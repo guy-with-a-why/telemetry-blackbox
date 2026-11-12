@@ -1,0 +1,12 @@
+[book]
+title = "telemetry-blackbox"
+authors = ["guy-with-a-why"]
+language = "en"
+src = "docs"
+
+[build]
+build-dir = "book"
+
+[output.html]
+git-repository-url = "https://github.com/guy-with-a-why/telemetry-blackbox"
+site-url = "/telemetry-blackbox/"

@@ -19,3 +19,16 @@ diagrams:
       extra=$(grep -q '^steps:' "$src" && echo --animate-interval=2000 || true); \
       d2 {{ d2_flags }} $extra "$src" "${src%.d2}.svg"; \
     done
+
+# Scan the history for secrets, and files, commits and issues for blocked terms
+audit:
+    gitleaks git --no-banner --redact .
+    scripts/blocked-terms.sh
+
+# Build the docs site into book/ (the README becomes its introduction)
+docs:
+    sed -e 's#](docs/#](#g' -e 's#src="docs/#src="#g' -e 's#srcset="docs/#srcset="#g' \
+        -e 's#(\.\./\.\./milestones)#(https://github.com/guy-with-a-why/telemetry-blackbox/milestones)#' \
+        README.md > docs/introduction.md
+    mkdir -p theme && cp docs/brand/favicon.svg theme/favicon.svg
+    mdbook build

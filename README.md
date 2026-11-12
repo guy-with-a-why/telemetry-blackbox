@@ -11,8 +11,10 @@ gateway, Redpanda and a [Spate](https://github.com/spate-etl/spate) pipeline
 carry every frame into ClickHouse, on a highly available Kubernetes cluster
 I built by hand.
 
-> **Status:** under construction. Progress is tracked in the
-> [milestones](../../milestones).
+> **Status:** under construction, in the open. Progress is tracked in the
+> [milestones](../../milestones), and the
+> [docs site](https://guy-with-a-why.github.io/telemetry-blackbox/) updates
+> with every push.
 
 ## Why I'm building it
 
@@ -114,6 +116,8 @@ just cluster    # five VMs and a highly available cluster
 just deploy     # Redpanda, ClickHouse, Grafana, gateway and pipeline
 just fly        # boot the firmware in Renode and start streaming
 just check      # run bbcheck against ClickHouse
+just docs       # build the docs site into book/
+just audit      # scan for secrets and blocked terms
 ```
 
 `just` on its own lists every recipe. You'll also need Linux with KVM, about
@@ -131,7 +135,8 @@ tools/bbcheck/   delivery and latency report
 docs/adr/        decisions and the reasons behind them
 docs/brand/      the logo, favicon, social preview and how to use them
 docs/diagrams/   D2 sources and the SVGs they render
-runbooks/        drills, with real output
+docs/runbooks/   drills, with real output
+scripts/         small checks the justfile and CI call
 ```
 
 ## Decisions

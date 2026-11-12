@@ -12,3 +12,11 @@ __pycache__/
 .DS_Store
 .idea/
 .vscode/
+
+# Docs site build output
+book/
+theme/
+docs/introduction.md
+
+# Local list of blocked terms, never committed
+.blocked-terms
