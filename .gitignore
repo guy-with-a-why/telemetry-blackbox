@@ -1,0 +1,14 @@
+# Rust
+target/
+
+# Python
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
