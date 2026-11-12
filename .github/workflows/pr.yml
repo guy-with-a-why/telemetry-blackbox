@@ -28,3 +28,27 @@ jobs:
             echo "::error::The title must read 'type(scope): summary', for example 'feat(gateway): resync after a bad CRC'."
             exit 1
           fi
+
+  description:
+    name: description
+    runs-on: ubuntu-latest
+    # release-please writes its own description
+    if: ${{ !startsWith(github.event.pull_request.head.ref, 'release-please--') }}
+    steps:
+      - name: Check the description follows the template
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          failed=0
+          for heading in '## Why' '## How it was tested'; do
+            if ! grep -qxF "$heading" <<<"${BODY//$'\r'/}"; then
+              echo "::error::The description needs a '$heading' section."
+              failed=1
+            fi
+          done
+          # the description becomes the squash commit's body on main
+          if [[ "$BODY" == *'<!--'* ]]; then
+            echo "::error::Delete the template's comments. The description becomes the commit message."
+            failed=1
+          fi
+          exit "$failed"
