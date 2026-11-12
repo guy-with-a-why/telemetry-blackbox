@@ -1,0 +1,3 @@
+# The STM32F407VG is a Cortex-M4F, so every build targets it.
+[build]
+target = "thumbv7em-none-eabihf"

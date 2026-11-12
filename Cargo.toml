@@ -1,0 +1,16 @@
+# The host crates. The firmware builds for its own target, so it has its own
+# workspace in firmware/.
+[workspace]
+resolver = "3"
+members = ["gateway", "pipeline"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.100"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }

@@ -25,8 +25,9 @@ audit:
     gitleaks git --no-banner --redact .
     scripts/blocked-terms.sh
 
-# Build the docs site into book/: the README becomes its introduction, and
-# the flight strip and log come from the issues
+# Build the docs site into book/: the README becomes its introduction, the
+# flight strip and log come from the issues and the coverage badge from
+# `just coverage`, if it has run
 docs:
     sed -e 's#](docs/#](#g' -e 's#src="docs/#src="#g' -e 's#srcset="docs/#srcset="#g' \
         -e 's#(\.\./\.\./milestone#(https://github.com/guy-with-a-why/telemetry-blackbox/milestone#g' \
@@ -34,8 +35,31 @@ docs:
     mkdir -p theme && cp docs/brand/favicon.svg theme/favicon.svg
     python3 scripts/flight.py
     mdbook build
+    if [[ -f target/coverage/coverage.json ]]; then cp target/coverage/coverage.json book/; fi
 
 # Lint and test the helper scripts
 test-scripts:
     uvx ruff@0.14.0 check scripts
     uv run --no-project --with pytest==8.4.2 pytest -q scripts
+
+# Check formatting and lints for the crates, the firmware and bbcheck
+lint:
+    cargo fmt --all --check
+    cargo clippy --workspace --all-targets --locked -- -D warnings
+    cd firmware && cargo fmt --check && cargo clippy --locked -- -D warnings
+    uv run --locked --project tools/bbcheck ruff check tools/bbcheck
+
+# Run the tests and build the firmware
+test:
+    cargo test --workspace --locked
+    cd firmware && cargo build --locked
+    cd tools/bbcheck && uv run --locked pytest
+
+# Measure line coverage across Rust and bbcheck, and write the badge to
+# target/coverage/coverage.json
+coverage:
+    mkdir -p target/coverage
+    cargo llvm-cov --workspace --locked --json --summary-only --output-path target/coverage/rust.json
+    cd tools/bbcheck && COVERAGE_FILE=../../target/coverage/.coverage uv run --locked pytest \
+        --cov=bbcheck --cov-report=term --cov-report=json:../../target/coverage/python.json
+    python3 scripts/coverage_badge.py target/coverage/rust.json target/coverage/python.json target/coverage/coverage.json
