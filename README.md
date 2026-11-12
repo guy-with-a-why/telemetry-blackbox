@@ -103,16 +103,17 @@ landing in ClickHouse.
 Still being built. When it's done, it will look like this:
 
 ```bash
-make bench      # check the tools are installed
-make cluster    # five VMs and a highly available cluster
-make deploy     # Redpanda, ClickHouse, Grafana, gateway and pipeline
-make fly        # boot the firmware in Renode and start streaming
-make check      # run bbcheck against ClickHouse
+mise install    # pinned tools: just, D2, uv, kubectl and Helm
+just bench      # check everything is installed
+just cluster    # five VMs and a highly available cluster
+just deploy     # Redpanda, ClickHouse, Grafana, gateway and pipeline
+just fly        # boot the firmware in Renode and start streaming
+just check      # run bbcheck against ClickHouse
 ```
 
-You'll need Linux with KVM, about 10 GB of free memory, Multipass, Renode,
-Rust with the `thumbv7em-none-eabihf` target, `uv` and, for the diagrams,
-[D2](https://d2lang.com).
+`just` on its own lists every recipe. You'll also need Linux with KVM, about
+10 GB of free memory, [mise](https://mise.jdx.dev), Multipass, Renode and Rust
+with the `thumbv7em-none-eabihf` target.
 
 ## Repository layout
 
@@ -135,6 +136,7 @@ Each gets a short record in `docs/adr/`.
 2. kubeadm over k3s or Talos.
 3. Redpanda over Apache Iggy or a home-made log.
 4. Deduplicating in ClickHouse over chasing exactly-once.
+5. just and mise over make, and a local registry for images.
 
 ## Results
 
@@ -159,7 +161,7 @@ To change one, edit the `.d2` file and watch it live, then render the lot:
 
 ```bash
 d2 --watch --layout=elk docs/diagrams/architecture.d2
-make diagrams
+just diagrams
 ```
 
 ## Cite
@@ -168,6 +170,10 @@ These are the documents I need to build this, grouped by where I use them.
 The board Renode simulates is ST's
 [STM32F4DISCOVERY](https://www.st.com/en/evaluation-tools/stm32f4discovery.html),
 which is built on the STM32F407VG, a Cortex-M4F.
+
+**Tooling (Day 0)**
+
+- [The just manual](https://just.systems/man/en/) and the [mise documentation](https://mise.jdx.dev/).
 
 **Microcontroller (Day 1)**
 
@@ -193,6 +199,7 @@ which is built on the STM32F407VG, a Cortex-M4F.
 - [Cilium on a kubeadm cluster](https://docs.cilium.io/en/stable/installation/k8s-install-kubeadm/).
 - [etcd disaster recovery](https://etcd.io/docs/v3.5/op-guide/recovery/).
 - [Upgrading kubeadm clusters](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/).
+- [The Distribution registry](https://distribution.github.io/distribution/) and [containerd registry hosts](https://github.com/containerd/containerd/blob/main/docs/hosts.md), for the local image registry.
 
 **Data path (Days 2 and 3)**
 

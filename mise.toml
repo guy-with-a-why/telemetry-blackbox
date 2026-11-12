@@ -1,0 +1,9 @@
+# Bench tools, pinned. `mise install` sets up a fresh machine.
+# Rust is pinned in rust-toolchain.toml. Multipass (snap) and Renode are
+# installed by hand; `just bench` checks them.
+[tools]
+just = "1.59.0"
+d2 = "0.9.0"
+uv = "0.13.7"
+kubectl = "1.37.2"
+helm = "4.3.1"
