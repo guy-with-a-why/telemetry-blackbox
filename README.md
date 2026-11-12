@@ -5,6 +5,11 @@
   </picture>
 </h1>
 
+<p align="center">
+  <a href="https://github.com/guy-with-a-why/telemetry-blackbox/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI status on main" src="https://img.shields.io/github/actions/workflow/status/guy-with-a-why/telemetry-blackbox/ci.yml?branch=main&event=push&label=CI"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/guy-with-a-why/telemetry-blackbox"><img alt="OpenSSF Scorecard" src="https://img.shields.io/ossf-scorecard/github.com/guy-with-a-why/telemetry-blackbox?label=OpenSSF%20Scorecard"></a>
+</p>
+
 A flight recorder for a simulated flight controller. Rust firmware runs a
 1 kHz control loop and streams MAVLink telemetry over a serial link. A Rust
 gateway, Redpanda and a [Spate](https://github.com/spate-etl/spate) pipeline
