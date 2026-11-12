@@ -161,3 +161,45 @@ To change one, edit the `.d2` file and watch it live, then render the lot:
 d2 --watch --layout=elk docs/diagrams/architecture.d2
 make diagrams
 ```
+
+## Cite
+
+These are the documents I need to build this, grouped by where I use them.
+The board Renode simulates is ST's
+[STM32F4DISCOVERY](https://www.st.com/en/evaluation-tools/stm32f4discovery.html),
+which is built on the STM32F407VG, a Cortex-M4F.
+
+**Microcontroller (Day 1)**
+
+- [STM32F407VG datasheet](https://www.st.com/resource/en/datasheet/stm32f407vg.pdf): pinout, memory map and electrical limits.
+- [RM0090 reference manual](https://www.st.com/resource/en/reference_manual/rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf): the timers, USART, DMA and clocks, register by register.
+- [PM0214 Cortex-M4 programming manual](https://www.st.com/resource/en/programming_manual/pm0214-stm32-cortexm4-mcus-and-mpus-programming-manual-stmicroelectronics.pdf): the NVIC, interrupt priorities, SysTick and the FPU.
+- [ES0182 errata](https://www.st.com/resource/en/errata_sheet/es0182-stm32f405407xx-and-stm32f415417xx-device-errata-stmicroelectronics.pdf): known silicon faults. Renode won't reproduce them, but real hardware would.
+- [UM1472 Discovery kit user manual](https://www.st.com/resource/en/user_manual/um1472-discovery-kit-with-stm32f407vg-mcu-stmicroelectronics.pdf): the board around the chip.
+- [Renode's STM32F4 Discovery platform](https://github.com/renode/renode/blob/master/platforms/boards/stm32f4_discovery-kit.repl) and the [Renode documentation](https://renode.readthedocs.io/en/latest/).
+- [The Embassy book](https://embassy.dev/book/) and the [embassy-stm32 API docs](https://docs.embassy.dev/embassy-stm32/).
+
+**Protocol (Days 1 and 3)**
+
+- [MAVLink serialisation](https://mavlink.io/en/guide/serialization.html): the v2 frame byte by byte.
+- [MAVLink CRC](https://mavlink.io/en/guide/crc.html): the checksum and `CRC_EXTRA`.
+- [MAVLink common messages](https://mavlink.io/en/messages/common.html): `HEARTBEAT`, `ATTITUDE` and `HIGHRES_IMU`.
+
+**Cluster (Day 2)**
+
+- [Multipass documentation](https://canonical.com/multipass/docs).
+- [Creating highly available clusters with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/).
+- [kube-vip as a static Pod](https://kube-vip.io/docs/installation/static/).
+- [Cilium on a kubeadm cluster](https://docs.cilium.io/en/stable/installation/k8s-install-kubeadm/).
+- [etcd disaster recovery](https://etcd.io/docs/v3.5/op-guide/recovery/).
+- [Upgrading kubeadm clusters](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/).
+
+**Data path (Days 2 and 3)**
+
+- [Redpanda on Kubernetes](https://docs.redpanda.com/current/deploy/redpanda/kubernetes/).
+- [ClickHouse ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree).
+- [Spate's connector contracts](https://spate.kainth.dev/docs/user-guide/extending/contracts) and its [delivery invariants](https://github.com/spate-etl/spate/blob/main/docs/INVARIANTS.md).
+
+**Diagrams**
+
+- [A tour of D2](https://d2lang.com/tour/intro/).
