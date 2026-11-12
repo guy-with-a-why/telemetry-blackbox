@@ -1,4 +1,9 @@
-# telemetry-blackbox
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/logo-dark.svg">
+    <img alt="telemetry-blackbox" src="docs/brand/logo-light.svg" width="440">
+  </picture>
+</h1>
 
 A flight recorder for a simulated flight controller. Rust firmware runs a
 1 kHz control loop and streams MAVLink telemetry over a serial link. A Rust
@@ -124,6 +129,7 @@ pipeline/        Spate pipeline into ClickHouse
 deploy/          VMs, cluster bootstrap and manifests
 tools/bbcheck/   delivery and latency report
 docs/adr/        decisions and the reasons behind them
+docs/brand/      the logo, favicon, social preview and how to use them
 docs/diagrams/   D2 sources and the SVGs they render
 runbooks/        drills, with real output
 ```
