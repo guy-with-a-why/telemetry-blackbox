@@ -3,8 +3,8 @@
     python3 scripts/flight.py      # writes docs/flight.svg and docs/flight-log.md
 
 Progress counts every issue in the Day milestones. Stretch issues are a bonus,
-issues closed as not planned drop out, and issues opened after takeoff are
-headwind: scope that crept in on the way.
+issues closed as not planned drop out, and issues opened after takeoff (the
+moment the tracker launched) are headwind: scope that crept in on the way.
 """
 
 import json
@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from html import escape
 from pathlib import Path
 
-TAKEOFF = "2026-11-13T00:00:00Z"
+TAKEOFF = "2026-11-12T17:25:24Z"  # the tracker launched with #39; anything newer is headwind
 STAMPS = {
     11: "Built it by hand",
     12: "Survived quorum loss",
