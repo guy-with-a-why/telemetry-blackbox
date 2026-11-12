@@ -8,7 +8,7 @@ default:
 
 # Check every bench tool is installed
 bench:
-    @for tool in just d2 uv kubectl helm multipass renode cargo; do \
+    @for tool in just d2 uv kubectl helm multipass renode cargo probe-rs clickhouse; do \
       if command -v "$tool" >/dev/null; then printf '%-10s ok\n' "$tool"; \
       else printf '%-10s missing\n' "$tool"; missing=1; fi; \
     done; exit "${missing:-0}"

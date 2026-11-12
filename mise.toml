@@ -1,7 +1,7 @@
 # Bench tools, pinned. `mise install` sets up a fresh machine, and CI uses
 # the same versions.
-# Rust is pinned in rust-toolchain.toml. Multipass (snap) and Renode are
-# installed by hand; `just bench` checks them.
+# Rust is pinned in rust-toolchain.toml. Multipass (snap), Renode, probe-rs
+# and the ClickHouse client are installed by hand; `just bench` checks them.
 [tools]
 just = "1.59.0"
 d2 = "0.9.0"

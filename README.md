@@ -131,8 +131,8 @@ just audit      # scan for secrets and blocked terms
 ```
 
 `just` on its own lists every recipe. You'll also need Linux with KVM, about
-10 GB of free memory, [mise](https://mise.jdx.dev), Multipass, Renode and Rust
-with the `thumbv7em-none-eabihf` target.
+10 GB of free memory, [mise](https://mise.jdx.dev), Multipass, Renode, probe-rs,
+the ClickHouse client and Rust with the `thumbv7em-none-eabihf` target.
 
 ## Repository layout
 
