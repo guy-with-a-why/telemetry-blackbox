@@ -34,3 +34,8 @@ docs:
     mkdir -p theme && cp docs/brand/favicon.svg theme/favicon.svg
     python3 scripts/flight.py
     mdbook build
+
+# Lint and test the helper scripts
+test-scripts:
+    uvx ruff@0.14.0 check scripts
+    uv run --no-project --with pytest==8.4.2 pytest -q scripts

@@ -1,0 +1,6 @@
+# Lint rules for every Python file in the repo.
+line-length = 120
+target-version = "py312"
+
+[lint]
+select = ["E", "W", "F", "I", "B", "UP"]
