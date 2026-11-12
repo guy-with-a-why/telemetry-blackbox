@@ -1,0 +1,6 @@
+# One toolchain for the host crates and the firmware. CI reads this too.
+[toolchain]
+channel = "1.100.0"
+components = ["rustfmt", "clippy", "llvm-tools-preview"]
+targets = ["thumbv7em-none-eabihf"]
+profile = "minimal"

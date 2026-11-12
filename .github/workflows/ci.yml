@@ -37,8 +37,49 @@ jobs:
           BLOCKED_TERMS: ${{ secrets.BLOCKED_TERMS }}
           GH_TOKEN: ${{ github.token }}
 
+  lint:
+    name: format and lint the code
+    if: github.event_name != 'issues' && github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        with:
+          install_args: just uv
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: |
+            .
+            firmware
+      - run: just lint
+
+  test:
+    name: test and measure coverage
+    if: github.event_name != 'issues' && github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        with:
+          install_args: just uv github:taiki-e/cargo-llvm-cov
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: |
+            .
+            firmware
+      - run: just test
+      - run: just coverage
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage
+          path: target/coverage/coverage.json
+          if-no-files-found: error
+
   docs:
     name: build the docs site
+    needs: test
+    # issue edits and the nightly run skip the tests, so they reuse the live badge
+    if: ${{ !cancelled() && contains(fromJSON('["success", "skipped"]'), needs.test.result) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -48,6 +89,20 @@ jobs:
       - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
         with:
           install_args: just mdbook
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: needs.test.result == 'success'
+        with:
+          name: coverage
+          path: target/coverage
+      - name: Reuse the published coverage badge
+        if: needs.test.result == 'skipped'
+        run: |
+          mkdir -p target/coverage
+          if curl -fsSL https://guy-with-a-why.github.io/telemetry-blackbox/coverage.json -o "$RUNNER_TEMP/coverage.json"; then
+            mv "$RUNNER_TEMP/coverage.json" target/coverage/coverage.json
+          else
+            echo "::warning::There's no published coverage badge to reuse."
+          fi
       - run: just docs
         env:
           GH_TOKEN: ${{ github.token }}
@@ -71,7 +126,10 @@ jobs:
   deploy:
     name: publish the docs site
     needs: [audit, docs]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # docs can run after a skipped job, so check the results explicitly
+    if: >-
+      !cancelled() && needs.audit.result == 'success' && needs.docs.result == 'success' &&
+      github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       pages: write

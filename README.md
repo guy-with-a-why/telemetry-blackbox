@@ -8,6 +8,7 @@
 <p align="center">
   <a href="https://github.com/guy-with-a-why/telemetry-blackbox/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI status on main" src="https://img.shields.io/github/actions/workflow/status/guy-with-a-why/telemetry-blackbox/ci.yml?branch=main&event=push&label=CI"></a>
   <a href="https://scorecard.dev/viewer/?uri=github.com/guy-with-a-why/telemetry-blackbox"><img alt="OpenSSF Scorecard" src="https://img.shields.io/ossf-scorecard/github.com/guy-with-a-why/telemetry-blackbox?label=OpenSSF%20Scorecard"></a>
+  <a href="https://github.com/guy-with-a-why/telemetry-blackbox/actions/workflows/ci.yml?query=branch%3Amain"><img alt="Line coverage across Rust and Python" src="https://img.shields.io/endpoint?url=https%3A%2F%2Fguy-with-a-why.github.io%2Ftelemetry-blackbox%2Fcoverage.json"></a>
 </p>
 
 A flight recorder for a simulated flight controller. Rust firmware runs a
@@ -125,8 +126,11 @@ landing in ClickHouse.
 Still being built. When it's done, it will look like this:
 
 ```bash
-mise install    # pinned tools: just, D2, uv, kubectl and Helm
+mise install    # pinned tools: just, D2, uv, kubectl, Helm and more
 just bench      # check everything is installed
+just lint       # formatting and lints for the crates, firmware and bbcheck
+just test       # the tests, plus a firmware build
+just coverage   # line coverage across Rust and Python
 just cluster    # five VMs and a highly available cluster
 just deploy     # Redpanda, ClickHouse, Grafana, gateway and pipeline
 just fly        # boot the firmware in Renode and start streaming

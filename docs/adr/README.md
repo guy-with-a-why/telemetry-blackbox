@@ -2,7 +2,7 @@
 
 Each decision gets a short record: the context, what I chose, what I turned
 down and what it costs. I write them as I make them, so this list grows over
-the four days.
+the four days. Each one starts from `_template.md`.
 
 | # | Decision | Status |
 |---|---|---|
