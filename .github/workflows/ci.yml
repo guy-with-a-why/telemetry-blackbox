@@ -4,7 +4,9 @@ on:
   push:
   pull_request:
   issues:
-    types: [opened, edited]
+    types: [opened, edited, closed, reopened, deleted, milestoned, demilestoned]
+  schedule:
+    - cron: "0 6 * * *" # keeps the flight strip's waypoint ETAs current
   workflow_dispatch:
 
 permissions:
@@ -36,14 +38,18 @@ jobs:
 
   docs:
     name: build the docs site
-    if: github.event_name != 'issues'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
         with:
           install_args: just mdbook
       - run: just docs
+        env:
+          GH_TOKEN: ${{ github.token }}
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
@@ -54,7 +60,7 @@ jobs:
   deploy:
     name: publish the docs site
     needs: [audit, docs]
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       pages: write

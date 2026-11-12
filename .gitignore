@@ -17,6 +17,8 @@ __pycache__/
 book/
 theme/
 docs/introduction.md
+docs/flight.svg
+docs/flight-log.md
 
 # Local list of blocked terms, never committed
 .blocked-terms

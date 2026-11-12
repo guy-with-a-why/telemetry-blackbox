@@ -47,6 +47,7 @@ that means a `<picture>` element:
 | Place | When | Issue |
 |---|---|---|
 | The README header | Now | |
+| The flight-progress strip | Now | #39 |
 | The repo's social preview | Day 4 | #29 |
 | The demo's opening and closing cards | Day 4 | #29 |
 | The Grafana home dashboard | Day 4 | #28 |

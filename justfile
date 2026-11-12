@@ -25,10 +25,12 @@ audit:
     gitleaks git --no-banner --redact .
     scripts/blocked-terms.sh
 
-# Build the docs site into book/ (the README becomes its introduction)
+# Build the docs site into book/: the README becomes its introduction, and
+# the flight strip and log come from the issues
 docs:
     sed -e 's#](docs/#](#g' -e 's#src="docs/#src="#g' -e 's#srcset="docs/#srcset="#g' \
-        -e 's#(\.\./\.\./milestones)#(https://github.com/guy-with-a-why/telemetry-blackbox/milestones)#' \
+        -e 's#(\.\./\.\./milestone#(https://github.com/guy-with-a-why/telemetry-blackbox/milestone#g' \
         README.md > docs/introduction.md
     mkdir -p theme && cp docs/brand/favicon.svg theme/favicon.svg
+    python3 scripts/flight.py
     mdbook build

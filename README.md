@@ -16,6 +16,16 @@ I built by hand.
 > [docs site](https://guy-with-a-why.github.io/telemetry-blackbox/) updates
 > with every push.
 
+## Progress
+
+[![Flight progress: issues closed against the Day 0 to Day 4 route](https://guy-with-a-why.github.io/telemetry-blackbox/flight.svg)](https://guy-with-a-why.github.io/telemetry-blackbox/flight-log.html)
+
+[![Day 0](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/1?label=Day%200&color=f2662b)](../../milestone/1) [![Day 1](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/2?label=Day%201&color=f2662b)](../../milestone/2) [![Day 2](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/3?label=Day%202&color=f2662b)](../../milestone/3) [![Day 3](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/4?label=Day%203&color=f2662b)](../../milestone/4) [![Day 4](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/5?label=Day%204&color=f2662b)](../../milestone/5)
+
+The plane moves as issues close. Headwind counts the work that crept in after
+takeoff, and a stamp unlocks at each milestone I care most about. The
+[flight log](https://guy-with-a-why.github.io/telemetry-blackbox/flight-log.html) has the detail.
+
 ## Why I'm building it
 
 I want to understand four things from the bottom up:
