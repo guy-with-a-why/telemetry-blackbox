@@ -47,6 +47,15 @@ build it, so they keep the history clean and the site honest.
 - The pull request title follows the same rule, because it becomes the commit
   on `main`. CI checks it.
 
+## Pull request descriptions
+
+- The template asks three things: why, how it was tested and anything else.
+- The description says why the change was made. The diff already says what.
+- A bug comes with steps that reproduce it, and the test shows those steps now
+  pass.
+- Short, clear and in order. The description becomes the commit body on
+  `main`, so the template's comments go before I open the pull request.
+
 ## Closing an issue
 
 - I tick every "Done when" box first. If one no longer makes sense, I say why.
