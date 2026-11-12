@@ -40,7 +40,7 @@ that means a `<picture>` element:
 | Ink | `#0f1720` | The box and the wordmark on light backgrounds |
 | Box (dark) | `#1c2330` | The box on dark backgrounds, with a `#4a5866` edge |
 | Ground | `#2a3442` | Below the horizon |
-| Light text | `#eaecef` | The wordmark on dark backgrounds |
+| Slate | `#8b97a6` | The wordmark on dark backgrounds, chosen to stay legible (3:1) if it lands on a light page |
 
 ## Where it appears
 
