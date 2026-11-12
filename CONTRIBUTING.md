@@ -24,11 +24,28 @@ build it, so they keep the history clean and the site honest.
 - `just docs` builds the site, so I know it still works.
 - I read the diff once more before it goes public.
 
+## Branches and pull requests
+
+- `main` is the only long-lived branch. It always builds, releases are cut
+  from it and the site deploys from it.
+- Every change starts on a branch from `main`, named
+  `<type>/<issue>-<slug>`, for example `feat/14-mavlink-framer`.
+- Branches live hours, not days. If `main` moves, I rebase onto it.
+- Every change reaches `main` through a pull request. Nothing is pushed to it
+  directly.
+- A pull request merges once the audit, the docs build and the title check
+  pass. It's squashed into one commit and the branch is deleted.
+- There's no `develop` branch and there are no release branches. A fix goes
+  to `main` and ships in the next patch release.
+- Release tags (`v*`) are never moved or deleted.
+
 ## Commits
 
 - [Conventional Commits](https://www.conventionalcommits.org):
   `type(scope): summary`, for example `feat(gateway): resync after a bad CRC`.
 - The summary says what changed. The body, if there is one, says why.
+- The pull request title follows the same rule, because it becomes the commit
+  on `main`. CI checks it.
 
 ## Closing an issue
 

@@ -2,6 +2,7 @@ name: ci
 
 on:
   push:
+    branches: [main] # other branches get CI through their pull request
   pull_request:
   issues:
     types: [opened, edited, closed, reopened, deleted, milestoned, demilestoned]
