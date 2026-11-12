@@ -1,0 +1,27 @@
+# How the parts fit together.
+direction: right
+
+device: Flight controller (Renode, STM32F4) {
+  grid-rows: 2
+  loop: "Control loop\n1 kHz · IMU → attitude"
+  tx: "Telemetry task\nMAVLink v2 · 100 Hz"
+  loop -> tx
+}
+
+cluster: Kubernetes (kubeadm, 3 control planes) {
+  gateway: "gateway\nRust · tokio"
+  redpanda: "Redpanda\ntelemetry.raw" {shape: cylinder}
+  pipeline: "pipeline\nSpate"
+  clickhouse: "ClickHouse\ndeduplicated by key" {shape: cylinder}
+  grafana: Grafana
+
+  gateway -> redpanda: produce {style.animated: true}
+  redpanda -> pipeline: poll {style.animated: true}
+  pipeline -> clickhouse: insert {style.animated: true}
+  grafana -> clickhouse: queries
+}
+
+bbcheck: "bbcheck\nPython" {style.stroke-dash: 3}
+
+device.tx -> cluster.gateway: UART {style.animated: true}
+bbcheck -> cluster.clickhouse: verifies {style.stroke-dash: 3}

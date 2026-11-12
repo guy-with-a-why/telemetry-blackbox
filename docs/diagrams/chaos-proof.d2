@@ -1,0 +1,54 @@
+# Spate crashes before it commits, and nothing is lost.
+direction: right
+
+redpanda: "Redpanda\nframes 41–43" {shape: cylinder}
+spate: Spate
+clickhouse: "ClickHouse\n41 · 42 · 43" {shape: cylinder}
+bbcheck: bbcheck {style.stroke-dash: 3}
+
+redpanda -> spate: poll
+spate -> clickhouse: insert
+clickhouse -> spate: durable {style.stroke-dash: 3}
+spate -> redpanda: commit {style.stroke-dash: 3}
+bbcheck -> clickhouse: verifies {style.stroke-dash: 3}
+
+caption: What happens when Spate crashes mid-batch {shape: text; near: bottom-center}
+
+steps: {
+  1: {
+    caption: Spate inserts frames 41 to 43 and ClickHouse makes them durable
+    (spate -> clickhouse)[0].style: {animated: true; stroke-width: 3}
+  }
+  2: {
+    caption: Spate crashes before it commits the offset
+    (spate -> clickhouse)[0].style: {animated: false; stroke-width: 2}
+    spate.label: Spate ✕
+    spate.style: {stroke: "#e5534b"; stroke-width: 3}
+  }
+  3: {
+    caption: On restart it reads from the last commit, so the same frames arrive again
+    spate.label: Spate (restarted)
+    spate.style: {stroke-width: 2}
+    (redpanda -> spate)[0].style: {animated: true; stroke-width: 3}
+  }
+  4: {
+    caption: ClickHouse now holds each frame twice
+    (redpanda -> spate)[0].style: {animated: false; stroke-width: 2}
+    (spate -> clickhouse)[0].style: {animated: true; stroke-width: 3}
+    clickhouse.label: "ClickHouse\n41 · 42 · 43 (twice)"
+    clickhouse.style: {stroke: "#c69026"; stroke-width: 3}
+  }
+  5: {
+    caption: This time the commit lands
+    (spate -> clickhouse)[0].style: {animated: false; stroke-width: 2}
+    (spate -> redpanda)[0].style: {animated: true; stroke-width: 3}
+  }
+  6: {
+    caption: ReplacingMergeTree drops the duplicates, and bbcheck finds nothing missing
+    (spate -> redpanda)[0].style: {animated: false; stroke-width: 2}
+    clickhouse.label: "ClickHouse\n41 · 42 · 43"
+    clickhouse.style: {stroke: "#46954a"; stroke-width: 3}
+    bbcheck.label: "bbcheck\nmissing 0 · duplicates 0"
+    (bbcheck -> clickhouse)[0].style: {animated: true; stroke-width: 3}
+  }
+}

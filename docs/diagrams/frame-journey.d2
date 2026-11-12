@@ -1,0 +1,49 @@
+# One frame's journey. Each step highlights the hop that's happening.
+direction: right
+
+firmware: Firmware
+gateway: Gateway
+redpanda: "Redpanda\ntelemetry.raw" {shape: cylinder}
+spate: Spate
+clickhouse: ClickHouse {shape: cylinder}
+
+firmware -> gateway: UART
+gateway -> redpanda: produce
+redpanda -> spate: poll
+spate -> clickhouse: insert
+clickhouse -> spate: durable {style.stroke-dash: 3}
+spate -> redpanda: commit {style.stroke-dash: 3}
+
+caption: One frame, from the firmware to ClickHouse {shape: text; near: bottom-center}
+
+steps: {
+  1: {
+    caption: Frame 41 leaves the firmware over UART
+    (firmware -> gateway)[0].style: {animated: true; stroke-width: 3}
+  }
+  2: {
+    caption: The gateway checks its CRC and sequence, then publishes it
+    (firmware -> gateway)[0].style: {animated: false; stroke-width: 2}
+    (gateway -> redpanda)[0].style: {animated: true; stroke-width: 3}
+  }
+  3: {
+    caption: Spate polls the partition and decodes the frame into a row
+    (gateway -> redpanda)[0].style: {animated: false; stroke-width: 2}
+    (redpanda -> spate)[0].style: {animated: true; stroke-width: 3}
+  }
+  4: {
+    caption: Spate inserts the batch into ClickHouse
+    (redpanda -> spate)[0].style: {animated: false; stroke-width: 2}
+    (spate -> clickhouse)[0].style: {animated: true; stroke-width: 3}
+  }
+  5: {
+    caption: ClickHouse confirms the batch is durable
+    (spate -> clickhouse)[0].style: {animated: false; stroke-width: 2}
+    (clickhouse -> spate)[0].style: {animated: true; stroke-width: 3}
+  }
+  6: {
+    caption: Only then does Spate commit the offset, so a crash can repeat work but never skip it
+    (clickhouse -> spate)[0].style: {animated: false; stroke-width: 2}
+    (spate -> redpanda)[0].style: {animated: true; stroke-width: 3}
+  }
+}

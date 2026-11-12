@@ -1,0 +1,23 @@
+# The cluster: five VMs on one machine.
+direction: down
+
+vip: API virtual IP (kube-vip) {shape: oval}
+
+control: Control planes (stacked etcd) {
+  cp1: "cp-1\napiserver · etcd · scheduler"
+  cp2: "cp-2\napiserver · etcd · scheduler"
+  cp3: "cp-3\napiserver · etcd · scheduler"
+}
+
+workers: Workers (Cilium) {
+  edge: "edge-1\ncapability=serial\ngateway"
+  data: "data-1\nRedpanda · pipeline\nClickHouse · Grafana"
+}
+
+renode: "Renode on the host\nUART on a TCP port" {style.stroke-dash: 3}
+
+vip -> control.cp1
+vip -> control.cp2
+vip -> control.cp3
+control -> workers: schedules Pods
+renode -> workers.edge: serial link {style.animated: true}
