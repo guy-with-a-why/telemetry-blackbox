@@ -1,0 +1,74 @@
+# One grouped pull request per ecosystem each week, titled as a Conventional
+# Commit. chore doesn't cut a release, so a bump ships with the next real
+# change. A new version waits a week before it's proposed, so a bad release
+# has time to be yanked.
+version: 2
+
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      host-crates:
+        patterns: ["*"]
+
+  - package-ecosystem: cargo
+    directory: /firmware
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      firmware-crates:
+        patterns: ["*"]
+
+  - package-ecosystem: uv
+    directory: /tools/bbcheck
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      bbcheck:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    ignore:
+      # the tag tracks rust-toolchain.toml, so both move together by hand
+      - dependency-name: "*rust"
+    groups:
+      images:
+        patterns: ["*"]

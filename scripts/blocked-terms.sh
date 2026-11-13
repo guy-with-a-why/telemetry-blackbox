@@ -24,10 +24,10 @@ sed -i '/^[[:space:]]*$/d' "$terms" # a blank line would match everything
 found=0
 matches() { grep -qiF -f "$terms"; }
 
-# GitHub adds a trailer crediting the release App when it squash-merges
-# release-please's pull request. It names a bot, not a person, and release
-# tags point at those commits, so they can't be rewritten.
-release_bot='^[[:alnum:]-]+: telemetry-blackbox-release\[bot\] <356374965\+telemetry-blackbox-release\[bot\]@users\.noreply\.github\.com>$'
+# GitHub adds a trailer crediting the bot when it squash-merges a pull request
+# from release-please or Dependabot. It names a bot, not a person, and commits
+# on main can't be rewritten.
+bot_trailer='^[[:alnum:]-]+: (telemetry-blackbox-release\[bot\] <356374965\+telemetry-blackbox-release|dependabot\[bot\] <49699333\+dependabot)\[bot\]@users\.noreply\.github\.com>$'
 
 if files=$(git grep -liF -f "$terms"); then
   printf 'blocked term in file: %s\n' $files
@@ -35,7 +35,7 @@ if files=$(git grep -liF -f "$terms"); then
 fi
 
 for commit in $(git rev-list --all); do
-  if git log -1 --format=%B "$commit" | grep -vE "$release_bot" | matches; then
+  if git log -1 --format=%B "$commit" | grep -vE "$bot_trailer" | matches; then
     echo "blocked term in the message of commit ${commit:0:7}"
     found=1
   fi
