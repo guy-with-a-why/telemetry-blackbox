@@ -258,3 +258,9 @@ which is built on the STM32F407VG, a Cortex-M4F.
 **Diagrams**
 
 - [A tour of D2](https://d2lang.com/tour/intro/).
+
+## Licence
+
+Dual-licensed under [MIT](LICENSE-MIT) or [Apache 2.0](LICENSE-APACHE), at
+your option. Any contribution you submit is licensed the same way, unless you
+say otherwise.

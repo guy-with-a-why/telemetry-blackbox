@@ -32,8 +32,10 @@ jobs:
   description:
     name: description
     runs-on: ubuntu-latest
-    # release-please writes its own description
-    if: ${{ !startsWith(github.event.pull_request.head.ref, 'release-please--') }}
+    # release-please and Dependabot write their own descriptions
+    if: >-
+      !startsWith(github.event.pull_request.head.ref, 'release-please--') &&
+      !startsWith(github.event.pull_request.head.ref, 'dependabot/')
     steps:
       - name: Check the description follows the template
         env:

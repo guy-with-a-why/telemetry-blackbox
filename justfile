@@ -45,7 +45,7 @@ note +text:
 # Lint and test the helper scripts
 test-scripts:
     uvx ruff@0.14.0 check scripts
-    uv run --no-project --with pytest==8.4.2 pytest -q scripts
+    uv run --no-project --with pytest==9.2.0 pytest -q scripts
 
 # Check formatting and lints for the crates, the firmware and bbcheck
 lint:
