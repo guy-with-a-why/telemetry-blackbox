@@ -5,6 +5,8 @@ resolver = "3"
 members = ["gateway", "pipeline"]
 
 [workspace.package]
+# release-please bumps this, and the lockfile, in its release pull request
+version = "0.0.0"
 edition = "2024"
 rust-version = "1.100"
 publish = false
