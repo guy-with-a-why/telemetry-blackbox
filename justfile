@@ -37,6 +37,11 @@ docs:
     mdbook build
     if [[ -f target/coverage/coverage.json ]]; then cp target/coverage/coverage.json book/; fi
 
+# Jot a timestamped note for tonight's blog post, e.g. just note "the board boots"
+note +text:
+    @mkdir -p ~/.local/state/telemetry-blackbox
+    @printf '%s  %s\n' "$(date +%H:%M)" {{ quote(text) }} | tee -a ~/.local/state/telemetry-blackbox/notes-$(date +%F).log
+
 # Lint and test the helper scripts
 test-scripts:
     uvx ruff@0.14.0 check scripts
