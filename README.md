@@ -9,6 +9,7 @@
   <a href="https://github.com/guy-with-a-why/telemetry-blackbox/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI status on main" src="https://img.shields.io/github/actions/workflow/status/guy-with-a-why/telemetry-blackbox/ci.yml?branch=main&event=push&label=CI"></a>
   <a href="https://scorecard.dev/viewer/?uri=github.com/guy-with-a-why/telemetry-blackbox"><img alt="OpenSSF Scorecard" src="https://img.shields.io/ossf-scorecard/github.com/guy-with-a-why/telemetry-blackbox?label=OpenSSF%20Scorecard"></a>
   <a href="https://github.com/guy-with-a-why/telemetry-blackbox/actions/workflows/ci.yml?query=branch%3Amain"><img alt="Line coverage across Rust and Python" src="https://img.shields.io/endpoint?url=https%3A%2F%2Fguy-with-a-why.github.io%2Ftelemetry-blackbox%2Fcoverage.json"></a>
+  <a href="https://github.com/guy-with-a-why/telemetry-blackbox/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/guy-with-a-why/telemetry-blackbox?label=release"></a>
 </p>
 
 A flight recorder for a simulated flight controller. Rust firmware runs a
@@ -142,6 +143,23 @@ just audit      # scan for secrets and blocked terms
 `just` on its own lists every recipe. You'll also need Linux with KVM, about
 10 GB of free memory, [mise](https://mise.jdx.dev), Multipass, Renode, probe-rs,
 the ClickHouse client and Rust with the `thumbv7em-none-eabihf` target.
+
+### A released version
+
+Every release puts multi-arch images of the gateway and pipeline on GitHub
+Container Registry. Once the firmware has a binary, it's attached to the
+[release](https://github.com/guy-with-a-why/telemetry-blackbox/releases) too.
+The [changelog](https://github.com/guy-with-a-why/telemetry-blackbox/blob/main/CHANGELOG.md) says what each one changed.
+
+```bash
+docker pull ghcr.io/guy-with-a-why/telemetry-blackbox/gateway:latest
+docker pull ghcr.io/guy-with-a-why/telemetry-blackbox/pipeline:latest
+gh attestation verify oci://ghcr.io/guy-with-a-why/telemetry-blackbox/gateway:latest \
+  -R guy-with-a-why/telemetry-blackbox
+```
+
+Each image carries a provenance attestation, so the last command proves it
+was built here, from a tagged commit.
 
 ## Repository layout
 

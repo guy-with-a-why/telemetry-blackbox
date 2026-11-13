@@ -37,6 +37,8 @@ build it, so they keep the history clean and the site honest.
   pass. It's squashed into one commit and the branch is deleted.
 - There's no `develop` branch and there are no release branches. A fix goes
   to `main` and ships in the next patch release.
+- release-please keeps a release pull request open from the commits on
+  `main`. Merging it tags the release and publishes the images.
 - Release tags (`v*`) are never moved or deleted.
 
 ## Commits
