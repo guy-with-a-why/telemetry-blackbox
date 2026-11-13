@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.1.0...v0.1.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* **audit:** let the release bot's trailer through the commit scan ([#54](https://github.com/guy-with-a-why/telemetry-blackbox/issues/54)) ([be5f732](https://github.com/guy-with-a-why/telemetry-blackbox/commit/be5f732943eb60e60aa379eb0dbb4acd790623e4))
+
 ## 0.1.0 (2026-11-13)
 
 
