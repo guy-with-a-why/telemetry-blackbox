@@ -1,4 +1,4 @@
-//! Firmware for the STM32F407VG. Day 1 turns this into an Embassy binary.
+//! Logic for the STM32F407VG firmware that doesn't touch the hardware.
 
 #![no_std]
 

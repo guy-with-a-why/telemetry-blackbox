@@ -169,6 +169,7 @@ was built here, from a tagged commit.
 
 ```text
 firmware/        Embassy firmware for the STM32F4
+renode/          the board Renode simulates, as a script
 gateway/         serial link to Redpanda
 pipeline/        Spate pipeline into ClickHouse
 deploy/          VMs, cluster bootstrap and manifests
