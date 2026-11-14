@@ -2,9 +2,10 @@
 
     python3 scripts/flight.py      # writes docs/flight.svg and docs/flight-log.md
 
-Progress counts every issue in the Day milestones. Stretch issues are a bonus,
-issues closed as not planned drop out, and issues opened after takeoff (the
-moment the tracker launched) are headwind: scope that crept in on the way.
+Every milestone with a due date is a leg, flown in due-date order. Progress
+counts every issue in the legs. Stretch has no due date, so its issues are a
+bonus. Issues closed as not planned drop out, and issues opened after takeoff
+(the moment the tracker launched) are headwind: scope that crept in on the way.
 
 GitHub timestamps are ISO 8601 in UTC, so they compare correctly as strings.
 """
@@ -39,7 +40,7 @@ Issue = dict[str, Any]  # an issue as the GitHub REST API returns it
 
 @dataclass
 class Leg:
-    """One Day milestone and its issues."""
+    """One milestone with a due date, and its issues."""
 
     title: str
     due_on: str | None
@@ -95,16 +96,17 @@ def parse(out: str) -> list[Issue]:
 
 
 def plan(issues: list[Issue], now: str) -> Flight:
-    days: dict[int, Leg] = {}
+    legs: dict[int, Leg] = {}
     bonus = []
     for i in issues:
         m = i.get("milestone")
-        if m and m["title"].startswith("Day"):
-            days.setdefault(m["number"], Leg(m["title"], m.get("due_on"), [])).issues.append(i)
+        if m and m.get("due_on"):
+            legs.setdefault(m["number"], Leg(m["title"], m["due_on"], [])).issues.append(i)
         else:
             bonus.append(i)
     closed = {i["number"] for i in issues if i["state"] == "closed"}
-    return Flight([days[n] for n in sorted(days)], bonus, closed, now)
+    order = sorted(legs, key=lambda n: (legs[n].due_on, n))
+    return Flight([legs[n] for n in order], bonus, closed, now)
 
 
 def status(leg: Leg, now: str) -> tuple[str, str]:

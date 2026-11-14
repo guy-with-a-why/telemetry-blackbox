@@ -3,8 +3,9 @@ import json
 import flight
 
 NOW = "2026-11-13T09:00:00Z"
-DAY_0 = {"number": 1, "title": "Day 0 · The bench", "due_on": "2026-11-12T00:00:00Z"}
-DAY_1 = {"number": 2, "title": "Day 1 · Firmware and the wire", "due_on": "2026-11-13T00:00:00Z"}
+LEG_0 = {"number": 1, "title": "Leg 0 · The bench", "due_on": "2026-11-12T00:00:00Z"}
+LEG_1 = {"number": 3, "title": "Leg 1 · A cluster I built myself", "due_on": "2026-11-20T00:00:00Z"}
+LEG_2 = {"number": 2, "title": "Leg 2 · Firmware and the wire", "due_on": "2026-11-24T00:00:00Z"}
 STRETCH = {"number": 6, "title": "Stretch", "due_on": None}
 
 
@@ -31,21 +32,27 @@ def test_parse_drops_pull_requests_and_dropped_work():
     assert [i["number"] for i in flight.parse(json.dumps(pages))] == [1]
 
 
-def test_plan_orders_legs_and_sets_aside_the_bonus():
-    issues = [issue(1, milestone=DAY_1), issue(2, milestone=DAY_0), issue(3, milestone=STRETCH), issue(4)]
+def test_plan_flies_legs_in_due_date_order_and_sets_aside_the_bonus():
+    issues = [
+        issue(1, milestone=LEG_2),
+        issue(2, milestone=LEG_0),
+        issue(3, milestone=STRETCH),
+        issue(4),
+        issue(5, milestone=LEG_1),
+    ]
     plan = flight.plan(issues, NOW)
-    assert [leg.title for leg in plan.legs] == [DAY_0["title"], DAY_1["title"]]
+    assert [leg.title for leg in plan.legs] == [LEG_0["title"], LEG_1["title"], LEG_2["title"]]
     assert [i["number"] for i in plan.bonus] == [3, 4]
 
 
 def test_headwind_counts_issues_opened_after_takeoff():
-    issues = [issue(1, milestone=DAY_0), issue(2, milestone=DAY_0, created="2026-11-12T18:00:00Z")]
+    issues = [issue(1, milestone=LEG_0), issue(2, milestone=LEG_0, created="2026-11-12T18:00:00Z")]
     assert flight.plan(issues, NOW).headwind == 1
 
 
 def test_status():
     def leg(due, *states):
-        return flight.Leg("Day", due, [issue(n, state=s) for n, s in enumerate(states)])
+        return flight.Leg("Leg", due, [issue(n, state=s) for n, s in enumerate(states)])
 
     assert flight.status(leg("2026-11-12T00:00:00Z", "closed", "closed"), NOW)[0] == "landed"
     assert flight.status(leg("2026-11-12T00:00:00Z", "closed", "open"), NOW)[0] == "late"
@@ -61,9 +68,9 @@ def test_an_empty_flight_still_draws():
 
 def test_log_lists_landed_issues_newest_first_then_the_bonus():
     issues = [
-        issue(1, "closed", DAY_0, closed="2026-11-12T11:00:00Z"),
-        issue(2, "closed", DAY_0, closed="2026-11-12T15:00:00Z"),
-        issue(3, milestone=DAY_0),
+        issue(1, "closed", LEG_0, closed="2026-11-12T11:00:00Z"),
+        issue(2, "closed", LEG_0, closed="2026-11-12T15:00:00Z"),
+        issue(3, milestone=LEG_0),
         issue(4, milestone=STRETCH),
     ]
     lines = flight.log(flight.plan(issues, NOW)).splitlines()
