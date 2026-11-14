@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.2.0...v0.3.0) (2026-11-14)
+
+
+### Features
+
+* **deploy:** build the five cluster VMs with cloud-init and a local registry ([#74](https://github.com/guy-with-a-why/telemetry-blackbox/issues/74)) ([49fce66](https://github.com/guy-with-a-why/telemetry-blackbox/commit/49fce66bc1a2f60935918cedc9a9044e8fb51995)), closes [#10](https://github.com/guy-with-a-why/telemetry-blackbox/issues/10)
+* **deploy:** cache packages and control-plane images on the host ([#78](https://github.com/guy-with-a-why/telemetry-blackbox/issues/78)) ([a224770](https://github.com/guy-with-a-why/telemetry-blackbox/commit/a22477074ad10cb8d109ab8a0ae695b5a9778ba3)), closes [#75](https://github.com/guy-with-a-why/telemetry-blackbox/issues/75)
+* **release:** attach build provenance to the firmware ([#77](https://github.com/guy-with-a-why/telemetry-blackbox/issues/77)) ([d5b9951](https://github.com/guy-with-a-why/telemetry-blackbox/commit/d5b9951e93f63242808c363df3137c81848700c2))
+
 ## [0.2.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.1.2...v0.2.0) (2026-11-14)
 
 
