@@ -9,9 +9,11 @@ source deploy/vms/config.sh
 
 exists() { multipass info "$1" >/dev/null 2>&1; }
 
-# Prints node.yaml with its placeholders filled in.
+# Prints node.yaml with its placeholders filled in, given the host's address.
 user_data() {
-  sed -e "s/@REGISTRY@/$1/g" -e "s/@KUBERNETES_MINOR@/$kubernetes_minor/g" \
+  sed -e "s/@KUBERNETES_MINOR@/$kubernetes_minor/g" \
+    -e "s/@REGISTRY@/$1:$registry_port/g" \
+    -e "s/@APT_CACHE@/$1:$apt_cache_port/g" \
     deploy/vms/node.yaml
 }
 
@@ -27,15 +29,15 @@ wait_ready() {
 }
 
 create() {
-  local registry node name cpus memory disk
-  registry=$(scripts/registry.sh)
+  local host node name cpus memory disk
+  host=$(scripts/host.sh)
   for node in "${nodes[@]}"; do
     read -r name cpus memory disk <<<"$node"
     if exists "$name"; then
       echo "$name exists"
     else
       # Launch waits for cloud-init, which installs packages, so allow 15 minutes.
-      user_data "$registry" |
+      user_data "$host" |
         multipass launch "$release" --name "$name" --zone "$zone" \
           --cpus "$cpus" --memory "$memory" --disk "$disk" \
           --cloud-init - --timeout 900

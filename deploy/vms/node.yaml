@@ -1,8 +1,18 @@
 #cloud-config
 # Every node, control plane or worker, starts from this file, so they all
 # reach kubeadm in the same state. scripts/vms.sh passes it to Multipass. It
-# fills in @KUBERNETES_MINOR@ from deploy/vms/config.sh and @REGISTRY@ with
-# the host's registry on the Multipass bridge.
+# fills in @KUBERNETES_MINOR@ from deploy/vms/config.sh, and @REGISTRY@ and
+# @APT_CACHE@ with what scripts/host.sh runs on the bridge.
+
+# apt goes through the cache on the host, so each package crosses the internet
+# once. The real host goes first in the path, which is how the cache routes it.
+apt:
+  primary:
+    - arches: [default]
+      uri: http://@APT_CACHE@/archive.ubuntu.com/ubuntu
+  security:
+    - arches: [default]
+      uri: http://@APT_CACHE@/security.ubuntu.com/ubuntu
 
 packages:
   - containerd
@@ -52,8 +62,11 @@ write_files:
 
       # From the Kubernetes install guide:
       # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
-      repo="https://pkgs.k8s.io/core:/stable:/$minor/deb/"
-      curl -fsSL "${repo}Release.key" | gpg --dearmor -o /etc/apt/keyrings/kubernetes.gpg
+      # Packages come through the cache. The key comes straight from upstream,
+      # so the cache can't swap it, and apt checks every package against it.
+      key="https://pkgs.k8s.io/core:/stable:/$minor/deb/Release.key"
+      repo="http://@APT_CACHE@/pkgs.k8s.io/core:/stable:/$minor/deb/"
+      curl -fsSL "$key" | gpg --dearmor -o /etc/apt/keyrings/kubernetes.gpg
       echo "deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] $repo /" >/etc/apt/sources.list.d/kubernetes.list
       apt-get update -q
       # kubeadm no longer pulls in cri-tools, and crictl is how I debug a node.
