@@ -9,6 +9,7 @@ kubernetes_minor=v1.36
 zone=zone1
 bridge=mpqemubr$zone
 registry_port=5000
+k8s_mirror_port=5001
 apt_cache_port=3142
 
 # name    vCPUs  memory  disk

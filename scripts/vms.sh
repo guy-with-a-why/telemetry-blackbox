@@ -13,6 +13,7 @@ exists() { multipass info "$1" >/dev/null 2>&1; }
 user_data() {
   sed -e "s/@KUBERNETES_MINOR@/$kubernetes_minor/g" \
     -e "s/@REGISTRY@/$1:$registry_port/g" \
+    -e "s/@K8S_MIRROR@/$1:$k8s_mirror_port/g" \
     -e "s/@APT_CACHE@/$1:$apt_cache_port/g" \
     deploy/vms/node.yaml
 }

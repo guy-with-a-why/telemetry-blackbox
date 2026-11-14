@@ -2,6 +2,7 @@
 # Runs what the VMs use from the host, and prints the host's address on the
 # Multipass bridge:
 #   - the image registry, on localhost for pushes and the bridge for pulls
+#   - a pull-through mirror of registry.k8s.io, for the control-plane images
 #   - an apt cache, so each package crosses the internet once
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -31,6 +32,11 @@ ensure() {
 ensure blackbox-registry \
   -p "127.0.0.1:$registry_port:5000" -p "$ip:$registry_port:5000" \
   -v blackbox-registry:/var/lib/registry "$registry_image"
+
+ensure blackbox-k8s-mirror \
+  -p "$ip:$k8s_mirror_port:5000" \
+  -e REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io \
+  -v blackbox-k8s-mirror:/var/lib/registry "$registry_image"
 
 docker build -q -t blackbox-apt-cache deploy/apt-cache >/dev/null
 ensure blackbox-apt-cache \

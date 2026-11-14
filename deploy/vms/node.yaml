@@ -1,8 +1,8 @@
 #cloud-config
 # Every node, control plane or worker, starts from this file, so they all
 # reach kubeadm in the same state. scripts/vms.sh passes it to Multipass. It
-# fills in @KUBERNETES_MINOR@ from deploy/vms/config.sh, and @REGISTRY@ and
-# @APT_CACHE@ with what scripts/host.sh runs on the bridge.
+# fills in @KUBERNETES_MINOR@ from deploy/vms/config.sh, and @REGISTRY@,
+# @K8S_MIRROR@ and @APT_CACHE@ with what scripts/host.sh runs on the bridge.
 
 # apt goes through the cache on the host, so each package crosses the internet
 # once. The real host goes first in the path, which is how the cache routes it.
@@ -45,6 +45,14 @@ write_files:
       server = "http://@REGISTRY@"
 
       [host."http://@REGISTRY@"]
+        capabilities = ["pull", "resolve"]
+  # The control-plane images come through a mirror on the host, or straight
+  # from registry.k8s.io if the mirror is down.
+  - path: /etc/containerd/certs.d/registry.k8s.io/hosts.toml
+    content: |
+      server = "https://registry.k8s.io"
+
+      [host."http://@K8S_MIRROR@"]
         capabilities = ["pull", "resolve"]
   - path: /usr/local/sbin/prepare-node
     permissions: "0755"
