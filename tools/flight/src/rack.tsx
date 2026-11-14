@@ -7,6 +7,7 @@
  * the same detail as text.
  */
 import { readFile } from "node:fs/promises";
+import type { ReactNode } from "react";
 import satori from "satori";
 import {
   type Flight,
@@ -58,49 +59,88 @@ const TONE: Record<Status, string> = {
 };
 
 const PIP_GAP = 3;
-const PIPS_WIDTH = 260; // past 20 issues the pips get narrower instead of the rack wider
 
-export function Rack({ flight, mark }: { flight: Flight; mark: string }) {
+/**
+ * The two cards. The wide one is for a desktop. A phone would shrink it to
+ * about 40%, so the narrow one drops the ETAs, puts each strip on two rows and
+ * keeps every number at full size.
+ */
+const CARDS = {
+  wide: {
+    narrow: false,
+    width: 900,
+    pad: "px-7",
+    rail: "w-2.5 mr-2.5",
+    strip: "h-[34px]",
+    stickOut: "ml-[22px]", // how far the active strip sticks out of the rack
+    tuckIn: "mr-[22px]",
+    label: "w-[84px]",
+    name: "text-[15px]",
+    status: "w-[112px]",
+    count: "w-16",
+    stamp: "text-[11px]",
+    pips: 260, // past 20 issues the pips get narrower instead of the rack wider
+  },
+  narrow: {
+    narrow: true,
+    width: 420,
+    pad: "px-4",
+    rail: "w-1.5 mr-2",
+    strip: "h-14",
+    stickOut: "ml-3.5",
+    tuckIn: "mr-3.5",
+    label: "w-[62px]",
+    name: "text-sm", // fits the longest leg name today, 25 characters
+    status: "w-[104px]",
+    count: "w-11",
+    stamp: "text-xs",
+    pips: 166, // what's left of the second row beside the status
+  },
+};
+type Card = (typeof CARDS)["wide"];
+
+export function Rack({ flight, mark, card = CARDS.wide }: { flight: Flight; mark: string; card?: Card }) {
   const most = Math.max(1, ...flight.legs.map((leg) => leg.issues.length));
-  const pitch = Math.min(13, Math.floor(PIPS_WIDTH / most)); // a pip and its gap
+  const pitch = Math.min(13, Math.floor(card.pips / most)); // a pip and its gap
   return (
     <div
-      tw="flex flex-col w-full px-7 py-[22px] bg-background border-2 border-dim rounded-[14px] text-ink"
+      tw={`flex flex-col w-full ${card.pad} py-[22px] bg-background border-2 border-dim rounded-[14px] text-ink`}
       style={{ fontFamily: "JetBrains Mono" }}
     >
-      <Header flight={flight} mark={mark} />
+      <Header flight={flight} mark={mark} card={card} />
       <div tw="flex mt-[18px]">
-        <div tw="w-2.5 shrink-0 mr-2.5 bg-dim rounded-sm" />
+        <div tw={`${card.rail} shrink-0 bg-dim rounded-sm`} />
         <div tw="flex flex-col flex-grow min-w-0">
           {flight.legs.map((leg, i) => (
-            <Strip key={leg.title} flight={flight} leg={leg} index={i} pitch={pitch} most={most} mark={mark} />
+            <Strip key={leg.title} {...{ flight, leg, pitch, most, mark, card }} index={i} />
           ))}
-          <Standby flight={flight} />
+          <Standby flight={flight} card={card} />
         </div>
       </div>
       <div tw="flex flex-wrap justify-center mt-3.5">
         {Object.entries(STAMPS).map(([n, name]) => (
-          <Stamp key={n} name={name} won={flight.closed.has(Number(n))} />
+          <Stamp key={n} name={name} won={flight.closed.has(Number(n))} card={card} />
         ))}
       </div>
     </div>
   );
 }
 
-function Header({ flight, mark }: { flight: Flight; mark: string }) {
+function Header({ flight, mark, card }: { flight: Flight; mark: string; card: Card }) {
   const { done, total, percent, headwind } = totals(flight);
   const arrival = flight.legs.at(-1)?.dueOn;
   const route = `Takeoff ${shortDate(TAKEOFF)}` + (arrival ? ` · arrival ${shortDate(arrival)}` : "");
   const notes = [headwind ? `+${headwind} since takeoff` : "no headwind yet"];
   if (flight.legs.some((_, i) => planned(flight, i) !== null)) notes.push("white tick = today's plan");
   return (
-    <div tw="flex items-center">
+    <div tw="flex flex-wrap items-center">
       <img src={mark} width={40} height={47} />
       <div tw="flex flex-col flex-grow ml-3.5">
         <div tw="text-[13px] tracking-[1.5px] text-slate">FLIGHT PROGRESS STRIPS</div>
         <div tw="text-[15px] font-bold mt-0.5">{route}</div>
       </div>
-      <div tw="flex flex-col items-end">
+      {/* the narrow card has no room beside the route, so the score wraps under it */}
+      <div tw={`flex flex-col ${card.narrow ? "w-full mt-3.5" : "items-end"}`}>
         <div tw="text-[17px] font-bold">{`${done} of ${plural(total, "issue")} · ${percent}%`}</div>
         <div tw="text-xs text-slate mt-0.5">{notes.join(" · ")}</div>
       </div>
@@ -115,9 +155,10 @@ interface StripProps {
   pitch: number;
   most: number;
   mark: string;
+  card: Card;
 }
 
-function Strip({ flight, leg, index, pitch, most, mark }: StripProps) {
+function Strip({ flight, leg, index, pitch, most, mark, card }: StripProps) {
   const st = status(flight, index);
   const tone = TONE[st];
   const active = index === activeLeg(flight);
@@ -125,18 +166,45 @@ function Strip({ flight, leg, index, pitch, most, mark }: StripProps) {
   const closed = closedCount(leg.issues);
   // a late leg's label is outlined, not filled, so it differs from a landed one by more than colour
   const label = late ? `border-2 border-${tone} text-${tone}` : `bg-${tone} text-background`;
-  const offset = active ? `ml-[22px] border-${tone}` : "mr-[22px] border-dim"; // the active strip sticks out
+  const offset = active ? `${card.stickOut} border-${tone}` : `${card.tuckIn} border-dim`;
+  const name = (
+    <Name tw={`${card.name} font-bold ${st === "landed" ? "text-slate" : "text-ink"}`}>{legName(leg.title)}</Name>
+  );
+  const state = <div tw={`flex ${card.status} shrink-0 text-xs font-bold text-${tone}`}>{late ? "LATE" : st}</div>;
+  const pips = (
+    <Pips closed={closed} total={leg.issues.length} plan={planned(flight, index)} pitch={pitch} most={most} />
+  );
+  const count = <Count card={card}>{`${closed}/${leg.issues.length}`}</Count>;
   return (
-    <div tw={`flex items-center h-[34px] mb-1.5 bg-strip rounded-sm border-[1.5px] ${offset}`}>
-      <div tw={`flex w-[84px] h-full shrink-0 items-center justify-center text-sm font-bold ${label}`}>
+    <div tw={`flex items-center ${card.strip} mb-1.5 bg-strip rounded-sm border-[1.5px] ${offset}`}>
+      <div tw={`flex ${card.label} h-full shrink-0 items-center justify-center text-sm font-bold ${label}`}>
         {active && <img src={mark} width={17} height={20} tw="mr-[5px]" />}
         {`TBX${legNumber(leg.title, index)}`}
       </div>
-      <Name tw={`text-[15px] font-bold ${st === "landed" ? "text-slate" : "text-ink"}`}>{legName(leg.title)}</Name>
-      <div tw="flex w-[100px] shrink-0 text-xs text-slate">{`ETA ${shortDate(leg.dueOn)}`}</div>
-      <div tw={`flex w-[112px] shrink-0 text-xs font-bold text-${tone}`}>{late ? "LATE" : st}</div>
-      <Pips closed={closed} total={leg.issues.length} plan={planned(flight, index)} pitch={pitch} most={most} />
-      <Count>{`${closed}/${leg.issues.length}`}</Count>
+      {card.narrow ? (
+        <Rows
+          top={
+            <>
+              {name}
+              {count}
+            </>
+          }
+          bottom={
+            <>
+              {state}
+              {pips}
+            </>
+          }
+        />
+      ) : (
+        <>
+          {name}
+          <div tw="flex w-[100px] shrink-0 text-xs text-slate">{`ETA ${shortDate(leg.dueOn)}`}</div>
+          {state}
+          {pips}
+          {count}
+        </>
+      )}
     </div>
   );
 }
@@ -169,12 +237,39 @@ function Pips({ closed, total, plan, pitch, most }: PipsProps) {
   );
 }
 
-function Standby({ flight }: { flight: Flight }) {
+function Standby({ flight, card }: { flight: Flight; card: Card }) {
+  const count = <Count card={card}>{`${closedCount(flight.bonus)}/${flight.bonus.length}`}</Count>;
   return (
-    <div tw="flex items-center h-[34px] mr-[22px] rounded-sm border-[1.5px] border-dashed border-faint text-faint">
-      <div tw="flex w-[84px] shrink-0 justify-center text-sm font-bold">TBX-S</div>
-      <Name tw="text-sm">Stretch · on standby, flown if the legs land early</Name>
-      <Count>{`${closedCount(flight.bonus)}/${flight.bonus.length}`}</Count>
+    <div
+      tw={`flex items-center ${card.strip} ${card.tuckIn} rounded-sm border-[1.5px] border-dashed border-faint text-faint`}
+    >
+      <div tw={`flex ${card.label} shrink-0 justify-center text-sm font-bold`}>TBX-S</div>
+      {card.narrow ? (
+        <Rows
+          top={
+            <>
+              <Name tw="text-sm">Stretch · on standby</Name>
+              {count}
+            </>
+          }
+          bottom={<div tw="text-xs">flown if the legs land early</div>}
+        />
+      ) : (
+        <>
+          <Name tw="text-sm">Stretch · on standby, flown if the legs land early</Name>
+          {count}
+        </>
+      )}
+    </div>
+  );
+}
+
+/** A narrow strip's two rows, beside the label: the name and count, then the detail under them. */
+function Rows({ top, bottom }: { top: ReactNode; bottom: ReactNode }) {
+  return (
+    <div tw="flex flex-col flex-grow min-w-0">
+      <div tw="flex items-center">{top}</div>
+      <div tw="flex items-center mt-2 pl-3">{bottom}</div>
     </div>
   );
 }
@@ -190,14 +285,14 @@ function Name({ tw, children }: { tw: string; children: string }) {
   );
 }
 
-function Count({ children }: { children: string }) {
-  return <div tw="flex w-16 shrink-0 justify-end pr-3 text-[13px]">{children}</div>;
+function Count({ card, children }: { card: Card; children: string }) {
+  return <div tw={`flex ${card.count} shrink-0 justify-end pr-3 text-[13px]`}>{children}</div>;
 }
 
-function Stamp({ name, won }: { name: string; won: boolean }) {
+function Stamp({ name, won, card }: { name: string; won: boolean; card: Card }) {
   return (
     <div
-      tw={`m-1 px-[9px] py-[3px] rounded-xl border-[1.5px] text-[11px] font-bold ${won ? "bg-orange border-orange text-background" : "border-faint text-faint"}`}
+      tw={`m-1 px-[9px] py-[3px] rounded-xl border-[1.5px] ${card.stamp} font-bold ${won ? "bg-orange border-orange text-background" : "border-faint text-faint"}`}
     >
       {name}
     </div>
@@ -232,16 +327,20 @@ const xml = (text: string) =>
 
 const asset = (path: string) => readFile(new URL(import.meta.resolve(path)));
 
-/** The rack as SVG, as tall as its content, with a title and description for screen readers. */
-export async function render(flight: Flight): Promise<string> {
+/**
+ * The rack as SVG, as tall as its content, with a title and description for
+ * screen readers. `narrow` draws the 420px card for phones.
+ */
+export async function render(flight: Flight, { narrow = false } = {}): Promise<string> {
+  const card = narrow ? CARDS.narrow : CARDS.wide;
   const [regular, bold, markSvg] = await Promise.all([
     asset("@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff"),
     asset("@fontsource/jetbrains-mono/files/jetbrains-mono-latin-700-normal.woff"),
     readFile(new URL("../../../docs/brand/mark-dark.svg", import.meta.url)),
   ]);
   const mark = `data:image/svg+xml;base64,${markSvg.toString("base64")}`;
-  const svg = await satori(<Rack flight={flight} mark={mark} />, {
-    width: 900,
+  const svg = await satori(<Rack flight={flight} mark={mark} card={card} />, {
+    width: card.width,
     tailwindConfig,
     fonts: [
       { name: "JetBrains Mono", data: regular, weight: 500, style: "normal" },

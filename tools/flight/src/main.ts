@@ -1,7 +1,7 @@
 /**
  * Draws the flight-progress strips and the flight log from the repo's issues.
  *
- *     npm run build    # writes docs/flight.svg and docs/flight-log.md
+ *     npm run build    # writes docs/flight.svg, docs/flight-narrow.svg and docs/flight-log.md
  *
  * Reads GH_TOKEN when it's set, as in CI. Without it the public API still
  * answers, at a lower rate limit. GITHUB_REPOSITORY picks the repo, so a fork

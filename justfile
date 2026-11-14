@@ -27,10 +27,12 @@ audit:
 
 # Build the docs site into book/: the README becomes its introduction, the
 # flight strip and log come from the issues and the coverage badge from
-# `just coverage`, if it has run
+# `just coverage`, if it has run. The introduction links the strips this build
+# draws, not the ones last published
 docs:
     sed -e 's#](docs/#](#g' -e 's#src="docs/#src="#g' -e 's#srcset="docs/#srcset="#g' \
         -e 's#(\.\./\.\./milestone#(https://github.com/guy-with-a-why/telemetry-blackbox/milestone#g' \
+        -e 's#https://guy-with-a-why\.github\.io/telemetry-blackbox/flight#flight#g' \
         README.md > docs/introduction.md
     mkdir -p theme && cp docs/brand/favicon.svg theme/favicon.svg
     npm --prefix tools/flight ci --silent

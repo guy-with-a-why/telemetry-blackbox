@@ -25,7 +25,12 @@ I built by hand.
 
 ## Progress
 
-[![Flight progress strips, one per leg. The flight log has the same detail as text.](https://guy-with-a-why.github.io/telemetry-blackbox/flight.svg)](https://guy-with-a-why.github.io/telemetry-blackbox/flight-log.html)
+<a href="https://guy-with-a-why.github.io/telemetry-blackbox/flight-log.html">
+  <picture>
+    <source media="(max-width: 600px)" srcset="https://guy-with-a-why.github.io/telemetry-blackbox/flight-narrow.svg">
+    <img src="https://guy-with-a-why.github.io/telemetry-blackbox/flight.svg" alt="Flight progress strips, one per leg. The flight log has the same detail as text.">
+  </picture>
+</a>
 
 [![Leg 0](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/1?label=Leg%200&color=f2662b)](../../milestone/1) [![Leg 1](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/3?label=Leg%201&color=f2662b)](../../milestone/3) [![Leg 2](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/2?label=Leg%202&color=f2662b)](../../milestone/2) [![Leg 3](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/4?label=Leg%203&color=f2662b)](../../milestone/4) [![Leg 4](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/5?label=Leg%204&color=f2662b)](../../milestone/5)
 
