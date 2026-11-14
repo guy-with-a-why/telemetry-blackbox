@@ -37,9 +37,12 @@ for commit in $(git rev-list --all); do
   fi
 done
 
+# Bots such as Dependabot are skipped: their bodies quote other projects'
+# release notes, which I don't write. Each body is flattened onto one line, so
+# every line starts with the issue number.
 if [[ -n "${GH_TOKEN:-}" ]] || gh auth status >/dev/null 2>&1; then
   if text=$(gh api --paginate "repos/{owner}/{repo}/issues?state=all&per_page=100" \
-    --jq '.[] | "\(.number)\t\(.title) \(.body // "")"' 2>/dev/null); then
+    --jq '.[] | select(.user.type != "Bot") | "\(.number)\t\(.title) \(.body // "" | gsub("\\s+"; " "))"' 2>/dev/null); then
     for number in $(printf '%s\n' "$text" | grep -iF -f "$terms" | cut -f1); do
       echo "blocked term in issue or pull request #$number"
       found=1
