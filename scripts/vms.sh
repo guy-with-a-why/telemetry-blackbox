@@ -10,12 +10,19 @@ source deploy/vms/config.sh
 exists() { multipass info "$1" >/dev/null 2>&1; }
 
 # Prints node.yaml with its placeholders filled in, given the host's address.
+# Fails on any placeholder left over, so a typo stops here, not inside a VM.
 user_data() {
-  sed -e "s/@KUBERNETES_MINOR@/$kubernetes_minor/g" \
+  local yaml left
+  yaml=$(sed -e "s/@KUBERNETES_MINOR@/$kubernetes_minor/g" \
     -e "s/@REGISTRY@/$1:$registry_port/g" \
     -e "s/@K8S_MIRROR@/$1:$k8s_mirror_port/g" \
     -e "s/@APT_CACHE@/$1:$apt_cache_port/g" \
-    deploy/vms/node.yaml
+    deploy/vms/node.yaml)
+  if left=$(grep -oE '@[A-Z0-9_]+@' <<<"$yaml" | sort -u); then
+    echo "node.yaml: nothing fills ${left//$'\n'/ }" >&2
+    return 1
+  fi
+  printf '%s\n' "$yaml"
 }
 
 # Waits for cloud-init. Exit code 2 means it finished with warnings.
@@ -30,18 +37,18 @@ wait_ready() {
 }
 
 create() {
-  local host node name cpus memory disk
+  local host config node name cpus memory disk
   host=$(scripts/host.sh)
+  config=$(user_data "$host")
   for node in "${nodes[@]}"; do
     read -r name cpus memory disk <<<"$node"
     if exists "$name"; then
       echo "$name exists"
     else
       # Launch waits for cloud-init, which installs packages, so allow 15 minutes.
-      user_data "$host" |
-        multipass launch "$release" --name "$name" --zone "$zone" \
-          --cpus "$cpus" --memory "$memory" --disk "$disk" \
-          --cloud-init - --timeout 900
+      multipass launch "$release" --name "$name" --zone "$zone" \
+        --cpus "$cpus" --memory "$memory" --disk "$disk" \
+        --cloud-init - --timeout 900 <<<"$config"
     fi
     wait_ready "$name"
   done
