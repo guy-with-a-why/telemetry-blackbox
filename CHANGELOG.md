@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.3.0...v0.4.0) (2026-11-14)
+
+
+### Features
+
+* **deploy:** configure and check the HA control plane ([#84](https://github.com/guy-with-a-why/telemetry-blackbox/issues/84)) ([a12045c](https://github.com/guy-with-a-why/telemetry-blackbox/commit/a12045c67ee09c09dea819b97adc4476724456dd))
+* **deploy:** mirror quay.io and ghcr.io on the host ([#83](https://github.com/guy-with-a-why/telemetry-blackbox/issues/83)) ([da2937f](https://github.com/guy-with-a-why/telemetry-blackbox/commit/da2937f637bcd6a944ee8490b50a6f41a10c0ed1)), closes [#82](https://github.com/guy-with-a-why/telemetry-blackbox/issues/82)
+
 ## [0.3.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.2.0...v0.3.0) (2026-11-14)
 
 
