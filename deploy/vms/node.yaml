@@ -1,0 +1,61 @@
+#cloud-config
+# Every node, control plane or worker, starts from this file, so they all
+# reach kubeadm in the same state. scripts/vms.sh passes it to Multipass and
+# fills in @KUBERNETES_MINOR@ from deploy/vms/config.sh.
+
+packages:
+  - containerd
+  - curl
+  - gpg
+package_update: true
+
+write_files:
+  - path: /etc/modules-load.d/kubernetes.conf
+    content: |
+      overlay
+      br_netfilter
+  - path: /etc/sysctl.d/90-kubernetes.conf
+    content: |
+      net.ipv4.ip_forward = 1
+      net.bridge.bridge-nf-call-iptables = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+  - path: /etc/crictl.yaml
+    content: |
+      runtime-endpoint: unix:///run/containerd/containerd.sock
+      image-endpoint: unix:///run/containerd/containerd.sock
+  - path: /usr/local/sbin/prepare-node
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      # Load the modules, install kubeadm one minor version behind the latest
+      # and point containerd at systemd's cgroups.
+      set -euo pipefail
+      minor=@KUBERNETES_MINOR@
+
+      modprobe overlay
+      modprobe br_netfilter
+      sysctl --system >/dev/null
+      swapoff -a
+
+      repo="https://pkgs.k8s.io/core:/stable:/$minor/deb/"
+      curl -fsSL "${repo}Release.key" | gpg --dearmor -o /etc/apt/keyrings/kubernetes.gpg
+      echo "deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] $repo /" >/etc/apt/sources.list.d/kubernetes.list
+      apt-get update -q
+      # kubeadm no longer pulls in cri-tools, and crictl is how I debug a node.
+      apt-get install -yq kubelet kubeadm kubectl cri-tools
+      apt-mark hold kubelet kubeadm kubectl
+
+      # The sandbox image must match the one kubeadm expects, or kubeadm warns.
+      pause=$(kubeadm config images list --kubernetes-version "$(kubeadm version -o short)" | grep /pause:)
+      mkdir -p /etc/containerd
+      containerd config default >/etc/containerd/config.toml
+      sed -i -E \
+        -e 's/SystemdCgroup = false/SystemdCgroup = true/' \
+        -e "s#^(\s*sandbox(_image)? = ).*#\1\"$pause\"#" \
+        /etc/containerd/config.toml
+      grep -q 'SystemdCgroup = true' /etc/containerd/config.toml
+      systemctl restart containerd
+      systemctl enable kubelet
+
+runcmd:
+  - /usr/local/sbin/prepare-node
