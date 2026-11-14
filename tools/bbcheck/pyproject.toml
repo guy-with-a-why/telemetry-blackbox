@@ -1,6 +1,6 @@
 [project]
 name = "bbcheck"
-version = "0.1.1"
+version = "0.1.2"
 description = "Proves what reached ClickHouse: gaps, duplicates and latency."
 requires-python = ">=3.12"
 license = "MIT OR Apache-2.0"

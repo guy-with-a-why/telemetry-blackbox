@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.1.1...v0.1.2) (2026-11-14)
+
+
+### Bug Fixes
+
+* **audit:** drop the trailer exemptions from the commit scan ([#63](https://github.com/guy-with-a-why/telemetry-blackbox/issues/63)) ([30c970e](https://github.com/guy-with-a-why/telemetry-blackbox/commit/30c970ea817c09bfad92c20906b6ce08b7defd98))
+
 ## [0.1.1](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.1.0...v0.1.1) (2026-11-13)
 
 
