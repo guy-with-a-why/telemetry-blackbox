@@ -122,6 +122,15 @@ describe("log", () => {
     expect(page).toContain('<img src="flight.svg" alt="Flight progress strips');
   });
 
+  it("ends with the diagram of how it's drawn", () => {
+    const lines = log(plan([issue(1, "open", LEG_1), issue(2, "open", STRETCH)], NOW))
+      .trimEnd()
+      .split("\n");
+    expect(lines.at(-5)).toBe("## How this page is drawn");
+    expect(lines.at(-3)).toMatch(/^!\[CI runs just docs .+\]\(diagrams\/flight-tracker\.svg\)$/);
+    expect(lines.at(-1)).toContain("[full size](diagrams/flight-tracker.svg)");
+  });
+
   it("lists landed issues newest first, then the waiting ones, then the bonus", () => {
     const issues = [
       issue(1, "closed", LEG_0, { closed_at: "2026-11-12T11:00:00Z" }),
