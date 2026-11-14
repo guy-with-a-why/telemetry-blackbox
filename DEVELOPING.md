@@ -5,7 +5,7 @@ branches, commits and pull requests are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Set up
 
-You need Linux with KVM and about 10 GB of free memory.
+You need Linux with KVM and about 11 GB of free memory.
 
 ```bash
 mise install    # just, D2, uv, kubectl, Helm, mdBook, gitleaks, cargo-llvm-cov

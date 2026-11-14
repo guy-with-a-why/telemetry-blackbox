@@ -8,7 +8,7 @@ default:
 
 # Check every bench tool is installed
 bench:
-    @for tool in just d2 uv kubectl helm multipass renode cargo probe-rs clickhouse; do \
+    @for tool in just d2 uv kubectl helm multipass docker renode cargo probe-rs clickhouse; do \
       if command -v "$tool" >/dev/null; then printf '%-10s ok\n' "$tool"; \
       else printf '%-10s missing\n' "$tool"; missing=1; fi; \
     done; exit "${missing:-0}"
@@ -47,8 +47,10 @@ test-scripts:
     uvx ruff@0.14.0 check scripts
     uv run --no-project --with pytest==9.2.0 pytest -q scripts
 
-# Check formatting and lints for the crates, the firmware and bbcheck
+# Check formatting and lints for the crates, the firmware, bbcheck and the shell scripts
 lint:
+    shfmt --diff --indent 2 --case-indent scripts deploy
+    shellcheck --external-sources $(shfmt --find scripts deploy)
     cargo fmt --all --check
     cargo clippy --workspace --all-targets --locked -- -D warnings
     cd firmware && cargo fmt --check && cargo clippy --locked -- -D warnings
@@ -68,6 +70,23 @@ coverage:
     cd tools/bbcheck && COVERAGE_FILE=../../target/coverage/.coverage uv run --locked pytest \
         --cov=bbcheck --cov-report=term --cov-report=json:../../target/coverage/python.json
     python3 scripts/coverage_badge.py target/coverage/rust.json target/coverage/python.json target/coverage/coverage.json
+
+# Run the local image registry the VMs pull from
+registry:
+    scripts/registry.sh
+
+# Create the five cluster VMs and start the registry; existing VMs are left alone
+vms:
+    scripts/vms.sh
+
+# Check every VM is ready for kubeadm and pulls from the registry
+vms-check:
+    scripts/vms-check.sh
+
+# Delete the five cluster VMs and their disks
+[confirm("Delete all five VMs and their disks?")]
+vms-delete:
+    scripts/vms.sh delete
 
 # Build the firmware and boot it on the simulated board; `quit` stops it
 fly:
