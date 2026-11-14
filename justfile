@@ -68,3 +68,8 @@ coverage:
     cd tools/bbcheck && COVERAGE_FILE=../../target/coverage/.coverage uv run --locked pytest \
         --cov=bbcheck --cov-report=term --cov-report=json:../../target/coverage/python.json
     python3 scripts/coverage_badge.py target/coverage/rust.json target/coverage/python.json target/coverage/coverage.json
+
+# Build the firmware and boot it on the simulated board; `quit` stops it
+fly:
+    cd firmware && cargo build --release --locked
+    renode --console --disable-xwt renode/blackbox.resc

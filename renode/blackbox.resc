@@ -1,0 +1,23 @@
+:name: STM32F4 Discovery
+:description: Boots the flight controller firmware on a simulated STM32F4DISCOVERY.
+
+# Run from the repo root. Pass another ELF with `$bin = @path` before including.
+$bin ?= @firmware/target/thumbv7em-none-eabihf/release/firmware
+
+using sysbus
+mach create "blackbox"
+
+# Renode's own description of the board: the STM32F407VG and the parts around
+# it, including the green LED on PD12.
+machine LoadPlatformDescription @platforms/boards/stm32f4_discovery-kit.repl
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset
+
+# Log each time the green LED changes state.
+logLevel -1 gpioPortD.UserLED
+
+start
