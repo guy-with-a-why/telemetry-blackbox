@@ -102,3 +102,58 @@ barely touches the internet.
 With a warm cache, a VM finishes cloud-init in about a minute, and packages
 arrive at 75 to 100 MB/s. What's left is booting and unpacking, one VM at a
 time. Launching them in parallel is the next step if a rebuild still hurts.
+
+## The cluster
+
+I bootstrap the cluster by hand with kubeadm. The files it needs are in
+[`cluster/`](cluster/).
+
+1. `just cluster-files` fills them in and copies them to `~/cluster/` on the
+   control planes.
+2. On cp-1, kube-vip goes into `/etc/kubernetes/manifests` reading
+   `super-admin.conf`, then `kubeadm init --upload-certs`, then kube-vip goes
+   back to `admin.conf`.
+3. cp-2 and cp-3 join with `--control-plane` and
+   `--ignore-preflight-errors=Mem`, then get kube-vip.
+4. edge-1 and data-1 join as workers.
+5. Cilium goes on from my laptop.
+6. `just cluster-check` checks the VIP, every node Ready, a healthy etcd
+   member on each control plane and Cilium on every node.
+
+```bash
+helm install cilium cilium --repo https://helm.cilium.io --version 1.20.4 \
+  -n kube-system -f deploy/cluster/cilium-values.yaml
+```
+
+- [`kubeadm.yaml`](cluster/kubeadm.yaml) sets the control-plane endpoint to the
+  virtual IP, so every kubeconfig and every join goes through it.
+- [`kube-vip.yaml`](cluster/kube-vip.yaml) is a static Pod on each control
+  plane. One of them holds the virtual IP and answers ARP for it. If that node
+  goes down, another takes the lease and the IP.
+- [`cilium-values.yaml`](cluster/cilium-values.yaml) gives Cilium the pod
+  network. kube-proxy stays and routes Services.
+
+### The addresses
+
+| Range | Value | Why |
+|---|---|---|
+| Nodes | `10.97.0.0/24` | The `zone1` bridge, from Multipass |
+| API virtual IP | `10.97.0.250` | On the bridge, because ARP doesn't cross a router |
+| Pods | `10.244.0.0/16` | Cilium's default, `10.0.0.0/8`, covers the bridge |
+| Services | `10.96.0.0/16` | kubeadm's default, `10.96.0.0/12`, covers the bridge |
+
+Multipass's DHCP range covers the whole bridge and never expires a lease, so
+nothing reserves the virtual IP. Both recipes fail if a VM ever leases it.
+
+### Reaching the API from my laptop
+
+The virtual IP lives on my home server's bridge, so my laptop reaches it
+through an SSH tunnel. The API server's certificate also names `127.0.0.1`
+for this.
+
+```bash
+ssh -fN -L 6443:10.97.0.250:6443 <home-server>
+```
+
+My kubeconfig is cp-1's `admin.conf` with the server changed to
+`https://127.0.0.1:6443`.
