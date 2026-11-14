@@ -79,6 +79,10 @@ registry:
 vms:
     scripts/vms.sh
 
+# Check every VM is ready for kubeadm and pulls from the registry
+vms-check:
+    scripts/vms-check.sh
+
 # Delete the five cluster VMs and their disks
 [confirm("Delete all five VMs and their disks?")]
 vms-delete:
