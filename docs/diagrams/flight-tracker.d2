@@ -1,0 +1,42 @@
+# How the flight tracker turns the issues into progress strips and publishes
+# them to the docs site.
+direction: right
+
+issues: "GitHub issues\none milestone per leg\nplus Stretch"
+
+ci: "CI · ci.yml\npush to main · issue changes\ndaily at 06:00"
+
+docs: "just docs" {
+  readme: "README.md → introduction.md\nflight URLs made relative"
+
+  # a grid keeps the four steps in one column; nothing outside points into it
+  flight: "tools/flight · npm run build" {
+    grid-columns: 1
+    vertical-gap: 40
+
+    fetch: "github.ts\nfetches the issues with Octokit"
+    plan: "plan.ts\ngroups them into legs by due date\nstatus · plan tick · headwind · stamps"
+    rack: "rack.tsx\nReact components, Tailwind classes\nSatori draws an SVG, text as outlines\n<title> and <desc> for screen readers"
+    build: "build.ts\nrenders a wide card (900 px)\nand a narrow card (420 px)"
+
+    fetch -> plan
+    plan -> rack
+    rack -> build
+  }
+
+  files: "docs/\nflight.svg · flight-narrow.svg\nflight-log.md"
+  mdbook: "mdbook build"
+
+  flight -> files: writes
+  files -> mdbook
+  readme -> mdbook
+}
+
+pages: "GitHub Pages\nfrom main only" {shape: cloud}
+
+readers: "README and flight log\n<picture> picks the card:\nnarrow under 600 px wide\nwide otherwise"
+
+issues -> docs.flight: "REST API\nGH_TOKEN in CI"
+ci -> docs: runs
+docs.mdbook -> pages: deploys
+pages -> readers: serves
