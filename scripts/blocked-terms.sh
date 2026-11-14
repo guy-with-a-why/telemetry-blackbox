@@ -24,8 +24,9 @@ sed -i '/^[[:space:]]*$/d' "$terms" # a blank line would match everything
 found=0
 matches() { grep -qiF -f "$terms"; }
 
-if files=$(git grep -liF -f "$terms"); then
-  printf 'blocked term in file: %s\n' $files
+mapfile -t files < <(git grep -liF -f "$terms" || true)
+if ((${#files[@]})); then
+  printf 'blocked term in file: %s\n' "${files[@]}"
   found=1
 fi
 

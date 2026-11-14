@@ -47,8 +47,10 @@ test-scripts:
     uvx ruff@0.14.0 check scripts
     uv run --no-project --with pytest==9.2.0 pytest -q scripts
 
-# Check formatting and lints for the crates, the firmware and bbcheck
+# Check formatting and lints for the crates, the firmware, bbcheck and the shell scripts
 lint:
+    shfmt --diff --indent 2 --case-indent scripts deploy
+    shellcheck --external-sources $(shfmt --find scripts deploy)
     cargo fmt --all --check
     cargo clippy --workspace --all-targets --locked -- -D warnings
     cd firmware && cargo fmt --check && cargo clippy --locked -- -D warnings
