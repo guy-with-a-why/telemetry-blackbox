@@ -14,6 +14,18 @@ quay_mirror_port=5002
 ghcr_mirror_port=5003
 apt_cache_port=3142
 
+# The API's virtual IP, which kube-vip moves between the control planes. The
+# bridge's DHCP range covers the whole /24, so cluster-files.sh and
+# cluster-check.sh fail if a VM ever leases it.
+vip=10.97.0.250
+# kubeadm's default Service range, 10.96.0.0/12, covers the bridge's 10.97.0.0/24,
+# and so does Cilium's default pod range, 10.0.0.0/8. Neither may overlap it.
+pod_subnet=10.244.0.0/16
+service_subnet=10.96.0.0/16
+kube_vip_image=ghcr.io/kube-vip/kube-vip:v1.3.1@sha256:1962f9daf226503f7e6b107f595cb28b7917fd2d0113957075e19a3e5a6c1e33
+# The Lease the control planes' kube-vips compete for.
+kube_vip_lease=plndr-cp-lock
+
 # name    vCPUs  memory  disk
 nodes=(
   "cp-1     2      1536M   10G"
@@ -24,5 +36,9 @@ nodes=(
 )
 
 node_names=()
-for node in "${nodes[@]}"; do node_names+=("${node%% *}"); done
+control_planes=()
+for node in "${nodes[@]}"; do
+  node_names+=("${node%% *}")
+  if [[ $node == cp-* ]]; then control_planes+=("${node%% *}"); fi
+done
 unset node

@@ -1,0 +1,9 @@
+# Helm values for Cilium. kube-proxy stays and routes Services through
+# iptables, so Cilium only does the pod network.
+kubeProxyReplacement: false
+
+# Use the pod range kubeadm hands each node, so the range lives in one place:
+# podSubnet in kubeadm.yaml. Cilium's own default, 10.0.0.0/8, overlaps the
+# bridge.
+ipam:
+  mode: kubernetes
