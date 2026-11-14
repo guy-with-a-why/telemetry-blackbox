@@ -1,0 +1,23 @@
+# kubeadm init reads this on cp-1. scripts/cluster-files.sh fills in the
+# placeholders from deploy/vms/config.sh and the node's kubeadm version.
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: InitConfiguration
+nodeRegistration:
+  # Control planes have 1.5 GB against kubeadm's generic 1.7 GB floor. Every
+  # other preflight check still runs. This covers init only, so joining
+  # control planes pass --ignore-preflight-errors=Mem. deploy/README.md has
+  # the reasoning.
+  ignorePreflightErrors: [Mem]
+---
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+kubernetesVersion: @KUBERNETES_VERSION@
+# Every kubeconfig and every join goes through the VIP, so the API survives
+# losing whichever control plane holds it.
+controlPlaneEndpoint: "@VIP@:6443"
+networking:
+  podSubnet: "@POD_SUBNET@"
+  serviceSubnet: "@SERVICE_SUBNET@"
+apiServer:
+  # My laptop reaches the API through an SSH tunnel to localhost.
+  certSANs: [127.0.0.1]

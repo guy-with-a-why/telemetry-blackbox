@@ -88,6 +88,14 @@ vms-check:
 vms-delete:
     scripts/vms.sh delete
 
+# Copy the kubeadm and kube-vip files, filled in, to the control planes
+cluster-files:
+    scripts/cluster-files.sh
+
+# Check the VIP, the nodes, etcd and Cilium
+cluster-check:
+    scripts/cluster-check.sh
+
 # Build the firmware and boot it on the simulated board; `quit` stops it
 fly:
     cd firmware && cargo build --release --locked
