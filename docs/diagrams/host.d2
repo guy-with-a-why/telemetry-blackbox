@@ -1,0 +1,26 @@
+# The home server: five Multipass VMs built by cloud-init, and the services
+# they use from the host so each byte crosses the internet once.
+direction: right
+
+build: "just vms" {
+  host_sh: "host.sh\nstarts the services"
+  vms_sh: "vms.sh\nfills in node.yaml"
+}
+
+vms: "Five Multipass VMs, zone1 bridge\ncp-1 · cp-2 · cp-3 · edge-1 · data-1"
+
+docker: "Docker on the host" {
+  registry: "registry · :5000\nmy images"
+  mirror: "registry.k8s.io mirror · :5001\ncontrol-plane images"
+  apt: "apt-cacher-ng · :3142\nUbuntu and Kubernetes packages"
+}
+
+internet: "The internet\nabout 1.1 MB/s" {shape: cloud}
+
+build.vms_sh -> vms: "launches, with\nnode.yaml as cloud-init"
+build.host_sh -> docker: starts
+vms -> docker.registry
+vms -> docker.mirror
+vms -> docker.apt
+docker.mirror -> internet: first pull only
+docker.apt -> internet: first fetch only
