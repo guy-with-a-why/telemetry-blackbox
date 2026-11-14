@@ -71,7 +71,11 @@ coverage:
         --cov=bbcheck --cov-report=term --cov-report=json:../../target/coverage/python.json
     python3 scripts/coverage_badge.py target/coverage/rust.json target/coverage/python.json target/coverage/coverage.json
 
-# Create the five cluster VMs; existing ones are left alone
+# Run the local image registry the VMs pull from
+registry:
+    scripts/registry.sh
+
+# Create the five cluster VMs and start the registry; existing VMs are left alone
 vms:
     scripts/vms.sh
 

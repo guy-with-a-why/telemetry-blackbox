@@ -11,7 +11,8 @@ exists() { multipass info "$1" >/dev/null 2>&1; }
 
 # Prints node.yaml with its placeholders filled in.
 user_data() {
-  sed "s/@KUBERNETES_MINOR@/$kubernetes_minor/g" deploy/vms/node.yaml
+  sed -e "s/@REGISTRY@/$1/g" -e "s/@KUBERNETES_MINOR@/$kubernetes_minor/g" \
+    deploy/vms/node.yaml
 }
 
 # Waits for cloud-init. Exit code 2 means it finished with warnings.
@@ -26,14 +27,15 @@ wait_ready() {
 }
 
 create() {
-  local node name cpus memory disk
+  local registry node name cpus memory disk
+  registry=$(scripts/registry.sh)
   for node in "${nodes[@]}"; do
     read -r name cpus memory disk <<<"$node"
     if exists "$name"; then
       echo "$name exists"
     else
       # Launch waits for cloud-init, which installs packages, so allow 15 minutes.
-      user_data |
+      user_data "$registry" |
         multipass launch "$release" --name "$name" --zone "$zone" \
           --cpus "$cpus" --memory "$memory" --disk "$disk" \
           --cloud-init - --timeout 900

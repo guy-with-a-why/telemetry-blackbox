@@ -1,7 +1,8 @@
 #cloud-config
 # Every node, control plane or worker, starts from this file, so they all
-# reach kubeadm in the same state. scripts/vms.sh passes it to Multipass and
-# fills in @KUBERNETES_MINOR@ from deploy/vms/config.sh.
+# reach kubeadm in the same state. scripts/vms.sh passes it to Multipass. It
+# fills in @KUBERNETES_MINOR@ from deploy/vms/config.sh and @REGISTRY@ with
+# the host's registry on the Multipass bridge.
 
 packages:
   - containerd
@@ -23,12 +24,20 @@ write_files:
     content: |
       runtime-endpoint: unix:///run/containerd/containerd.sock
       image-endpoint: unix:///run/containerd/containerd.sock
+  # Images are pushed to localhost:5000 on the host, so a pod pulls the same
+  # name. containerd sends those pulls to the host over plain HTTP.
+  - path: /etc/containerd/certs.d/localhost:5000/hosts.toml
+    content: |
+      server = "http://@REGISTRY@"
+
+      [host."http://@REGISTRY@"]
+        capabilities = ["pull", "resolve"]
   - path: /usr/local/sbin/prepare-node
     permissions: "0755"
     content: |
       #!/usr/bin/env bash
       # Load the modules, install kubeadm one minor version behind the latest
-      # and point containerd at systemd's cgroups.
+      # and point containerd at systemd's cgroups and the local registry.
       set -euo pipefail
       minor=@KUBERNETES_MINOR@
 
@@ -49,11 +58,16 @@ write_files:
       pause=$(kubeadm config images list --kubernetes-version "$(kubeadm version -o short)" | grep /pause:)
       mkdir -p /etc/containerd
       containerd config default >/etc/containerd/config.toml
+      # containerd 2 pulls through its transfer service by default, which
+      # ignores certs.d. The local pull path reads it.
       sed -i -E \
         -e 's/SystemdCgroup = false/SystemdCgroup = true/' \
         -e "s#^(\s*sandbox(_image)? = ).*#\1\"$pause\"#" \
+        -e 's/use_local_image_pull = false/use_local_image_pull = true/' \
         /etc/containerd/config.toml
       grep -q 'SystemdCgroup = true' /etc/containerd/config.toml
+      grep -q 'use_local_image_pull = true' /etc/containerd/config.toml
+      grep -q "config_path = .*/etc/containerd/certs.d" /etc/containerd/config.toml
       systemctl restart containerd
       systemctl enable kubelet
 
