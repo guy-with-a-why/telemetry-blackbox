@@ -11,6 +11,10 @@ packages:
 package_update: true
 
 write_files:
+  # Pod traffic crosses nodes, so the kernel must forward packets, and traffic
+  # on Linux bridges must pass through iptables, where Services are routed.
+  # br_netfilter provides the bridge sysctls, and kubeadm's preflight checks
+  # them all.
   - path: /etc/modules-load.d/kubernetes.conf
     content: |
       overlay
@@ -46,6 +50,8 @@ write_files:
       sysctl --system >/dev/null
       swapoff -a
 
+      # From the Kubernetes install guide:
+      # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
       repo="https://pkgs.k8s.io/core:/stable:/$minor/deb/"
       curl -fsSL "${repo}Release.key" | gpg --dearmor -o /etc/apt/keyrings/kubernetes.gpg
       echo "deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] $repo /" >/etc/apt/sources.list.d/kubernetes.list
@@ -58,8 +64,10 @@ write_files:
       pause=$(kubeadm config images list --kubernetes-version "$(kubeadm version -o short)" | grep /pause:)
       mkdir -p /etc/containerd
       containerd config default >/etc/containerd/config.toml
-      # containerd 2 pulls through its transfer service by default, which
-      # ignores certs.d. The local pull path reads it.
+      # Match kubelet's systemd cgroup driver and kubeadm's pause image, and
+      # fail loudly if containerd renames a key. containerd 2 pulls through its
+      # transfer service by default, which ignores certs.d. The local pull path
+      # reads it.
       sed -i -E \
         -e 's/SystemdCgroup = false/SystemdCgroup = true/' \
         -e "s#^(\s*sandbox(_image)? = ).*#\1\"$pause\"#" \
