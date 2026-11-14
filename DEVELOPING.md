@@ -28,6 +28,15 @@ The host crates (`gateway/`, `pipeline/`) share the root workspace. The
 firmware has its own workspace in `firmware/`, because it only builds for the
 microcontroller. bbcheck is a uv project in `tools/bbcheck/`.
 
+## Fly the firmware
+
+```bash
+just fly        # build the firmware and boot it on the simulated board
+```
+
+Renode logs each change of the board's green LED. Type `quit` at the monitor
+prompt to stop it.
+
 ## Docs and diagrams
 
 ```bash
