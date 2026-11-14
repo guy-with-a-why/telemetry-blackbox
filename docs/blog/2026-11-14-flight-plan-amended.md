@@ -1,5 +1,7 @@
 # Flight plan amended
 
+*14 November 2026*
+
 ## What was done
 
 I've re-planned the route. The plan had five Days of nine hours each, 09:00 to 18:00, and I fly this in the evenings after a full working day. A Day was always going to be three or four evenings. The Days are now legs. Each has a budget in evenings and a due date that assumes weekday evenings only, and the last leg lands on 4 December. This timeline is documented in the table in [#62](https://github.com/guy-with-a-why/telemetry-blackbox/issues/62).

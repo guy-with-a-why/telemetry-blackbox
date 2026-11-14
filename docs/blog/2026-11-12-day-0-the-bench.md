@@ -1,5 +1,7 @@
 # Day 0: Laying out the bench
 
+*12 November 2026*
+
 ## What was done
 
 No firmware today, and that was the plan. By the evening the repo was public and every push was checked for secrets and blocked terms. The docs site rebuilds whenever an issue changes, and a flight strip on it shows how far through the plan I am. The Rust workspace, bbcheck and CI were scaffolded by half nine, so Day 1 starts on firmware straight away.
