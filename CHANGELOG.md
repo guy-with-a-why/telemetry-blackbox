@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.5.0...v0.5.1) (2026-11-14)
+
+
+### Bug Fixes
+
+* **audit:** skip bot pull requests in the blocked-terms scan ([#97](https://github.com/guy-with-a-why/telemetry-blackbox/issues/97)) ([e6e0c27](https://github.com/guy-with-a-why/telemetry-blackbox/commit/e6e0c2712fe67ce6a9e78089a437f4e5039b503a))
+
 ## [0.5.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.4.0...v0.5.0) (2026-11-14)
 
 
