@@ -25,9 +25,13 @@ I built by hand.
 
 ## Progress
 
-[![Flight progress: issues closed against the Day 0 to Day 4 route](https://guy-with-a-why.github.io/telemetry-blackbox/flight.svg)](https://guy-with-a-why.github.io/telemetry-blackbox/flight-log.html)
+[![Flight progress: issues closed against the Leg 0 to Leg 4 route](https://guy-with-a-why.github.io/telemetry-blackbox/flight.svg)](https://guy-with-a-why.github.io/telemetry-blackbox/flight-log.html)
 
-[![Day 0](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/1?label=Day%200&color=f2662b)](../../milestone/1) [![Day 1](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/2?label=Day%201&color=f2662b)](../../milestone/2) [![Day 2](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/3?label=Day%202&color=f2662b)](../../milestone/3) [![Day 3](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/4?label=Day%203&color=f2662b)](../../milestone/4) [![Day 4](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/5?label=Day%204&color=f2662b)](../../milestone/5)
+[![Leg 0](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/1?label=Leg%200&color=f2662b)](../../milestone/1) [![Leg 1](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/3?label=Leg%201&color=f2662b)](../../milestone/3) [![Leg 2](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/2?label=Leg%202&color=f2662b)](../../milestone/2) [![Leg 3](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/4?label=Leg%203&color=f2662b)](../../milestone/4) [![Leg 4](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/5?label=Leg%204&color=f2662b)](../../milestone/5)
+
+I fly the route in evenings after work, so each leg has a budget in evenings
+and a due date to match. The cluster flies before the firmware because it
+carries the most risk. [#62](https://github.com/guy-with-a-why/telemetry-blackbox/issues/62) has the reasoning.
 
 The plane moves as issues close. Headwind counts the work that crept in after
 takeoff, and a stamp unlocks at each milestone I care most about. The
@@ -219,11 +223,11 @@ The board Renode simulates is ST's
 [STM32F4DISCOVERY](https://www.st.com/en/evaluation-tools/stm32f4discovery.html),
 which is built on the STM32F407VG, a Cortex-M4F.
 
-**Tooling (Day 0)**
+**Tooling (Leg 0)**
 
 - [The just manual](https://just.systems/man/en/) and the [mise documentation](https://mise.jdx.dev/).
 
-**Microcontroller (Day 1)**
+**Microcontroller (Leg 2)**
 
 - [STM32F407VG datasheet](https://www.st.com/resource/en/datasheet/stm32f407vg.pdf): pinout, memory map and electrical limits.
 - [RM0090 reference manual](https://www.st.com/resource/en/reference_manual/rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf): the timers, USART, DMA and clocks, register by register.
@@ -233,13 +237,13 @@ which is built on the STM32F407VG, a Cortex-M4F.
 - [Renode's STM32F4 Discovery platform](https://github.com/renode/renode/blob/master/platforms/boards/stm32f4_discovery-kit.repl) and the [Renode documentation](https://renode.readthedocs.io/en/latest/).
 - [The Embassy book](https://embassy.dev/book/) and the [embassy-stm32 API docs](https://docs.embassy.dev/embassy-stm32/).
 
-**Protocol (Days 1 and 3)**
+**Protocol (Legs 2 and 3)**
 
 - [MAVLink serialisation](https://mavlink.io/en/guide/serialization.html): the v2 frame byte by byte.
 - [MAVLink CRC](https://mavlink.io/en/guide/crc.html): the checksum and `CRC_EXTRA`.
 - [MAVLink common messages](https://mavlink.io/en/messages/common.html): `HEARTBEAT`, `ATTITUDE` and `HIGHRES_IMU`.
 
-**Cluster (Day 2)**
+**Cluster (Leg 1)**
 
 - [Multipass documentation](https://canonical.com/multipass/docs).
 - [Creating highly available clusters with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/).
@@ -249,7 +253,7 @@ which is built on the STM32F407VG, a Cortex-M4F.
 - [Upgrading kubeadm clusters](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/).
 - [The Distribution registry](https://distribution.github.io/distribution/) and [containerd registry hosts](https://github.com/containerd/containerd/blob/main/docs/hosts.md), for the local image registry.
 
-**Data path (Days 2 and 3)**
+**Data path (Legs 1 and 3)**
 
 - [Redpanda on Kubernetes](https://docs.redpanda.com/current/deploy/redpanda/kubernetes/).
 - [ClickHouse ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree).
