@@ -11,7 +11,7 @@ vms: "Five Multipass VMs, zone1 bridge\ncp-1 · cp-2 · cp-3 · edge-1 · data-1
 
 docker: "Docker on the host" {
   registry: "registry · :5000\nmy images"
-  mirror: "registry.k8s.io mirror · :5001\ncontrol-plane images"
+  mirror: "Mirrors · :5001 to :5003\nregistry.k8s.io, quay.io, ghcr.io"
   apt: "apt-cacher-ng · :3142\nUbuntu and Kubernetes packages"
 }
 

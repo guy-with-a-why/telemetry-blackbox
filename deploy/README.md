@@ -52,11 +52,11 @@ OOM-killed, the fix is to move memory from data-1, not to drop a node.
 
 ## What the host runs
 
-`just host` runs three containers on the host, and `just vms` starts them
+`just host` runs five containers on the host, and `just vms` starts them
 first. All of them listen on the `zone1` bridge, where only the VMs can reach
 them.
 
-![just vms starts three containers on the host, then launches five Multipass VMs with node.yaml as cloud-init. The VMs pull images from the registry and the registry.k8s.io mirror, and packages from apt-cacher-ng. Only the mirror and the cache reach the internet, on the first fetch.](../docs/diagrams/host.svg)
+![just vms starts five containers on the host, then launches five Multipass VMs with node.yaml as cloud-init. The VMs pull images from the registry and the mirrors of registry.k8s.io, quay.io and ghcr.io, and packages from apt-cacher-ng. Only the mirrors and the cache reach the internet, on the first fetch.](../docs/diagrams/host.svg)
 
 ### The local registry
 
@@ -84,9 +84,11 @@ they'd share the same connection. Caching does.
   Proxy mode trips over the colons in the Kubernetes paths. apt still checks
   every package against the repository's signing key, and the key itself comes
   straight from upstream.
-- **A `registry:2` mirror of `registry.k8s.io`**, in proxy mode on port 5001,
-  serves the control-plane images. containerd tries it first and falls back to
-  `registry.k8s.io` if it's down.
+- **`registry:2` mirrors** in proxy mode serve the images from upstream
+  registries. Each mirrors one upstream: `registry.k8s.io` on port 5001 for
+  the control plane, `quay.io` on 5002 for Cilium and `ghcr.io` on 5003 for
+  kube-vip. containerd tries the mirror first and falls back upstream if it's
+  down.
 
 Both keep their data in Docker volumes, so a rebuild after `just vms-delete`
 barely touches the internet.

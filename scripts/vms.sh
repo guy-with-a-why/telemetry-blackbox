@@ -16,6 +16,8 @@ user_data() {
   yaml=$(sed -e "s/@KUBERNETES_MINOR@/$kubernetes_minor/g" \
     -e "s/@REGISTRY@/$1:$registry_port/g" \
     -e "s/@K8S_MIRROR@/$1:$k8s_mirror_port/g" \
+    -e "s/@QUAY_MIRROR@/$1:$quay_mirror_port/g" \
+    -e "s/@GHCR_MIRROR@/$1:$ghcr_mirror_port/g" \
     -e "s/@APT_CACHE@/$1:$apt_cache_port/g" \
     deploy/vms/node.yaml)
   if left=$(grep -oE '@[A-Z0-9_]+@' <<<"$yaml" | sort -u); then
