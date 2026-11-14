@@ -10,6 +10,8 @@ zone=zone1
 bridge=mpqemubr$zone
 registry_port=5000
 k8s_mirror_port=5001
+quay_mirror_port=5002
+ghcr_mirror_port=5003
 apt_cache_port=3142
 
 # name    vCPUs  memory  disk
