@@ -7,6 +7,7 @@
   - [Day 0: Laying out the bench](blog/2026-11-12-day-0-the-bench.md)
   - [Flight plan amended](blog/2026-11-14-flight-plan-amended.md)
   - [Ground power: first boot in Renode](blog/2026-11-14-ground-power.md)
+  - [The hangar: five VMs and two caches](blog/2026-11-14-the-hangar.md)
 - [Decisions](adr/README.md)
   - [0005. just, mise and a local registry](adr/0005-just-mise-and-a-local-registry.md)
 - [Runbooks](runbooks/README.md)
