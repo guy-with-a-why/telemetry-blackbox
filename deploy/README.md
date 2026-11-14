@@ -56,6 +56,8 @@ OOM-killed, the fix is to move memory from data-1, not to drop a node.
 first. All of them listen on the `zone1` bridge, where only the VMs can reach
 them.
 
+![just vms starts three containers on the host, then launches five Multipass VMs with node.yaml as cloud-init. The VMs pull images from the registry and the registry.k8s.io mirror, and packages from apt-cacher-ng. Only the mirror and the cache reach the internet, on the first fetch.](../docs/diagrams/host.svg)
+
 ### The local registry
 
 `registry:2` listens in two places:
