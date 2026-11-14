@@ -1,7 +1,10 @@
 <!-- Write it like you're telling a colleague how the day went over a coffee. Plain prose, no lists. Proficient,
 grounded and experienced: decisions and reasons, never "I learned". One joke at most and at least one real
-specific, such as a number, a wrong turn or something I said. -->
-# Day N: Title
+specific, such as a number, a wrong turn or something I said. Put the post's date under the title. Add it as
+the last row of the table in blog/README.md and the last blog entry in SUMMARY.md. -->
+# Title
+
+*14 November 2026*
 
 ## What was done
 
