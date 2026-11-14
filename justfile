@@ -8,7 +8,7 @@ default:
 
 # Check every bench tool is installed
 bench:
-    @for tool in just d2 uv kubectl helm multipass docker renode cargo probe-rs clickhouse; do \
+    @for tool in just d2 uv node kubectl helm multipass docker renode cargo probe-rs clickhouse; do \
       if command -v "$tool" >/dev/null; then printf '%-10s ok\n' "$tool"; \
       else printf '%-10s missing\n' "$tool"; missing=1; fi; \
     done; exit "${missing:-0}"
@@ -33,7 +33,8 @@ docs:
         -e 's#(\.\./\.\./milestone#(https://github.com/guy-with-a-why/telemetry-blackbox/milestone#g' \
         README.md > docs/introduction.md
     mkdir -p theme && cp docs/brand/favicon.svg theme/favicon.svg
-    python3 scripts/flight.py
+    npm --prefix tools/flight ci --silent
+    npm --prefix tools/flight run --silent build
     mdbook build
     if [[ -f target/coverage/coverage.json ]]; then cp target/coverage/coverage.json book/; fi
 
@@ -42,10 +43,14 @@ note +text:
     @mkdir -p ~/.local/state/telemetry-blackbox
     @printf '%s  %s\n' "$(date +%H:%M)" {{ quote(text) }} | tee -a ~/.local/state/telemetry-blackbox/notes-$(date +%F).log
 
-# Lint and test the helper scripts
+# Lint and test the helper scripts and the flight strips
 test-scripts:
     uvx ruff@0.14.0 check scripts
     uv run --no-project --with pytest==9.2.0 pytest -q scripts
+    npm --prefix tools/flight ci --silent
+    npm --prefix tools/flight run --silent typecheck
+    npm --prefix tools/flight run --silent lint
+    npm --prefix tools/flight test
 
 # Check formatting and lints for the crates, the firmware, bbcheck and the shell scripts
 lint:

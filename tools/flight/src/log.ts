@@ -1,0 +1,48 @@
+import { type Flight, type Issue, closedCount, plural, status, totals } from "./plan";
+
+/** The flight log page: the totals, the strips, then every leg's issues as text. */
+export function log(flight: Flight): string {
+  const { done, total, percent, headwind } = totals(flight);
+  const lines = [
+    "# Flight log",
+    "",
+    `**${done} of ${plural(total, "issue")} closed (${percent}%).** ` +
+      (headwind ? `${headwind} joined after takeoff. ` : "") +
+      `Stretch: ${closedCount(flight.bonus)} of ${flight.bonus.length}.`,
+    "",
+    "![Flight progress strips, one per leg. The lists below give the same detail as text.](flight.svg)",
+    "",
+    `Rebuilt whenever an issue changes. Last update: ${flight.now.slice(0, 16).replace("T", " ")} UTC.`,
+  ];
+  flight.legs.forEach((leg, i) => {
+    lines.push(...section(leg.title, `${status(flight, i)}, due ${leg.dueOn.slice(0, 10)}`, leg.issues));
+  });
+  if (flight.bonus.length) lines.push(...section("Stretch", "bonus", flight.bonus));
+  return lines.join("\n") + "\n";
+}
+
+/** A heading, then landed issues newest first, then waiting issues in number order. */
+function section(title: string, note: string, issues: Issue[]): string[] {
+  const landed = issues
+    .filter((i) => i.state === "closed")
+    .sort((a, b) => (b.closed_at ?? "").localeCompare(a.closed_at ?? ""));
+  const waiting = issues.filter((i) => i.state === "open").sort((a, b) => a.number - b.number);
+  return [
+    "",
+    `## ${markdown(title)}`,
+    "",
+    `*${note}*`,
+    "",
+    ...landed.map(
+      (i) => `- [x] #${i.number} ${markdown(i.title)}` + (i.closed_at ? ` (landed ${i.closed_at.slice(0, 10)})` : ""),
+    ),
+    ...waiting.map((i) => `- [ ] #${i.number} ${markdown(i.title)}`),
+  ];
+}
+
+/**
+ * Shows text literally: anyone can open an issue on a public repo, so a title
+ * must never become a link, an image or HTML. CommonMark lets a backslash
+ * escape any ASCII punctuation.
+ */
+export const markdown = (text: string) => text.replace(/[!-/:-@[-`{-~]/g, "\\$&");
