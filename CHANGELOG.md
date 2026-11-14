@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.4.0...v0.5.0) (2026-11-14)
+
+
+### Features
+
+* **flight:** draw a narrow rack for phones ([#91](https://github.com/guy-with-a-why/telemetry-blackbox/issues/91)) ([bb76d8e](https://github.com/guy-with-a-why/telemetry-blackbox/commit/bb76d8e5f79691af36288c6869af2b86b7e7dc55)), closes [#90](https://github.com/guy-with-a-why/telemetry-blackbox/issues/90)
+* **flight:** draw the progress strips as a rack with Satori and React ([#88](https://github.com/guy-with-a-why/telemetry-blackbox/issues/88)) ([4e6f1ac](https://github.com/guy-with-a-why/telemetry-blackbox/commit/4e6f1aca4c7c88169fb667e4b9be97775410f14f)), closes [#86](https://github.com/guy-with-a-why/telemetry-blackbox/issues/86)
+
 ## [0.4.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.3.0...v0.4.0) (2026-11-14)
 
 
