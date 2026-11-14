@@ -1,10 +1,17 @@
+import { mkdtemp, readdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { describe, expect, it, test, vi } from "vitest";
+import { build } from "../src/build";
 import { log, markdown } from "../src/log";
 import { plan } from "../src/plan";
 import { render, summary } from "../src/rack";
 import { LEG_0, LEG_1, NOW, STRETCH, issue, leg, legs } from "./fixtures";
 
 const height = (svg: string) => Number(/height="(\d+)"/.exec(svg)?.[1]);
+const width = (svg: string) => Number(/width="(\d+)"/.exec(svg)?.[1]);
+const inWords = (svg: string) => /<title>.*<\/desc>/.exec(svg)?.[0];
 
 describe("render", () => {
   it("uses only Tailwind classes Satori understands, since it drops the rest with a warning", async () => {
@@ -13,8 +20,11 @@ describe("render", () => {
       [...leg(LEG_0, 1, "closed", "open"), ...leg(LEG_1, 10, "closed", "open")],
       "2026-11-14T09:00:00Z",
     );
-    await render(late);
-    await render(plan([...leg(LEG_0, 1, "closed"), issue(12, "closed")], NOW));
+    const landed = plan([...leg(LEG_0, 1, "closed"), issue(12, "closed")], NOW);
+    for (const narrow of [false, true]) {
+      await render(late, { narrow });
+      await render(landed, { narrow });
+    }
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
   });
@@ -57,7 +67,61 @@ describe("render", () => {
   });
 });
 
+describe("render narrow", () => {
+  const flight = plan(
+    [...leg(LEG_0, 1, "closed"), ...leg(LEG_1, 10, "closed", "open"), ...leg(STRETCH, 20, "open")],
+    NOW,
+  );
+
+  it("draws a 420px card for phones and keeps the wide one at 900px", async () => {
+    const [wide, narrow] = await Promise.all([render(flight), render(flight, { narrow: true })]);
+    expect(width(wide)).toBe(900);
+    expect(width(narrow)).toBe(420);
+  });
+
+  it("says the same in words as the wide card, ETAs included", async () => {
+    const [wide, narrow] = await Promise.all([render(flight), render(flight, { narrow: true })]);
+    expect(inWords(narrow)).toBe(inWords(wide));
+    expect(narrow).toContain("due 20 Nov");
+  });
+
+  it("stacks each strip on two rows, so it is taller than the wide strip", async () => {
+    const [five, ten, wide] = await Promise.all([
+      render(plan(legs(5), NOW), { narrow: true }),
+      render(plan(legs(10), NOW), { narrow: true }),
+      render(plan(legs(5), NOW)),
+    ]);
+    expect(height(ten) - height(five)).toBe(5 * (56 + 6));
+    expect(height(five)).toBeGreaterThan(height(wide));
+  });
+
+  it("draws a leg with many issues", async () => {
+    const many = Array.from({ length: 40 }, (_, n) => issue(n, "open", LEG_1));
+    await expect(render(plan(many, NOW), { narrow: true })).resolves.toContain(
+      "<desc>TBX1 A cluster I built myself: in flight, 0 of 40",
+    );
+  });
+});
+
+describe("build", () => {
+  it("writes the wide card, the narrow card and the log", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "flight-"));
+    try {
+      await build([issue(1, "open", LEG_1)], NOW, pathToFileURL(dir + "/"));
+      expect((await readdir(dir)).sort()).toEqual(["flight-log.md", "flight-narrow.svg", "flight.svg"]);
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+});
+
 describe("log", () => {
+  it("serves the narrow card to phones and the wide one to everything else", () => {
+    const page = log(plan([issue(1, "open", LEG_1)], NOW));
+    expect(page).toContain('<source media="(max-width: 600px)" srcset="flight-narrow.svg">');
+    expect(page).toContain('<img src="flight.svg" alt="Flight progress strips');
+  });
+
   it("lists landed issues newest first, then the waiting ones, then the bonus", () => {
     const issues = [
       issue(1, "closed", LEG_0, { closed_at: "2026-11-12T11:00:00Z" }),

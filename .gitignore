@@ -21,6 +21,7 @@ book/
 theme/
 docs/introduction.md
 docs/flight.svg
+docs/flight-narrow.svg
 docs/flight-log.md
 
 # Local list of blocked terms, never committed

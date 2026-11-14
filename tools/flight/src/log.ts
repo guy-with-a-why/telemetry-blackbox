@@ -10,7 +10,11 @@ export function log(flight: Flight): string {
       (headwind ? `${headwind} joined after takeoff. ` : "") +
       `Stretch: ${closedCount(flight.bonus)} of ${flight.bonus.length}.`,
     "",
-    "![Flight progress strips, one per leg. The lists below give the same detail as text.](flight.svg)",
+    // phones get the narrow card, which keeps the text readable at full size
+    "<picture>",
+    '  <source media="(max-width: 600px)" srcset="flight-narrow.svg">',
+    '  <img src="flight.svg" alt="Flight progress strips, one per leg. The lists below give the same detail as text.">',
+    "</picture>",
     "",
     `Rebuilt whenever an issue changes. Last update: ${flight.now.slice(0, 16).replace("T", " ")} UTC.`,
   ];
