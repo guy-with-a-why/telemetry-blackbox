@@ -44,6 +44,19 @@ updates:
       bbcheck:
         patterns: ["*"]
 
+  - package-ecosystem: npm
+    directory: /tools/flight
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      flight:
+        patterns: ["*"]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:

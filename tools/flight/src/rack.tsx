@@ -1,0 +1,257 @@
+/**
+ * The flight-progress strips: one strip per leg in a rack, the way air traffic
+ * control tracks flights. The strip being flown sticks out, and a white tick
+ * marks where the plan says I should be. Satori lays it out, styled with its
+ * built-in Tailwind, and writes an SVG with the text as outlines, so it looks
+ * the same in the README, on the docs site and on any device. A <desc> carries
+ * the same detail as text.
+ */
+import { readFile } from "node:fs/promises";
+import satori from "satori";
+import {
+  type Flight,
+  type Leg,
+  type Status,
+  STAMPS,
+  TAKEOFF,
+  activeLeg,
+  closedCount,
+  legName,
+  legNumber,
+  planned,
+  plural,
+  shortDate,
+  status,
+  totals,
+} from "./plan";
+
+declare module "react" {
+  interface HTMLAttributes<T> {
+    tw?: string; // Satori's Tailwind classes
+  }
+}
+
+const tailwindConfig = {
+  theme: {
+    extend: {
+      colors: {
+        background: "#0d1117",
+        strip: "#161b22",
+        ink: "#eaecef",
+        slate: "#8b97a6",
+        dim: "#30363d", // decoration only: the rail and strip edges
+        faint: "#7d8896", // 4.8:1 on a strip, so it passes for small text
+        orange: "#f2662b",
+        red: "#f07167",
+        amber: "#ffb547",
+      },
+    },
+  },
+};
+
+const TONE: Record<Status, string> = {
+  landed: "orange",
+  "in flight": "amber",
+  late: "red",
+  "started early": "slate",
+  "not started": "slate",
+};
+
+const PIP_GAP = 3;
+const PIPS_WIDTH = 260; // past 20 issues the pips get narrower instead of the rack wider
+
+export function Rack({ flight, mark }: { flight: Flight; mark: string }) {
+  const most = Math.max(1, ...flight.legs.map((leg) => leg.issues.length));
+  const pitch = Math.min(13, Math.floor(PIPS_WIDTH / most)); // a pip and its gap
+  return (
+    <div
+      tw="flex flex-col w-full px-7 py-[22px] bg-background border-2 border-dim rounded-[14px] text-ink"
+      style={{ fontFamily: "JetBrains Mono" }}
+    >
+      <Header flight={flight} mark={mark} />
+      <div tw="flex mt-[18px]">
+        <div tw="w-2.5 shrink-0 mr-2.5 bg-dim rounded-sm" />
+        <div tw="flex flex-col flex-grow min-w-0">
+          {flight.legs.map((leg, i) => (
+            <Strip key={leg.title} flight={flight} leg={leg} index={i} pitch={pitch} most={most} mark={mark} />
+          ))}
+          <Standby flight={flight} />
+        </div>
+      </div>
+      <div tw="flex flex-wrap justify-center mt-3.5">
+        {Object.entries(STAMPS).map(([n, name]) => (
+          <Stamp key={n} name={name} won={flight.closed.has(Number(n))} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Header({ flight, mark }: { flight: Flight; mark: string }) {
+  const { done, total, percent, headwind } = totals(flight);
+  const arrival = flight.legs.at(-1)?.dueOn;
+  const route = `Takeoff ${shortDate(TAKEOFF)}` + (arrival ? ` · arrival ${shortDate(arrival)}` : "");
+  const notes = [headwind ? `+${headwind} since takeoff` : "no headwind yet"];
+  if (flight.legs.some((_, i) => planned(flight, i) !== null)) notes.push("white tick = today's plan");
+  return (
+    <div tw="flex items-center">
+      <img src={mark} width={40} height={47} />
+      <div tw="flex flex-col flex-grow ml-3.5">
+        <div tw="text-[13px] tracking-[1.5px] text-slate">FLIGHT PROGRESS STRIPS</div>
+        <div tw="text-[15px] font-bold mt-0.5">{route}</div>
+      </div>
+      <div tw="flex flex-col items-end">
+        <div tw="text-[17px] font-bold">{`${done} of ${plural(total, "issue")} · ${percent}%`}</div>
+        <div tw="text-xs text-slate mt-0.5">{notes.join(" · ")}</div>
+      </div>
+    </div>
+  );
+}
+
+interface StripProps {
+  flight: Flight;
+  leg: Leg;
+  index: number;
+  pitch: number;
+  most: number;
+  mark: string;
+}
+
+function Strip({ flight, leg, index, pitch, most, mark }: StripProps) {
+  const st = status(flight, index);
+  const tone = TONE[st];
+  const active = index === activeLeg(flight);
+  const late = st === "late";
+  const closed = closedCount(leg.issues);
+  // a late leg's label is outlined, not filled, so it differs from a landed one by more than colour
+  const label = late ? `border-2 border-${tone} text-${tone}` : `bg-${tone} text-background`;
+  const offset = active ? `ml-[22px] border-${tone}` : "mr-[22px] border-dim"; // the active strip sticks out
+  return (
+    <div tw={`flex items-center h-[34px] mb-1.5 bg-strip rounded-sm border-[1.5px] ${offset}`}>
+      <div tw={`flex w-[84px] h-full shrink-0 items-center justify-center text-sm font-bold ${label}`}>
+        {active && <img src={mark} width={17} height={20} tw="mr-[5px]" />}
+        {`TBX${legNumber(leg.title, index)}`}
+      </div>
+      <Name tw={`text-[15px] font-bold ${st === "landed" ? "text-slate" : "text-ink"}`}>{legName(leg.title)}</Name>
+      <div tw="flex w-[100px] shrink-0 text-xs text-slate">{`ETA ${shortDate(leg.dueOn)}`}</div>
+      <div tw={`flex w-[112px] shrink-0 text-xs font-bold text-${tone}`}>{late ? "LATE" : st}</div>
+      <Pips closed={closed} total={leg.issues.length} plan={planned(flight, index)} pitch={pitch} most={most} />
+      <Count>{`${closed}/${leg.issues.length}`}</Count>
+    </div>
+  );
+}
+
+interface PipsProps {
+  closed: number;
+  total: number;
+  plan: number | null;
+  pitch: number;
+  most: number;
+}
+
+/** One pip per issue, filled once it closes, and the white tick where the plan says I should be. */
+function Pips({ closed, total, plan, pitch, most }: PipsProps) {
+  return (
+    <div tw="flex relative shrink-0" style={{ width: pitch * most }}>
+      {Array.from({ length: total }, (_, n) => (
+        // open work is an outline, so it passes 3:1 and reads by shape as well as colour
+        <div
+          key={n}
+          tw={`h-3 mr-[${PIP_GAP}px] shrink-0 rounded-sm ${n < closed ? "bg-orange" : "border border-faint"}`}
+          style={{ width: pitch - PIP_GAP }}
+        />
+      ))}
+      {plan !== null && (
+        // centred in the gap after the last pip the plan expects to be done
+        <div tw="absolute -top-1 w-0.5 h-5 bg-ink" style={{ left: plan * total * pitch - (PIP_GAP + 2) / 2 }} />
+      )}
+    </div>
+  );
+}
+
+function Standby({ flight }: { flight: Flight }) {
+  return (
+    <div tw="flex items-center h-[34px] mr-[22px] rounded-sm border-[1.5px] border-dashed border-faint text-faint">
+      <div tw="flex w-[84px] shrink-0 justify-center text-sm font-bold">TBX-S</div>
+      <Name tw="text-sm">Stretch · on standby, flown if the legs land early</Name>
+      <Count>{`${closedCount(flight.bonus)}/${flight.bonus.length}`}</Count>
+    </div>
+  );
+}
+
+/** The strip's name column: takes the room that's left and cuts a long name short with an ellipsis. */
+function Name({ tw, children }: { tw: string; children: string }) {
+  return (
+    <div tw={`flex flex-grow min-w-0 px-3 ${tw}`}>
+      <span tw="overflow-hidden" style={{ whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+        {children}
+      </span>
+    </div>
+  );
+}
+
+function Count({ children }: { children: string }) {
+  return <div tw="flex w-16 shrink-0 justify-end pr-3 text-[13px]">{children}</div>;
+}
+
+function Stamp({ name, won }: { name: string; won: boolean }) {
+  return (
+    <div
+      tw={`m-1 px-[9px] py-[3px] rounded-xl border-[1.5px] text-[11px] font-bold ${won ? "bg-orange border-orange text-background" : "border-faint text-faint"}`}
+    >
+      {name}
+    </div>
+  );
+}
+
+/** The rack in words: a title and one sentence per leg, for screen readers and the <desc>. */
+export function summary(flight: Flight) {
+  const { done, total, percent } = totals(flight);
+  const title = `Flight progress: ${done} of ${plural(total, "issue")} closed (${percent}%)`;
+  const legs = flight.legs.map((leg, i) => {
+    const plan = planned(flight, i);
+    return (
+      `TBX${legNumber(leg.title, i)} ${legName(leg.title)}: ${status(flight, i)}, ` +
+      `${closedCount(leg.issues)} of ${leg.issues.length} closed, due ${shortDate(leg.dueOn)}` +
+      (plan === null ? "." : `, the plan says ${Math.round(plan * 100)}% by today.`)
+    );
+  });
+  const stamps = Object.entries(STAMPS)
+    .filter(([n]) => flight.closed.has(Number(n)))
+    .map(([, name]) => name);
+  const desc = [
+    ...legs,
+    `Stretch: ${closedCount(flight.bonus)} of ${flight.bonus.length} closed.`,
+    `Stamps won: ${stamps.length ? stamps.join(", ") : "none yet"}.`,
+  ].join(" ");
+  return { title, desc };
+}
+
+const xml = (text: string) =>
+  text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[c]!);
+
+const asset = (path: string) => readFile(new URL(import.meta.resolve(path)));
+
+/** The rack as SVG, as tall as its content, with a title and description for screen readers. */
+export async function render(flight: Flight): Promise<string> {
+  const [regular, bold, markSvg] = await Promise.all([
+    asset("@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff"),
+    asset("@fontsource/jetbrains-mono/files/jetbrains-mono-latin-700-normal.woff"),
+    readFile(new URL("../../../docs/brand/mark-dark.svg", import.meta.url)),
+  ]);
+  const mark = `data:image/svg+xml;base64,${markSvg.toString("base64")}`;
+  const svg = await satori(<Rack flight={flight} mark={mark} />, {
+    width: 900,
+    tailwindConfig,
+    fonts: [
+      { name: "JetBrains Mono", data: regular, weight: 500, style: "normal" },
+      { name: "JetBrains Mono", data: bold, weight: 700, style: "normal" },
+    ],
+  });
+  const { title, desc } = summary(flight);
+  return (
+    svg
+      .replace("<svg ", `<svg role="img" aria-label="${xml(title)}" `)
+      .replace(/>/, `><title>${xml(title)}</title><desc>${xml(desc)}</desc>`) + "\n"
+  );
+}

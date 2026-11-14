@@ -25,7 +25,7 @@ I built by hand.
 
 ## Progress
 
-[![Flight progress: issues closed against the Leg 0 to Leg 4 route](https://guy-with-a-why.github.io/telemetry-blackbox/flight.svg)](https://guy-with-a-why.github.io/telemetry-blackbox/flight-log.html)
+[![Flight progress strips, one per leg. The flight log has the same detail as text.](https://guy-with-a-why.github.io/telemetry-blackbox/flight.svg)](https://guy-with-a-why.github.io/telemetry-blackbox/flight-log.html)
 
 [![Leg 0](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/1?label=Leg%200&color=f2662b)](../../milestone/1) [![Leg 1](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/3?label=Leg%201&color=f2662b)](../../milestone/3) [![Leg 2](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/2?label=Leg%202&color=f2662b)](../../milestone/2) [![Leg 3](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/4?label=Leg%203&color=f2662b)](../../milestone/4) [![Leg 4](https://img.shields.io/github/milestones/progress/guy-with-a-why/telemetry-blackbox/5?label=Leg%204&color=f2662b)](../../milestone/5)
 
@@ -33,8 +33,10 @@ I fly the route in evenings after work, so each leg has a budget in evenings
 and a due date to match. The cluster flies before the firmware because it
 carries the most risk. [#62](https://github.com/guy-with-a-why/telemetry-blackbox/issues/62) has the reasoning.
 
-The plane moves as issues close. Headwind counts the work that crept in after
-takeoff, and a stamp unlocks at each milestone I care most about. The
+Each leg is a strip in a rack, the way air traffic control tracks flights.
+The leg I'm flying sticks out, a late leg is outlined in red and a white tick
+marks where the plan says I should be. Headwind counts the work that crept in
+after takeoff, and a stamp unlocks at each milestone I care most about. The
 [flight log](https://guy-with-a-why.github.io/telemetry-blackbox/flight-log.html) has the detail.
 
 ## Why I'm building it
