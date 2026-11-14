@@ -6,6 +6,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Rebuild the firmware for this release and attach it with its provenance, e.g. v0.2.0
+        required: false
+        type: string
 
 permissions: {}
 
@@ -135,17 +140,31 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
+  # The ELF ships with SLSA provenance. The .intoto.jsonl file is the signed
+  # in-toto statement and the .sigstore.json file is the whole bundle, so
+  # either `gh attestation verify` or cosign can check it.
   firmware:
     name: attach the firmware
     needs: release-please
-    if: needs.release-please.outputs.created == 'true'
+    if: >-
+      needs.release-please.outputs.created == 'true' ||
+      (github.event_name == 'workflow_dispatch' && inputs.tag != '')
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write # sign the provenance
+      attestations: write
+    env:
+      TAG: ${{ inputs.tag || needs.release-please.outputs.tag }}
     steps:
+      - name: Check the tag
+        run: |
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'$TAG' isn't a release tag like v1.2.3."; exit 1
+          fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.release-please.outputs.tag }}
+          ref: ${{ env.TAG }}
           persist-credentials: false
       # the firmware is a library until Day 1 gives it a binary
       - id: binary
@@ -154,11 +173,32 @@ jobs:
           else echo "::notice::There's no firmware binary yet, so nothing is attached."; fi
       - if: steps.binary.outputs.exists == 'true'
         working-directory: firmware
-        run: cargo build --release --locked
+        run: |
+          cargo build --release --locked
+          cp target/thumbv7em-none-eabihf/release/firmware "../firmware-$TAG.elf"
+      - id: attest
+        if: steps.binary.outputs.exists == 'true'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: firmware-${{ env.TAG }}.elf
       - if: steps.binary.outputs.exists == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ needs.release-please.outputs.tag }}
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+        # Attach the ELF and two copies of its provenance:
+        #   .sigstore.json  the whole Sigstore bundle, with the certificate
+        #                   that gh attestation verify and cosign check
+        #   .intoto.jsonl   only the signed in-toto statement (a DSSE
+        #                   envelope), the file Scorecard looks for
+        # Format: https://github.com/in-toto/attestation/blob/main/spec/v1/bundle.md
+        # A hand run for an older tag replaces its files, hence --clobber and
+        # the check against the published ELF.
         run: |
-          cp firmware/target/thumbv7em-none-eabihf/release/firmware "firmware-$TAG.elf"
-          gh release upload "$TAG" "firmware-$TAG.elf"
+          elf="firmware-$TAG.elf"
+          cp "$BUNDLE" "$elf.sigstore.json"
+          jq -c .dsseEnvelope "$BUNDLE" > "$elf.intoto.jsonl"
+          if gh release download "$TAG" --pattern "$elf" --output published.elf 2>/dev/null; then
+            if cmp -s published.elf "$elf"; then echo "::notice::$elf matches the published binary."
+            else echo "::warning::$elf differs from the published binary it replaces."; fi
+          fi
+          gh release upload "$TAG" "$elf" "$elf.intoto.jsonl" "$elf.sigstore.json" --clobber
