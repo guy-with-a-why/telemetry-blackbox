@@ -8,7 +8,7 @@ default:
 
 # Check every bench tool is installed
 bench:
-    @for tool in just d2 uv kubectl helm multipass renode cargo probe-rs clickhouse; do \
+    @for tool in just d2 uv kubectl helm multipass docker renode cargo probe-rs clickhouse; do \
       if command -v "$tool" >/dev/null; then printf '%-10s ok\n' "$tool"; \
       else printf '%-10s missing\n' "$tool"; missing=1; fi; \
     done; exit "${missing:-0}"
@@ -70,6 +70,15 @@ coverage:
     cd tools/bbcheck && COVERAGE_FILE=../../target/coverage/.coverage uv run --locked pytest \
         --cov=bbcheck --cov-report=term --cov-report=json:../../target/coverage/python.json
     python3 scripts/coverage_badge.py target/coverage/rust.json target/coverage/python.json target/coverage/coverage.json
+
+# Create the five cluster VMs; existing ones are left alone
+vms:
+    scripts/vms.sh
+
+# Delete the five cluster VMs and their disks
+[confirm("Delete all five VMs and their disks?")]
+vms-delete:
+    scripts/vms.sh delete
 
 # Build the firmware and boot it on the simulated board; `quit` stops it
 fly:
