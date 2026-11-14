@@ -1,0 +1,13 @@
+# Advisories that don't apply to the firmware. OSV-Scanner and Scorecard both
+# read this file. Each entry lapses so it gets looked at again. Newer
+# OSV-Scanner calls ignoreUntil deprecated, but the version inside Scorecard
+# only reads ignoreUntil, so it stays.
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0110"
+ignoreUntil = 2027-05-14
+reason = """\
+bare-metal is deprecated, not vulnerable: the advisory is informational. \
+It comes in through cortex-m 0.7.10, the latest 0.7 release, which the \
+firmware and embassy both depend on. It goes when embassy moves to \
+cortex-m 0.8."""
