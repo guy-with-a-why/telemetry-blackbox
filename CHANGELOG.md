@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.1.2...v0.2.0) (2026-11-14)
+
+
+### Features
+
+* **firmware:** boot Embassy firmware on an STM32F4 in Renode ([#69](https://github.com/guy-with-a-why/telemetry-blackbox/issues/69)) ([ac59e97](https://github.com/guy-with-a-why/telemetry-blackbox/commit/ac59e97f24c8673b69020bb080106e403773d591)), closes [#3](https://github.com/guy-with-a-why/telemetry-blackbox/issues/3)
+
 ## [0.1.2](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.1.1...v0.1.2) (2026-11-14)
 
 
