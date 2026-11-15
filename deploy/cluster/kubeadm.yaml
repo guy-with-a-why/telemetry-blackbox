@@ -12,10 +12,7 @@ bootstrapTokens:
 # them for two hours.
 certificateKey: "@CERTIFICATE_KEY@"
 nodeRegistration:
-  # Control planes have 1.5 GB against kubeadm's generic 1.7 GB floor. Every
-  # other preflight check still runs. This covers init only. Joining control
-  # planes skip it in join-control-plane.yaml. deploy/README.md has the
-  # reasoning.
+  # 1.5 GB is under kubeadm's 1.7 GB floor. deploy/README.md says why that's fine.
   ignorePreflightErrors: [Mem]
 ---
 apiVersion: kubeadm.k8s.io/v1beta4

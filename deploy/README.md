@@ -110,7 +110,7 @@ I bootstrapped the cluster by hand with kubeadm once, following
 The files it needs are in [`cluster/`](cluster/).
 
 ```bash
-just cluster-up                  # steps 1 to 5 below, on the server
+just cluster-up                  # runbook steps 1 to 8, on the server
 just up                          # vms, cluster-up and cluster-check, from nothing
 just kubeconfig <home-server>    # on my laptop: the kubeconfig and the tunnel
 ```

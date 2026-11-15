@@ -9,7 +9,9 @@ the repo or on a VM through `multipass shell`. Steps 7 and 8 run on my laptop.
 
 `just cluster-up` runs steps 1 to 8 in one go on the server, and `just up`
 rebuilds the VMs and the cluster from nothing. This runbook is what they do,
-and how to recover when they stop halfway.
+and how to recover when they stop halfway. The script runs the joins in steps
+5 and 6 from `deploy/cluster/join-control-plane.yaml` and `join-worker.yaml`
+in place of the flags.
 
 ## Before I start
 

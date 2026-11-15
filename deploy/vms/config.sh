@@ -27,6 +27,9 @@ kube_vip_image=ghcr.io/kube-vip/kube-vip:v1.3.1@sha256:1962f9daf226503f7e6b107f5
 kube_vip_lease=plndr-cp-lock
 # The Cilium chart scripts/cluster-up.sh installs.
 cilium_version=1.20.4
+# Where cluster-files.sh puts the rendered files on each VM. It's absolute,
+# because an unquoted ~ would expand on the server, not the VM.
+cluster_dir=/home/ubuntu/cluster
 
 # name    vCPUs  memory  disk
 nodes=(
@@ -39,8 +42,9 @@ nodes=(
 
 node_names=()
 control_planes=()
+workers=()
 for node in "${nodes[@]}"; do
   node_names+=("${node%% *}")
-  if [[ $node == cp-* ]]; then control_planes+=("${node%% *}"); fi
+  if [[ $node == cp-* ]]; then control_planes+=("${node%% *}"); else workers+=("${node%% *}"); fi
 done
 unset node

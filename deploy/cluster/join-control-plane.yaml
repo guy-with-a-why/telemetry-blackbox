@@ -10,7 +10,7 @@ discovery:
     # CA matches, so a stray server on the VIP can't hand it a fake cluster.
     caCertHashes: ["@CA_HASH@"]
 nodeRegistration:
-  # The same memory floor as init. kubeadm.yaml has the reasoning.
+  # The same memory check init skips. deploy/README.md says why.
   ignorePreflightErrors: [Mem]
 # Joining as a control plane: download the shared certificates that init
 # uploaded, decrypted with this key, and add an etcd member.

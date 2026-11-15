@@ -11,12 +11,6 @@ source deploy/vms/config.sh
 
 first=${control_planes[0]}
 others=("${control_planes[@]:1}")
-workers=()
-for name in "${node_names[@]}"; do
-  if [[ " ${control_planes[*]} " != *" $name "* ]]; then workers+=("$name"); fi
-done
-# cluster-files.sh puts the files in the default user's ~/cluster/.
-files=/home/ubuntu/cluster
 kubeconfig=$HOME/.kube/blackbox.conf
 
 if ! command -v helm >/dev/null; then
@@ -26,12 +20,14 @@ fi
 
 has() { multipass exec "$1" -- sudo test -e "$2"; }
 
-# A node's own API server answers, including its etcd. The serving
-# certificate names 127.0.0.1.
-api_ready() {
-  multipass exec "$1" -- sudo kubectl --kubeconfig /etc/kubernetes/admin.conf \
-    --server https://127.0.0.1:6443 get --raw /readyz >/dev/null 2>&1
+# kubectl on cp-1 through its own API server, whose certificate names 127.0.0.1.
+first_kubectl() {
+  multipass exec "$first" -- sudo kubectl --kubeconfig /etc/kubernetes/admin.conf \
+    --server https://127.0.0.1:6443 "$@"
 }
+
+# True once cp-1's API server, and so its etcd, passes /readyz.
+api_ready() { first_kubectl get --raw /readyz >/dev/null 2>&1; }
 
 # Points cp-1's kube-vip at another kubeconfig. Only the hostPath line
 # matches, because mountPath has a capital P.
@@ -40,16 +36,17 @@ kube_vip_reads() {
     /etc/kubernetes/manifests/kube-vip.yaml
 }
 
-# A control plane has joined once kubeadm has written its etcd manifest, the
-# last file a control-plane join writes. A worker has joined once it has
-# kubelet.conf. Either with kubelet.conf and no more stopped halfway.
+# A control plane has joined once kubeadm has labelled it, the last step of
+# its join. A worker has joined once it has kubelet.conf.
 joined() {
-  if [[ " ${control_planes[*]} " == *" $1 "* ]]; then
-    has "$1" /etc/kubernetes/manifests/etcd.yaml
+  if [[ $1 == cp-* ]]; then
+    [[ -n $(first_kubectl get node "$1" -l node-role.kubernetes.io/control-plane -o name 2>/dev/null) ]]
   else
     has "$1" /etc/kubernetes/kubelet.conf
   fi
 }
+
+join() { multipass exec "$1" -- sudo kubeadm join --config "$cluster_dir/join.yaml"; }
 
 # Fresh secrets on every run, never written to the repo. cluster-files.sh
 # fills them in.
@@ -60,29 +57,38 @@ export BOOTSTRAP_TOKEN CERTIFICATE_KEY
 # Step 1. Write the files.
 scripts/cluster-files.sh init
 
-if api_ready "$first"; then
+if api_ready; then
   echo "$first: initialised already"
-  fresh=false
+  just_initialised=false
 elif has "$first" /etc/kubernetes/admin.conf; then
-  echo "$first: init ran but its API isn't ready. Wait, or run 'sudo kubeadm reset -f' on $first and start again" >&2
+  # A slow cp-1 isn't a broken one, so a reset is only safe before any join.
+  for name in "${others[@]}"; do
+    if has "$name" /etc/kubernetes/kubelet.conf; then
+      echo "$first: its API isn't ready. Wait, or run just cluster-check" >&2
+      exit 1
+    fi
+  done
+  echo "$first: its API isn't ready. Wait, or if init stopped halfway, run 'sudo kubeadm reset -f' on $first and start again" >&2
   exit 1
 else
   # Step 2. kube-vip holds the VIP through init on super-admin.conf, because
   # admin.conf has no rights until init finishes.
-  multipass exec "$first" -- sudo cp "$files/kube-vip.yaml" /etc/kubernetes/manifests/
+  multipass exec "$first" -- sudo cp "$cluster_dir/kube-vip.yaml" /etc/kubernetes/manifests/
   kube_vip_reads admin.conf super-admin.conf
 
   # Step 3. Initialise the first control plane. The token and the key come
   # from kubeadm.yaml.
-  multipass exec "$first" -- sudo kubeadm init --config "$files/kubeadm.yaml" --upload-certs
-
-  # Step 4. super-admin.conf skips RBAC, so nothing runs on it after init.
-  kube_vip_reads super-admin.conf admin.conf
-  fresh=true
+  multipass exec "$first" -- sudo kubeadm init --config "$cluster_dir/kubeadm.yaml" --upload-certs
+  just_initialised=true
 fi
 
-# Every node that still has to join, stopping on any that stopped halfway.
-pending=()
+# Step 4. super-admin.conf skips RBAC, so nothing runs on it after init. Every
+# run does this, in case an earlier one stopped straight after init.
+kube_vip_reads super-admin.conf admin.conf
+
+# Before steps 5 and 6: find the nodes still to join and write their files.
+# A node with kubelet.conf that fails the joined check stopped halfway.
+declare -A pending=()
 for name in "${others[@]}" "${workers[@]}"; do
   if joined "$name"; then
     echo "$name: joined already"
@@ -90,24 +96,17 @@ for name in "${others[@]}" "${workers[@]}"; do
     echo "$name: a join stopped halfway. See 'A join failed halfway' in docs/runbooks/bootstrap.md" >&2
     exit 1
   else
-    pending+=("$name")
+    pending[$name]=1
   fi
 done
 
 if ((${#pending[@]} > 0)); then
-  # On a later run, init's token and certificates have expired or belong to
-  # another run, so this run's go in place.
-  if [[ $fresh == false ]]; then
+  # Init's token may have expired and its certificates go after two hours, so upload this run's.
+  if [[ $just_initialised == false ]]; then
     multipass exec "$first" -- sudo kubeadm token create "$BOOTSTRAP_TOKEN" >/dev/null
     multipass exec "$first" -- sudo kubeadm init phase upload-certs --upload-certs \
       --certificate-key "$CERTIFICATE_KEY" >/dev/null
   fi
-
-  # The CA exists now, so its hash can go in the join files.
-  CA_HASH=sha256:$(multipass exec "$first" -- bash -c \
-    'openssl x509 -pubkey -noout -in /etc/kubernetes/pki/ca.crt | openssl pkey -pubin -outform der | sha256sum' |
-    cut -d' ' -f1)
-  export CA_HASH
   scripts/cluster-files.sh join
 fi
 
@@ -115,25 +114,19 @@ fi
 # time. kube-vip goes in after the join, because the node has no admin.conf
 # before it.
 for name in "${others[@]}"; do
-  if [[ " ${pending[*]} " == *" $name "* ]]; then
-    multipass exec "$name" -- sudo kubeadm join --config "$files/join.yaml"
-  fi
+  if [[ -v pending[$name] ]]; then join "$name"; fi
   if ! has "$name" /etc/kubernetes/manifests/kube-vip.yaml; then
-    multipass exec "$name" -- sudo cp "$files/kube-vip.yaml" /etc/kubernetes/manifests/
+    multipass exec "$name" -- sudo cp "$cluster_dir/kube-vip.yaml" /etc/kubernetes/manifests/
   fi
 done
 
 # Step 6. Join the workers.
 for name in "${workers[@]}"; do
-  if [[ " ${pending[*]} " == *" $name "* ]]; then
-    multipass exec "$name" -- sudo kubeadm join --config "$files/join.yaml"
-  fi
+  if [[ -v pending[$name] ]]; then join "$name"; fi
 done
 
-# Step 7. Copy the kubeconfig here. The server sits on the bridge, so it
-# reaches the VIP directly. `just kubeconfig` does the same for a laptop.
-# multipass exec spins forever when its output goes straight to a file, so
-# read it into a variable first.
+# Step 7. Copy the kubeconfig here, where the bridge reaches the VIP directly.
+# Via a variable, because multipass exec spins at 99% CPU when stdout is a file.
 mkdir -p "$(dirname "$kubeconfig")"
 config=$(multipass exec "$first" -- sudo cat /etc/kubernetes/admin.conf)
 (umask 077 && printf '%s\n' "$config" >"$kubeconfig")

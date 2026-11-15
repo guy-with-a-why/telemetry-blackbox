@@ -24,7 +24,7 @@ echo "kubeconfig: $kubeconfig"
 if (exec 3<>/dev/tcp/127.0.0.1/6443) 2>/dev/null; then
   echo "tunnel: 127.0.0.1:6443 is open already"
 else
-  ssh -fN -L "6443:$vip:6443" "$server"
+  ssh -fN -o ExitOnForwardFailure=yes -L "6443:$vip:6443" "$server"
   echo "tunnel: 127.0.0.1:6443 to $vip"
 fi
 echo "export KUBECONFIG=$kubeconfig"
