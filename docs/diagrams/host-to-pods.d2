@@ -1,0 +1,40 @@
+# From the host down to the Pods: my home server, its five Multipass VMs and what
+# kube-system runs on each, as of 15 Nov 2026. Sizes come from
+# deploy/vms/config.sh, addresses from multipass list and placement from
+# kubectl get pods -o wide.
+
+host: "Home server · i5-3320M, 2 cores and 4 threads · 16 GB · Multipass 1.17 on QEMU" {
+  grid-rows: 2
+  grid-columns: 3
+  grid-gap: 30
+
+  cp1: "cp-1 · 10.97.0.217\n2 vCPU · 1.5 GB" {
+    grid-columns: 1
+    static: "static Pods\netcd · API server\nscheduler · controller manager\nkube-vip"
+    daemons: "DaemonSets\nkube-proxy · cilium\ncilium-envoy" {style.stroke-dash: 3}
+    deploys: "Deployments\ncoredns × 2" {style.stroke-dash: 3}
+  }
+  cp2: "cp-2 · 10.97.0.209\n2 vCPU · 1.5 GB" {
+    grid-columns: 1
+    static: "static Pods\netcd · API server\nscheduler · controller manager\nkube-vip"
+    daemons: "DaemonSets\nkube-proxy · cilium\ncilium-envoy" {style.stroke-dash: 3}
+  }
+  cp3: "cp-3 · 10.97.0.225\n2 vCPU · 1.5 GB\nholds 10.97.0.250" {
+    style: {stroke: "#46954a"; stroke-width: 3}
+    grid-columns: 1
+    static: "static Pods\netcd (leader) · API server\nscheduler · controller manager\nkube-vip"
+    daemons: "DaemonSets\nkube-proxy · cilium\ncilium-envoy" {style.stroke-dash: 3}
+  }
+  edge: "edge-1 · 10.97.0.221\n2 vCPU · 2 GB" {
+    grid-columns: 1
+    daemons: "DaemonSets\nkube-proxy · cilium\ncilium-envoy" {style.stroke-dash: 3}
+    deploys: "Deployments\ncilium-operator" {style.stroke-dash: 3}
+  }
+  data: "data-1 · 10.97.0.128\n2 vCPU · 4 GB" {
+    grid-columns: 1
+    daemons: "DaemonSets\nkube-proxy · cilium\ncilium-envoy" {style.stroke-dash: 3}
+    deploys: "Deployments\ncilium-operator" {style.stroke-dash: 3}
+  }
+}
+
+caption: Ten vCPUs on four threads, all five VMs on the zone1 bridge, 10.97.0.0/24 {shape: text; near: bottom-center}

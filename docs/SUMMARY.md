@@ -8,6 +8,7 @@
   - [Flight plan amended](blog/2026-11-14-flight-plan-amended.md)
   - [Ground power: first boot in Renode](blog/2026-11-14-ground-power.md)
   - [The hangar: five VMs and two caches](blog/2026-11-14-the-hangar.md)
+  - [Engine start: a control plane built by hand](blog/2026-11-15-engine-start.md)
 - [Decisions](adr/README.md)
   - [0005. just, mise and a local registry](adr/0005-just-mise-and-a-local-registry.md)
 - [Runbooks](runbooks/README.md)
