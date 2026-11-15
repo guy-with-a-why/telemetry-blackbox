@@ -25,6 +25,8 @@ service_subnet=10.96.0.0/16
 kube_vip_image=ghcr.io/kube-vip/kube-vip:v1.3.1@sha256:1962f9daf226503f7e6b107f595cb28b7917fd2d0113957075e19a3e5a6c1e33
 # The Lease the control planes' kube-vips compete for.
 kube_vip_lease=plndr-cp-lock
+# The Cilium chart scripts/cluster-up.sh installs.
+cilium_version=1.20.4
 
 # name    vCPUs  memory  disk
 nodes=(

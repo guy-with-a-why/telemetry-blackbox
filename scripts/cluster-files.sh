@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
+# Usage: cluster-files.sh [init|join]
 # Renders deploy/cluster/ for this cluster and copies it to ~/cluster/ on the
-# control planes: kubeadm.yaml to cp-1, kube-vip.yaml to all three. It doesn't
-# touch /etc/kubernetes. Moving the files into place is part of the bootstrap.
+# nodes. It doesn't touch /etc/kubernetes. Moving the files into place is part
+# of the bootstrap.
+#
+#   init   kubeadm.yaml to cp-1 and kube-vip.yaml to all three control planes.
+#          It takes BOOTSTRAP_TOKEN and CERTIFICATE_KEY from the environment,
+#          or makes fresh ones.
+#   join   join.yaml to every other node, for its role. It needs
+#          BOOTSTRAP_TOKEN, CERTIFICATE_KEY and CA_HASH, so it runs after init.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # shellcheck source=deploy/vms/config.sh
@@ -16,33 +23,31 @@ if multipass list --format csv | awk -F, -v vip="$vip" '$3 == vip { found = 1 } 
   exit 1
 fi
 
-version=$(multipass exec "$first" -- kubeadm version -o short)
-
 # Prints a file with its placeholders filled in, and fails on any left over.
 # The second argument is the interface kube-vip announces the VIP on.
 render() {
   local out left
-  out=$(sed -e "s/@KUBERNETES_VERSION@/$version/g" \
+  out=$(sed -e "s/@KUBERNETES_VERSION@/${version-}/g" \
     -e "s/@VIP@/$vip/g" \
     -e "s#@POD_SUBNET@#$pod_subnet#g" \
     -e "s#@SERVICE_SUBNET@#$service_subnet#g" \
     -e "s/@INTERFACE@/${2-}/g" \
     -e "s#@IMAGE@#$kube_vip_image#g" \
     -e "s/@LEASE@/$kube_vip_lease/g" \
+    -e "s/@TOKEN@/$BOOTSTRAP_TOKEN/g" \
+    -e "s/@CERTIFICATE_KEY@/$CERTIFICATE_KEY/g" \
+    -e "s/@CA_HASH@/${CA_HASH-}/g" \
     "$1")
   if left=$(grep -oE '@[A-Z0-9_]+@' <<<"$out" | sort -u); then
     echo "$1: nothing fills ${left//$'\n'/ }" >&2
     return 1
   fi
+  if grep -qE '"(sha256:)?"' <<<"$out"; then
+    echo "$1: a placeholder was filled with nothing" >&2
+    return 1
+  fi
   printf '%s\n' "$out"
 }
-
-# The host's address on the bridge, which shares a subnet with the VIP.
-host_ip=$(ip -4 -o addr show dev "$bridge" 2>/dev/null | awk '{ sub(/\/.*/, "", $4); print $4; exit }' || true)
-if [[ -z $host_ip ]]; then
-  echo "$bridge has no IPv4 address; is Multipass running?" >&2
-  exit 1
-fi
 
 # Prints the interface a node uses to reach the bridge, where the VIP lives.
 # Asking for the VIP's own route fails on the node that holds it, which
@@ -58,18 +63,61 @@ interface() {
   echo "$dev"
 }
 
-# Writes stdin to ~/cluster/<file> on a node.
+# Writes stdin to ~/cluster/<file> on a node, readable only by its owner,
+# because the files carry the token and the certificate key.
 put() {
-  multipass exec "$1" -- bash -c "mkdir -p ~/cluster && cat >~/cluster/$2"
+  multipass exec "$1" -- bash -c "umask 077 && mkdir -p ~/cluster && cat >~/cluster/$2"
   echo "$1: ~/cluster/$2"
 }
 
-# Render everything before copying anything, so a bad template copies nothing.
-kubeadm=$(render deploy/cluster/kubeadm.yaml)
-declare -A kube_vip
-for name in "${control_planes[@]}"; do
-  dev=$(interface "$name")
-  kube_vip[$name]=$(render deploy/cluster/kube-vip.yaml "$dev")
-done
-put "$first" kubeadm.yaml <<<"$kubeadm"
-for name in "${control_planes[@]}"; do put "$name" kube-vip.yaml <<<"${kube_vip[$name]}"; done
+init_files() {
+  local kubeadm name dev
+  # The token joins nodes for 24 hours and the key unlocks the uploaded
+  # certificates for two. kubeadm makes both in the right format.
+  : "${BOOTSTRAP_TOKEN:=$(multipass exec "$first" -- kubeadm token generate)}"
+  : "${CERTIFICATE_KEY:=$(multipass exec "$first" -- kubeadm certs certificate-key)}"
+  version=$(multipass exec "$first" -- kubeadm version -o short)
+
+  # The host's address on the bridge, which shares a subnet with the VIP.
+  host_ip=$(ip -4 -o addr show dev "$bridge" 2>/dev/null | awk '{ sub(/\/.*/, "", $4); print $4; exit }' || true)
+  if [[ -z $host_ip ]]; then
+    echo "$bridge has no IPv4 address; is Multipass running?" >&2
+    exit 1
+  fi
+
+  # Render everything before copying anything, so a bad template copies nothing.
+  kubeadm=$(render deploy/cluster/kubeadm.yaml)
+  declare -A kube_vip
+  for name in "${control_planes[@]}"; do
+    dev=$(interface "$name")
+    kube_vip[$name]=$(render deploy/cluster/kube-vip.yaml "$dev")
+  done
+  put "$first" kubeadm.yaml <<<"$kubeadm"
+  for name in "${control_planes[@]}"; do put "$name" kube-vip.yaml <<<"${kube_vip[$name]}"; done
+}
+
+join_files() {
+  local control_plane worker name
+  : "${BOOTSTRAP_TOKEN:?join needs the token init used}"
+  : "${CERTIFICATE_KEY:?join needs the certificate key init used}"
+  : "${CA_HASH:?join needs the CA hash, which exists once init has run}"
+  control_plane=$(render deploy/cluster/join-control-plane.yaml)
+  worker=$(render deploy/cluster/join-worker.yaml)
+  for name in "${node_names[@]}"; do
+    if [[ $name == "$first" ]]; then continue; fi
+    if [[ " ${control_planes[*]} " == *" $name "* ]]; then
+      put "$name" join.yaml <<<"$control_plane"
+    else
+      put "$name" join.yaml <<<"$worker"
+    fi
+  done
+}
+
+case ${1:-init} in
+  init) init_files ;;
+  join) join_files ;;
+  *)
+    echo "usage: $0 [init|join]" >&2
+    exit 2
+    ;;
+esac

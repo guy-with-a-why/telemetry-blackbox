@@ -1,0 +1,18 @@
+# kubeadm join reads this on cp-2 and cp-3. `scripts/cluster-files.sh join`
+# fills in the placeholders once init has made the cluster's CA.
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: "@VIP@:6443"
+    token: "@TOKEN@"
+    # The SHA-256 of the CA's public key. The node trusts the API only if its
+    # CA matches, so a stray server on the VIP can't hand it a fake cluster.
+    caCertHashes: ["@CA_HASH@"]
+nodeRegistration:
+  # The same memory floor as init. kubeadm.yaml has the reasoning.
+  ignorePreflightErrors: [Mem]
+# Joining as a control plane: download the shared certificates that init
+# uploaded, decrypted with this key, and add an etcd member.
+controlPlane:
+  certificateKey: "@CERTIFICATE_KEY@"
