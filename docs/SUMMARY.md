@@ -11,6 +11,7 @@
   - [Engine start: a control plane built by hand](blog/2026-11-15-engine-start.md)
 - [Decisions](adr/README.md)
   - [0005. just, mise and a local registry](adr/0005-just-mise-and-a-local-registry.md)
+  - [0006. A scripted kubeadm bootstrap](adr/0006-scripted-kubeadm-bootstrap.md)
 - [Runbooks](runbooks/README.md)
   - [Bootstrap the cluster by hand](runbooks/bootstrap.md)
 - [Brand](brand/README.md)
