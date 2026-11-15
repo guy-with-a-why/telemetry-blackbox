@@ -40,7 +40,8 @@ kube_vip_reads() {
 # its join. A worker has joined once it has kubelet.conf.
 joined() {
   if [[ $1 == cp-* ]]; then
-    [[ -n $(first_kubectl get node "$1" -l node-role.kubernetes.io/control-plane -o name 2>/dev/null) ]]
+    [[ -n $(first_kubectl get nodes --field-selector "metadata.name=$1" \
+      -l node-role.kubernetes.io/control-plane -o name 2>/dev/null) ]]
   else
     has "$1" /etc/kubernetes/kubelet.conf
   fi
