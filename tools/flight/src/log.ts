@@ -22,6 +22,16 @@ export function log(flight: Flight): string {
     lines.push(...section(leg.title, `${status(flight, i)}, due ${leg.dueOn.slice(0, 10)}`, leg.issues));
   });
   if (flight.bonus.length) lines.push(...section("Stretch", "bonus", flight.bonus));
+  lines.push(
+    "",
+    "## How this page is drawn",
+    "",
+    "![CI runs just docs on a push to main, when an issue changes and daily at 06:00. " +
+      "tools/flight fetches the issues, groups them into legs and draws a wide and a narrow card. " +
+      "mdbook builds the site and Pages serves the cards to the README and this page.](diagrams/flight-tracker.svg)",
+    "",
+    "The diagram is wide, so here it is [full size](diagrams/flight-tracker.svg).",
+  );
   return lines.join("\n") + "\n";
 }
 
