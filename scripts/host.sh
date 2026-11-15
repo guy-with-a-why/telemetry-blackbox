@@ -12,7 +12,7 @@ source deploy/vms/config.sh
 
 registry_image=registry:2.8.3@sha256:a3d8aaa63ed8681a604f1dea0aa03f100d5895b6a58ace528858a7b332415373
 
-ip=$(ip -4 -o addr show dev "$bridge" 2>/dev/null | awk '{ sub(/\/.*/, "", $4); print $4 }')
+ip=$(ip -4 -o addr show dev "$bridge" 2>/dev/null | awk '{ sub(/\/.*/, "", $4); print $4; exit }' || true)
 if [[ -z $ip ]]; then
   echo "host: $bridge has no IPv4 address; is Multipass running?" >&2
   exit 1
