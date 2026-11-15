@@ -72,7 +72,7 @@ A longer Lease would make false alarms rarer, but it wouldn't stop a starved nod
 
 ## Quiz
 
-Eight questions on the post, for anyone who wants to check it's landed. Open one for my answer.
+Nine questions on the post, for anyone who wants to check it's landed. Open one for my answer.
 
 <details>
 <summary>You delete <code>kube-apiserver-cp-2</code> with kubectl. What happens on the node?</summary>
@@ -127,5 +127,12 @@ Three survives one failure. Four still only survives one, because the majority g
 <summary>Two control planes go down. What happens to the virtual IP?</summary>
 
 I expect it to vanish. Each kube-vip renews its Lease through its own API server, and without quorum nothing can renew it. #12 will tell me if I'm right.
+
+</details>
+
+<details>
+<summary>cp-3 took the address at 13:36:49. Why could cp-1 still answer for it?</summary>
+
+cp-1 was too starved to notice it had lost the Lease, then spent twelve seconds trying to hand it back through its own slow API server. Only then did it drop the address.
 
 </details>
