@@ -19,7 +19,7 @@ fi
 version=$(multipass exec "$first" -- kubeadm version -o short)
 
 # Prints a file with its placeholders filled in, and fails on any left over.
-# The second argument is the interface that reaches the VIP.
+# The second argument is the interface kube-vip announces the VIP on.
 render() {
   local out left
   out=$(sed -e "s/@KUBERNETES_VERSION@/$version/g" \
@@ -37,12 +37,22 @@ render() {
   printf '%s\n' "$out"
 }
 
-# Prints the interface a node uses to reach the VIP.
+# The host's address on the bridge, which shares a subnet with the VIP.
+host_ip=$(ip -4 -o addr show dev "$bridge" 2>/dev/null | awk '{ sub(/\/.*/, "", $4); print $4; exit }' || true)
+if [[ -z $host_ip ]]; then
+  echo "$bridge has no IPv4 address; is Multipass running?" >&2
+  exit 1
+fi
+
+# Prints the interface a node uses to reach the bridge, where the VIP lives.
+# Asking for the VIP's own route fails on the node that holds it, which
+# answers "local <vip> dev lo".
 interface() {
   local dev
-  dev=$(multipass exec "$1" -- ip -o -4 route get "$vip" | awk '{ print $3 }')
+  dev=$(multipass exec "$1" -- ip -o -4 route get "$host_ip" |
+    awk '{ for (i = 1; i < NF; i++) if ($i == "dev") { print $(i + 1); exit } }')
   if [[ -z $dev ]]; then
-    echo "$1: no route to $vip" >&2
+    echo "$1: no route to the bridge at $host_ip" >&2
     return 1
   fi
   echo "$dev"

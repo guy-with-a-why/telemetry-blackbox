@@ -98,7 +98,7 @@ vms-delete:
 cluster-files:
     scripts/cluster-files.sh
 
-# Check the VIP, the nodes, etcd and Cilium
+# Check the VIP, kube-vip, the nodes, etcd and Cilium
 cluster-check:
     scripts/cluster-check.sh
 

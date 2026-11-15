@@ -117,8 +117,9 @@ I bootstrap the cluster by hand with kubeadm. The files it needs are in
    `--ignore-preflight-errors=Mem`, then get kube-vip.
 4. edge-1 and data-1 join as workers.
 5. Cilium goes on from my laptop.
-6. `just cluster-check` checks the VIP, every node Ready, a healthy etcd
-   member on each control plane and Cilium on every node.
+6. `just cluster-check` checks the VIP, kube-vip on each control plane
+   reading `admin.conf`, every node Ready, a healthy etcd member on each
+   control plane and Cilium on every node.
 
 ```bash
 helm install cilium cilium --repo https://helm.cilium.io --version 1.20.4 \
