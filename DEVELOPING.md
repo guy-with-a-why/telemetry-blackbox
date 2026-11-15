@@ -47,7 +47,7 @@ just docs       # build the site into book/
 ## Before I push
 
 ```bash
-just audit      # secrets and blocked terms
+just audit      # scan the history for secrets
 ```
 
 CI runs the same recipes, so a green run here means a green run there.
