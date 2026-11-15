@@ -12,4 +12,5 @@
 - [Decisions](adr/README.md)
   - [0005. just, mise and a local registry](adr/0005-just-mise-and-a-local-registry.md)
 - [Runbooks](runbooks/README.md)
+  - [Bootstrap the cluster by hand](runbooks/bootstrap.md)
 - [Brand](brand/README.md)
