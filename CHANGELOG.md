@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.2](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.5.1...v0.5.2) (2026-11-15)
+
+
+### Bug Fixes
+
+* **deploy:** check every kube-vip and find its interface reliably ([#100](https://github.com/guy-with-a-why/telemetry-blackbox/issues/100)) ([fd73ac9](https://github.com/guy-with-a-why/telemetry-blackbox/commit/fd73ac9ca152f1dd9737f45a6c0efb6c31fdc809))
+
 ## [0.5.1](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.5.0...v0.5.1) (2026-11-14)
 
 
