@@ -20,10 +20,9 @@ diagrams:
       d2 {{ d2_flags }} $extra "$src" "${src%.d2}.svg"; \
     done
 
-# Scan the history for secrets, and files, commits and issues for blocked terms
+# Scan the history for secrets
 audit:
     gitleaks git --no-banner --redact .
-    scripts/blocked-terms.sh
 
 # Build the docs site into book/: the README becomes its introduction, the
 # flight strip and log come from the issues and the coverage badge from

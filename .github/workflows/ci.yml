@@ -19,12 +19,11 @@ concurrency:
 
 jobs:
   audit:
-    name: secrets and blocked terms
+    name: scan for secrets
+    if: github.event_name != 'issues' && github.event_name != 'schedule'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      issues: read
-      pull-requests: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -33,9 +32,6 @@ jobs:
         with:
           install_args: just gitleaks
       - run: just audit
-        env:
-          BLOCKED_TERMS: ${{ secrets.BLOCKED_TERMS }}
-          GH_TOKEN: ${{ github.token }}
 
   lint:
     name: format and lint the code

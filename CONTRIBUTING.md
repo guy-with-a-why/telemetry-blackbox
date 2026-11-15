@@ -19,7 +19,7 @@ build it, so they keep the history clean and the site honest.
 
 ## Before I push
 
-- `just audit` scans for secrets and blocked terms. CI repeats it, but a
+- `just audit` scans the history for secrets. CI repeats it, but a
   problem caught here never reaches the public history.
 - `just docs` builds the site, so I know it still works.
 - I read the diff once more before it goes public.
