@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Checks the cluster: no VM leases the VIP, the API answers on it with the
-# cluster's certificate, every node is Ready, etcd is healthy on every control
-# plane and Cilium runs on every node. It asks the first control plane whose
+# cluster's certificate, kube-vip runs on every control plane reading
+# admin.conf, every node is Ready, etcd is healthy on every control plane and
+# Cilium runs on every node. It asks the first control plane whose
 # own API server is ready, not the VIP, so it still reports mid-drill.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -47,6 +48,25 @@ if livez=$(curl -fsS --max-time 5 --cacert <(echo "$ca") "https://$vip:6443/live
   echo "API on $vip: $livez, held by $holder"
 else
   fail "the API doesn't answer on $vip"
+fi
+
+# The VIP can only fail over to a control plane whose kube-vip is running, so
+# check the standbys as well as the holder. Each must read admin.conf, because
+# super-admin.conf is only for cp-1's init and it bypasses RBAC.
+standing=0
+for name in "${control_planes[@]}"; do
+  pod=$(kubectl -n kube-system get pod "kube-vip-$name" -o jsonpath='{.status.containerStatuses[0].ready} {.spec.volumes[?(@.name=="kubeconfig")].hostPath.path}' 2>/dev/null || true)
+  read -r ready path <<<"$pod"
+  if [[ $ready != true ]]; then
+    fail "kube-vip: not running on $name"
+  elif [[ $path != /etc/kubernetes/admin.conf ]]; then
+    fail "kube-vip: $name reads ${path:-no kubeconfig}, not admin.conf"
+  else
+    ((++standing))
+  fi
+done
+if ((standing == ${#control_planes[@]})); then
+  echo "kube-vip: running on $standing control planes, all reading admin.conf"
 fi
 
 ready=$(kubectl get nodes --no-headers | awk '$2 == "Ready"' | wc -l || true)
