@@ -148,7 +148,7 @@ just deploy     # Redpanda, ClickHouse, Grafana, gateway and pipeline
 just fly        # boot the firmware in Renode and start streaming
 just check      # run bbcheck against ClickHouse
 just docs       # build the docs site into book/
-just audit      # scan for secrets and blocked terms
+just audit      # scan the history for secrets
 ```
 
 `just` on its own lists every recipe. You'll also need Linux with KVM, about
