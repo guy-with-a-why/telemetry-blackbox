@@ -5,6 +5,7 @@ output. They fill in as the drills happen.
 
 | Runbook | Drill | Status |
 |---|---|---|
+| [`bootstrap.md`](bootstrap.md) | Bootstrap the cluster by hand | Run on 15 Nov 2026 |
 | `control-plane.md` | Lose one control plane, then two | To run |
 | `etcd.md` | Snapshot and restore etcd | To run |
 | `chaos.md` | Break the pipeline while it streams | To run |
