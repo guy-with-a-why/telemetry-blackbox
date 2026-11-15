@@ -1,0 +1,29 @@
+# The PKI kubeadm writes to /etc/kubernetes/pki: three authorities and a key pair.
+grid-rows: 2
+grid-columns: 2
+grid-gap: 40
+
+ca: "ca · 10 years" {
+  grid-columns: 1
+  apiserver: "apiserver\nthe API's serving certificate"
+  kubelet: "apiserver-kubelet-client\nAPI server to each kubelet"
+  admin: "admin.conf · super-admin.conf\nthe two admin kubeconfigs"
+  parts: "controller-manager.conf · scheduler.conf\neach component's kubeconfig"
+}
+
+etcd: "etcd-ca · 10 years" {
+  grid-columns: 1
+  server: "etcd-server\netcd's serving certificate"
+  peer: "etcd-peer\nmember to member"
+  client: "apiserver-etcd-client\nthe API server's way in"
+  health: "etcd-healthcheck-client\nprobes and etcdctl"
+}
+
+proxy: "front-proxy-ca · 10 years" {
+  grid-columns: 1
+  client: "front-proxy-client\nAPI server to aggregated APIs"
+}
+
+sa: "sa.key · sa.pub\nnot a CA: signs ServiceAccount tokens" {style.stroke-dash: 3}
+
+caption: Every leaf certificate lasts a year, and kubeadm upgrade renews them {shape: text; near: bottom-center}

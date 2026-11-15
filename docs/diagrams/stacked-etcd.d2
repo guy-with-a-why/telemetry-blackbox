@@ -1,0 +1,22 @@
+# Stacked etcd: each control plane runs one etcd member, and its API server
+# only talks to that member, on 127.0.0.1:2379. The leader sits in the middle
+# so every edge is a short straight line.
+grid-rows: 2
+grid-columns: 3
+horizontal-gap: 140
+vertical-gap: 90
+
+api1: "cp-1 API server"
+api3: "cp-3 API server"
+api2: "cp-2 API server"
+etcd1: "cp-1 etcd" {shape: cylinder}
+etcd3: "cp-3 etcd\nleader" {shape: cylinder; style.stroke-width: 3}
+etcd2: "cp-2 etcd" {shape: cylinder}
+
+api1 -> etcd1: 127.0.0.1:2379
+api3 -> etcd3: 127.0.0.1:2379
+api2 -> etcd2: 127.0.0.1:2379
+etcd3 <-> etcd1: Raft · 2380
+etcd3 <-> etcd2: Raft · 2380
+
+caption: A write commits once two of the three members have it {shape: text; near: bottom-center}

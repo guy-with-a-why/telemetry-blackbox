@@ -1,0 +1,48 @@
+# kube-vip on cp-1 starts on borrowed credentials, then switches to its own.
+direction: right
+
+cart: "super-admin.conf\nsystem:masters, skips RBAC" {style.stroke-dash: 3}
+vip: "kube-vip on cp-1"
+api: "API server on cp-1"
+own: "admin.conf\nkubeadm:cluster-admins, through RBAC" {style.stroke-dash: 3}
+ip: "10.97.0.250" {shape: oval}
+
+cart -> vip: before init
+vip -> api: Lease
+own -> vip: after init
+vip -> ip: answers ARP
+
+caption: kube-vip on cp-1, from ground power to its own {shape: text; near: bottom-center}
+
+steps: {
+  1: {
+    caption: Before init, admin.conf has no rights, so kube-vip borrows super-admin.conf
+    cart.style: {stroke-dash: 0; stroke-width: 3; stroke: "#c69026"}
+    (cart -> vip)[0].style: {animated: true; stroke-width: 3}
+  }
+  2: {
+    caption: kubeadm init starts the API server, and kube-vip takes the Lease and the virtual IP
+    (cart -> vip)[0].style: {animated: false; stroke-width: 2}
+    (vip -> api)[0].style: {animated: true; stroke-width: 3}
+    (vip -> ip)[0].style: {animated: true; stroke-width: 3}
+  }
+  3: {
+    caption: init binds kubeadm:cluster-admins to cluster-admin, so admin.conf now works
+    (vip -> api)[0].style: {animated: false; stroke-width: 2}
+    (vip -> ip)[0].style: {animated: false; stroke-width: 2}
+    own.style: {stroke-dash: 0; stroke-width: 3; stroke: "#46954a"}
+  }
+  4: {
+    caption: One edit points kube-vip at admin.conf, and the ground power is disconnected
+    cart.style: {stroke-dash: 3; stroke-width: 2; stroke: "#e5534b"}
+    cart.label: "super-admin.conf\ndisconnected"
+    (cart -> vip)[0].style: {stroke-dash: 3; opacity: 0.4}
+    (own -> vip)[0].style: {animated: true; stroke-width: 3}
+  }
+  5: {
+    caption: cluster-check now fails if any kube-vip still reads super-admin.conf
+    (own -> vip)[0].style: {animated: false; stroke-width: 2}
+    vip.label: "kube-vip on cp-1\nreads admin.conf ✓"
+    vip.style: {stroke: "#46954a"; stroke-width: 3}
+  }
+}
