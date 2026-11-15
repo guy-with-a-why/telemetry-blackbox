@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.5.2...v0.6.0) (2026-11-15)
+
+
+### Features
+
+* **deploy:** bootstrap the cluster with one command ([#108](https://github.com/guy-with-a-why/telemetry-blackbox/issues/108)) ([2d3929d](https://github.com/guy-with-a-why/telemetry-blackbox/commit/2d3929dda928382d9b3206dcdf503cfa9d507e8a)), closes [#105](https://github.com/guy-with-a-why/telemetry-blackbox/issues/105)
+
 ## [0.5.2](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.5.1...v0.5.2) (2026-11-15)
 
 
