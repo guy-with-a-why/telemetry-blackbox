@@ -98,9 +98,20 @@ vms-delete:
 cluster-files:
     scripts/cluster-files.sh
 
+# Bootstrap the cluster: kubeadm, kube-vip, the joins and Cilium. Safe to run again
+cluster-up:
+    scripts/cluster-up.sh
+
 # Check the VIP, kube-vip, the nodes, etcd and Cilium
 cluster-check:
     scripts/cluster-check.sh
+
+# Build the VMs and the cluster from nothing, then check it
+up: vms cluster-up cluster-check
+
+# On my laptop: copy the kubeconfig and open the tunnel, e.g. just kubeconfig <home-server>
+kubeconfig server:
+    scripts/kubeconfig.sh {{ quote(server) }}
 
 # Build the firmware and boot it on the simulated board; `quit` stops it
 fly:

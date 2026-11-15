@@ -1,6 +1,6 @@
 # 0006. A scripted kubeadm bootstrap over Terraform or Ansible
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-15
 - **Issue:** #105
 
@@ -79,7 +79,9 @@ The constraints:
 ## Consequences
 
 - A rebuild is one command and a wait, so the drills can be as destructive as
-  they need to be.
+  they need to be. The first clean `just up` took 20m08s from nothing to a
+  passing `cluster-check`, VMs included. The bootstrap alone took 47 minutes
+  by hand.
 - The runbook stays. It explains what the script does and why, and its
   recovery steps still apply when the script stops halfway.
 - The script and the runbook can drift apart. Each step in the script names

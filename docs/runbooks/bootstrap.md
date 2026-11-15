@@ -7,6 +7,12 @@ took 47 minutes from `kubeadm init` to a clean `just cluster-check`.
 The VMs run on my home server. Steps 1 to 6 and step 9 run there, in
 the repo or on a VM through `multipass shell`. Steps 7 and 8 run on my laptop.
 
+`just cluster-up` runs steps 1 to 8 in one go on the server, and `just up`
+rebuilds the VMs and the cluster from nothing. This runbook is what they do,
+and how to recover when they stop halfway. The script runs the joins in steps
+5 and 6 from `deploy/cluster/join-control-plane.yaml` and `join-worker.yaml`
+in place of the flags.
+
 ## Before I start
 
 - `just vms` has built all five VMs, and `just vms-check` passes.
@@ -24,7 +30,8 @@ just cluster-files
 
 This renders `deploy/cluster/` and copies `kubeadm.yaml` to cp-1 and
 `kube-vip.yaml` to all three control planes, under `~/cluster/`. It fails if a
-VM has leased the virtual IP.
+VM has leased the virtual IP. `kubeadm.yaml` carries a fresh bootstrap token
+and certificate key, so the join commands init prints use them.
 
 ### 2. Put kube-vip on cp-1, on ground power
 
@@ -101,6 +108,8 @@ ssh -fN -L 6443:10.97.0.250:6443 <home-server>
 
 Then I change `server:` in `~/.kube/config` to `https://127.0.0.1:6443`. The
 API server's certificate names `127.0.0.1` for this tunnel.
+
+`just kubeconfig <home-server>` does both, into `~/.kube/blackbox.conf`.
 
 ### 8. Install Cilium
 

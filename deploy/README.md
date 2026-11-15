@@ -105,26 +105,38 @@ time. Launching them in parallel is the next step if a rebuild still hurts.
 
 ## The cluster
 
-I bootstrap the cluster by hand with kubeadm. The files it needs are in
-[`cluster/`](cluster/).
+I bootstrapped the cluster by hand with kubeadm once, following
+[the runbook](../docs/runbooks/bootstrap.md). Now a script runs the same steps.
+The files it needs are in [`cluster/`](cluster/).
+
+```bash
+just cluster-up                  # runbook steps 1 to 8, on the server
+just up                          # vms, cluster-up and cluster-check, from nothing
+just kubeconfig <home-server>    # on my laptop: the kubeconfig and the tunnel
+```
+
+`cluster-up` is safe to run again. It skips a control plane that has
+initialised and a node that has joined, and stops on one that stopped halfway.
+The first clean `just up` took 20m08s from nothing to a passing
+`cluster-check`, and a second `cluster-up` took 57 seconds.
+Each run makes a fresh bootstrap token and certificate key, and they never
+reach the repo. [ADR 6](../docs/adr/0006-scripted-kubeadm-bootstrap.md) has
+the reasoning.
 
 1. `just cluster-files` fills them in and copies them to `~/cluster/` on the
    control planes.
 2. On cp-1, kube-vip goes into `/etc/kubernetes/manifests` reading
    `super-admin.conf`, then `kubeadm init --upload-certs`, then kube-vip goes
    back to `admin.conf`.
-3. cp-2 and cp-3 join with `--control-plane` and
-   `--ignore-preflight-errors=Mem`, then get kube-vip.
-4. edge-1 and data-1 join as workers.
-5. Cilium goes on from my laptop.
+3. cp-2 and cp-3 join from
+   [`join-control-plane.yaml`](cluster/join-control-plane.yaml), which skips
+   the memory check, then get kube-vip.
+4. edge-1 and data-1 join from [`join-worker.yaml`](cluster/join-worker.yaml).
+   Both join files carry the CA's hash, read once init has made the CA.
+5. Cilium goes on with Helm, from the server's `~/.kube/blackbox.conf`.
 6. `just cluster-check` checks the VIP, kube-vip on each control plane
    reading `admin.conf`, every node Ready, a healthy etcd member on each
    control plane and Cilium on every node.
-
-```bash
-helm install cilium cilium --repo https://helm.cilium.io --version 1.20.4 \
-  -n kube-system -f deploy/cluster/cilium-values.yaml
-```
 
 - [`kubeadm.yaml`](cluster/kubeadm.yaml) sets the control-plane endpoint to the
   virtual IP, so every kubeconfig and every join goes through it.

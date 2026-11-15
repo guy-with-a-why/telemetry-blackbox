@@ -1,12 +1,18 @@
 # kubeadm init reads this on cp-1. scripts/cluster-files.sh fills in the
-# placeholders from deploy/vms/config.sh and the node's kubeadm version.
+# placeholders from deploy/vms/config.sh, the node's kubeadm version and a
+# token and certificate key made fresh on each run.
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: InitConfiguration
+# Fixing the token and the key here means the joins need no copying from
+# init's output. kubeadm adds the default groups and usages, and the token
+# lasts 24 hours.
+bootstrapTokens:
+  - token: "@TOKEN@"
+# --upload-certs encrypts the shared certificates with this key. It unlocks
+# them for two hours.
+certificateKey: "@CERTIFICATE_KEY@"
 nodeRegistration:
-  # Control planes have 1.5 GB against kubeadm's generic 1.7 GB floor. Every
-  # other preflight check still runs. This covers init only, so joining
-  # control planes pass --ignore-preflight-errors=Mem. deploy/README.md has
-  # the reasoning.
+  # 1.5 GB is under kubeadm's 1.7 GB floor. deploy/README.md says why that's fine.
   ignorePreflightErrors: [Mem]
 ---
 apiVersion: kubeadm.k8s.io/v1beta4
