@@ -255,6 +255,7 @@ which is built on the STM32F407VG, a Cortex-M4F.
 
 - [Multipass documentation](https://canonical.com/multipass/docs).
 - [Creating highly available clusters with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/).
+- [kubeadm configuration (v1beta4)](https://kubernetes.io/docs/reference/config-api/kubeadm-config.v1beta4/), for the init and join files.
 - [kube-vip as a static Pod](https://kube-vip.io/docs/installation/static/).
 - [Cilium on a kubeadm cluster](https://docs.cilium.io/en/stable/installation/k8s-install-kubeadm/).
 - [etcd disaster recovery](https://etcd.io/docs/v3.5/op-guide/recovery/).
