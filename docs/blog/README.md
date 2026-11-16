@@ -10,3 +10,4 @@ A flight recorder has two halves. The [flight log](../flight-log.md) is the data
 | 14 Nov 2026 | [The hangar: five VMs and two caches](2026-11-14-the-hangar.md) |
 | 15 Nov 2026 | [Engine start: a control plane built by hand](2026-11-15-engine-start.md) |
 | 15 Nov 2026 | [Autostart: the whole cluster in one command](2026-11-15-autostart.md) |
+| 16 Nov 2026 | [Deadstick: two control planes down](2026-11-16-deadstick.md) |
