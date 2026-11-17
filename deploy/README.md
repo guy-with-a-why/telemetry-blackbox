@@ -171,6 +171,19 @@ ssh -fN -L 6443:10.97.0.250:6443 <home-server>
 My kubeconfig is cp-1's `admin.conf` with the server changed to
 `https://127.0.0.1:6443`.
 
+### Backing up etcd
+
+```bash
+just etcd-snapshot    # on the server
+```
+
+It runs `etcdctl snapshot save` inside the etcd container on the first
+running control plane, then copies the file to
+`~/.local/state/telemetry-blackbox/etcd/` and checks the copy's hash. It goes
+through `crictl`, not the API, and a snapshot is one member's own database,
+so it works while the API is down or etcd has lost quorum. The file holds
+every Secret in plain text, so only I can read it.
+
 ## Drills
 
 The drills break the cluster on purpose, so there has to be something
