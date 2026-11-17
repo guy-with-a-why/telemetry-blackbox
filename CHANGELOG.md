@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.7.0...v0.8.0) (2026-11-17)
+
+
+### Features
+
+* **deploy:** snapshot etcd to the host ([#120](https://github.com/guy-with-a-why/telemetry-blackbox/issues/120)) ([e0f7ddb](https://github.com/guy-with-a-why/telemetry-blackbox/commit/e0f7ddb1199ab2a5fa103c21a38a2833e866d01c))
+
 ## [0.7.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.6.0...v0.7.0) (2026-11-17)
 
 
