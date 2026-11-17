@@ -109,6 +109,10 @@ cluster-check:
 # Build the VMs and the cluster from nothing, then check it
 up: vms cluster-up cluster-check
 
+# Deploy the echo workload, then watch the VIP, the API and echo through a drill
+drill-watch:
+    scripts/drill-watch.sh
+
 # On my laptop: copy the kubeconfig and open the tunnel, e.g. just kubeconfig <home-server>
 kubeconfig server:
     scripts/kubeconfig.sh {{ quote(server) }}

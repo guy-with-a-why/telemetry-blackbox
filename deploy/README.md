@@ -170,3 +170,15 @@ ssh -fN -L 6443:10.97.0.250:6443 <home-server>
 
 My kubeconfig is cp-1's `admin.conf` with the server changed to
 `https://127.0.0.1:6443`.
+
+## Drills
+
+The drills break the cluster on purpose, so there has to be something
+running to watch. [`drills/echo.yaml`](drills/echo.yaml) runs two echo Pods,
+one on each worker, behind NodePort 30080.
+
+`just drill-watch` deploys it, then probes every second or so from the home
+server. It prints a line whenever something changes: which control planes are
+up, which one holds the VIP, whether echo answers and whether the API serves a
+read, a cached read and a write. Ctrl-C prints how many of each passed. The
+runbooks in [`docs/runbooks/`](../docs/runbooks/) quote its output.
