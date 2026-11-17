@@ -183,6 +183,7 @@ running control plane, then copies the file to
 through `crictl`, not the API, and a snapshot is one member's own database,
 so it works while the API is down or etcd has lost quorum. The file holds
 every Secret in plain text, so only I can read it.
+[The etcd runbook](../docs/runbooks/etcd.md) restores one.
 
 ## Drills
 
