@@ -1,0 +1,77 @@
+# A stand-in workload for the drills, so there's something to keep serving
+# while the control plane is down. Two echo Pods, one on each worker, behind a
+# NodePort. kube-proxy's iptables rules route the NodePort, and they stay in
+# the kernel when the API goes away. The ConfigMap is what drill-watch.sh
+# writes to on every tick.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: drill
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: drill-watch
+  namespace: drill
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo
+  namespace: drill
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: echo
+  template:
+    metadata:
+      labels:
+        app: echo
+    spec:
+      # One per worker, so losing either node leaves one serving. Honor
+      # leaves tainted nodes out of the count: the control planes, and a worker
+      # that's cordoned or dead. By default they count as empty, so a
+      # replacement for a lost worker's Pod would stay Pending. matchLabelKeys
+      # only counts Pods from the same rollout, so old Pods on their way out
+      # can't steer both new ones onto one worker.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          nodeTaintsPolicy: Honor
+          matchLabelKeys:
+            - pod-template-hash
+          labelSelector:
+            matchLabels:
+              app: echo
+      containers:
+        - name: echo
+          image: registry.k8s.io/e2e-test-images/agnhost:2.66.1@sha256:6e2eef87d0dc77e070a7549bc5fdfa290c0fefe3359eb33c2ad1eda692fe66a4
+          args: ["netexec", "--http-port=8080"]
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo
+  namespace: drill
+spec:
+  type: NodePort
+  selector:
+    app: echo
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
