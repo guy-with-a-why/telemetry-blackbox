@@ -16,4 +16,6 @@
   - [0006. A scripted kubeadm bootstrap](adr/0006-scripted-kubeadm-bootstrap.md)
 - [Runbooks](runbooks/README.md)
   - [Bootstrap the cluster by hand](runbooks/bootstrap.md)
+  - [Lose one control plane, then two](runbooks/control-plane.md)
+  - [Snapshot and restore etcd](runbooks/etcd.md)
 - [Brand](brand/README.md)
