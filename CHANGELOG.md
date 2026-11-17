@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.6.0...v0.7.0) (2026-11-17)
+
+
+### Features
+
+* **deploy:** watch the cluster through a control-plane drill ([#111](https://github.com/guy-with-a-why/telemetry-blackbox/issues/111)) ([d0f2cc0](https://github.com/guy-with-a-why/telemetry-blackbox/commit/d0f2cc00dec7079ccac946ed93cbd90bcfb91bdc))
+
 ## [0.6.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.5.2...v0.6.0) (2026-11-15)
 
 
