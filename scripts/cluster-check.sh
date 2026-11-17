@@ -56,13 +56,14 @@ fi
 
 # The VIP can only fail over to a control plane whose kube-vip is running, so
 # check the standbys as well as the holder. Each must read admin.conf, because
-# super-admin.conf is only for cp-1's init and it bypasses RBAC.
+# super-admin.conf is only for cp-1's init and it bypasses RBAC. The Pod's Ready
+# condition, not its container status, turns False when its node is lost.
 standing=0
 for name in "${control_planes[@]}"; do
-  pod=$(kubectl -n kube-system get pod "kube-vip-$name" -o jsonpath='{.status.containerStatuses[0].ready} {.spec.volumes[?(@.name=="kubeconfig")].hostPath.path}' 2>/dev/null || true)
+  pod=$(kubectl -n kube-system get pod "kube-vip-$name" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status} {.spec.volumes[?(@.name=="kubeconfig")].hostPath.path}' 2>/dev/null || true)
   read -r ready path <<<"$pod"
-  if [[ $ready != true ]]; then
-    fail "kube-vip: not running on $name"
+  if [[ $ready != True ]]; then
+    fail "kube-vip: not ready on $name"
   elif [[ $path != /etc/kubernetes/admin.conf ]]; then
     fail "kube-vip: $name reads ${path:-no kubeconfig}, not admin.conf"
   else
