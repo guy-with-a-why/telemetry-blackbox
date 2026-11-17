@@ -20,15 +20,17 @@ concurrency:
 jobs:
   # A pull request runs only the jobs its files can affect. A skipped job still
   # reports, so the required checks pass. Every other event runs everything.
+  # Higher up a stack, the lint and tests wait until the pull request reaches
+  # the bottom and targets main.
   changes:
     name: find what changed
     runs-on: ubuntu-latest
     permissions:
       pull-requests: read
     outputs:
-      rust: ${{ github.event_name != 'pull_request' || steps.filter.outputs.rust == 'true' }}
-      python: ${{ github.event_name != 'pull_request' || steps.filter.outputs.python == 'true' }}
-      shell: ${{ github.event_name != 'pull_request' || steps.filter.outputs.shell == 'true' }}
+      rust: ${{ github.event_name != 'pull_request' || (steps.filter.outputs.rust == 'true' && github.base_ref == 'main') }}
+      python: ${{ github.event_name != 'pull_request' || (steps.filter.outputs.python == 'true' && github.base_ref == 'main') }}
+      shell: ${{ github.event_name != 'pull_request' || (steps.filter.outputs.shell == 'true' && github.base_ref == 'main') }}
       scripts: ${{ github.event_name != 'pull_request' || steps.filter.outputs.scripts == 'true' }}
     steps:
       - id: filter
