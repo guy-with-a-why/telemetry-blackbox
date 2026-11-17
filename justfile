@@ -106,6 +106,10 @@ cluster-up:
 cluster-check:
     scripts/cluster-check.sh
 
+# Snapshot etcd from a running control plane and copy it to the host
+etcd-snapshot:
+    scripts/etcd-snapshot.sh
+
 # Build the VMs and the cluster from nothing, then check it
 up: vms cluster-up cluster-check
 
