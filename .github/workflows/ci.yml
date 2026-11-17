@@ -18,6 +18,48 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # A pull request runs only the jobs its files can affect. A skipped job still
+  # reports, so the required checks pass. Every other event runs everything.
+  changes:
+    name: find what changed
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      rust: ${{ github.event_name != 'pull_request' || steps.filter.outputs.rust == 'true' }}
+      python: ${{ github.event_name != 'pull_request' || steps.filter.outputs.python == 'true' }}
+      shell: ${{ github.event_name != 'pull_request' || steps.filter.outputs.shell == 'true' }}
+      scripts: ${{ github.event_name != 'pull_request' || steps.filter.outputs.scripts == 'true' }}
+    steps:
+      - id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: |
+            ci: &ci
+              - .github/workflows/ci.yml
+              - justfile
+              - mise.toml
+            rust:
+              - *ci
+              - "**/*.rs"
+              - "**/Cargo.toml"
+              - "**/Cargo.lock"
+              - rust-toolchain.toml
+              - firmware/**
+            python:
+              - *ci
+              - tools/bbcheck/**
+              - ruff.toml
+            shell:
+              - *ci
+              - scripts/*.sh
+              - deploy/**/*.sh
+            scripts:
+              - *ci
+              - scripts/**
+              - tools/flight/**
+
   audit:
     name: scan for secrets
     if: github.event_name != 'issues' && github.event_name != 'schedule'
@@ -35,7 +77,11 @@ jobs:
 
   lint:
     name: format and lint the code
-    if: github.event_name != 'issues' && github.event_name != 'schedule'
+    needs: changes
+    if: >-
+      github.event_name != 'issues' && github.event_name != 'schedule' &&
+      (needs.changes.outputs.rust == 'true' || needs.changes.outputs.python == 'true' ||
+      needs.changes.outputs.shell == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,7 +97,10 @@ jobs:
 
   test:
     name: test and measure coverage
-    if: github.event_name != 'issues' && github.event_name != 'schedule'
+    needs: changes
+    if: >-
+      github.event_name != 'issues' && github.event_name != 'schedule' &&
+      (needs.changes.outputs.rust == 'true' || needs.changes.outputs.python == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -73,14 +122,21 @@ jobs:
 
   docs:
     name: build the docs site
-    needs: test
-    # issue edits and the nightly run skip the tests, so they reuse the live badge
+    needs: [changes, test]
+    # issue edits, the nightly run and pull requests that skip the tests reuse
+    # the live badge
     if: ${{ !cancelled() && contains(fromJSON('["success", "skipped"]'), needs.test.result) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       issues: read
     steps:
+      # a skipped check passes, so if the filter breaks this required check fails
+      - name: Check the filter ran
+        if: needs.changes.result != 'success'
+        run: |
+          echo "::error::Couldn't tell what changed, so the skipped checks prove nothing."
+          exit 1
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
         with:
@@ -111,6 +167,8 @@ jobs:
 
   scripts:
     name: lint and test the scripts
+    needs: changes
+    if: needs.changes.outputs.scripts == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
