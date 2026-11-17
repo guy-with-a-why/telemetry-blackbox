@@ -35,6 +35,21 @@ build it, so they keep the history clean and the site honest.
   directly.
 - A pull request merges once the audit, the docs build and the title check
   pass. It's squashed into one commit and the branch is deleted.
+- A pull request runs only the jobs its files can affect. A docs change skips
+  the lint, the tests and the CodeQL analyses, and `main` runs everything
+  after each merge.
+
+## Stacks
+
+- A change too big for one pull request becomes a native GitHub stack. I
+  install the tool once with `gh extension install github/gh-stack`.
+- `gh stack init <branch>` starts the stack, `gh stack add <branch>` adds each
+  layer and `gh stack submit` pushes them and opens the pull requests.
+- `gh stack sync` rebases the stack when `main` or a lower branch moves.
+- Only the bottom pull request runs the lint, the tests and the Rust and Python
+  analyses. The rest run them once they reach the bottom.
+- `gh stack merge --squash` merges the stack in one go, one squashed commit per
+  pull request, from the bottom up.
 - There's no `develop` branch and there are no release branches. A fix goes
   to `main` and ships in the next patch release.
 - release-please keeps a release pull request open from the commits on

@@ -43,13 +43,17 @@ jobs:
               - "**/*.rs"
               - "**/Cargo.toml"
               - "**/Cargo.lock"
+      # higher up a stack, Rust and Python wait until the pull request targets main
       - id: pick
         env:
           EVENT: ${{ github.event_name }}
+          BASE: ${{ github.base_ref }}
           CHANGED: ${{ steps.filter.outputs.changes }}
         run: |
-          if [[ "$EVENT" == pull_request ]]; then
+          if [[ "$EVENT" == pull_request && "$BASE" == main ]]; then
             echo "languages=$CHANGED" >>"$GITHUB_OUTPUT"
+          elif [[ "$EVENT" == pull_request ]]; then
+            echo "languages=$(jq -c 'map(select(. == "actions"))' <<<"$CHANGED")" >>"$GITHUB_OUTPUT"
           else
             echo 'languages=["actions", "python", "rust"]' >>"$GITHUB_OUTPUT"
           fi
