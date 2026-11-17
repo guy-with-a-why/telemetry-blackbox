@@ -2,7 +2,7 @@
 # Checks the cluster: no VM leases the VIP, the API answers on it with the
 # cluster's certificate, kube-vip runs on every control plane reading
 # admin.conf, every node is Ready, etcd is healthy on every control plane and
-# Cilium runs on every node. It asks the first control plane whose
+# Cilium runs on every node. It asks the first running control plane whose
 # own API server is ready, not the VIP, so it still reports mid-drill.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -27,16 +27,20 @@ local_kubectl() {
     --server https://127.0.0.1:6443 "${@:2}"
 }
 
+# multipass exec starts a stopped VM, which would undo a drill, so only ask the
+# control planes that are running.
+mapfile -t running < <(multipass list --format csv | awk -F, '$1 ~ /^cp-/ && $2 == "Running" { print $1 }')
+
 # /readyz includes the node's etcd, so a node that passes can answer the rest.
 via=
-for name in "${control_planes[@]}"; do
+for name in "${running[@]}"; do
   if local_kubectl "$name" get --raw /readyz >/dev/null 2>&1; then
     via=$name
     break
   fi
 done
 if [[ -z $via ]]; then
-  echo "no control plane's API server is ready; has kubeadm init run?" >&2
+  echo "no control plane's API server is ready (running: ${running[*]:-none}): kubeadm init hasn't run, or etcd has lost quorum" >&2
   exit 1
 fi
 kubectl() { local_kubectl "$via" "$@"; }
