@@ -2,7 +2,9 @@ name: codeql
 
 # Static analysis of the Rust crates, bbcheck and the workflows themselves.
 # Findings land in the repo's code scanning alerts. Nothing needs building:
-# CodeQL reads the source directly.
+# CodeQL reads the source directly. A pull request analyses only the languages
+# it changes and reports an empty result for the rest. Main, the weekly run and
+# a manual run analyse all of them.
 on:
   push:
     branches: [main]
@@ -18,8 +20,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  languages:
+    name: pick the languages
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      languages: ${{ steps.pick.outputs.languages }}
+    steps:
+      - id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: |
+            actions:
+              - .github/workflows/**
+            python:
+              - "**/*.py"
+              - "**/pyproject.toml"
+              - "**/uv.lock"
+            rust:
+              - "**/*.rs"
+              - "**/Cargo.toml"
+              - "**/Cargo.lock"
+      - id: pick
+        env:
+          EVENT: ${{ github.event_name }}
+          CHANGED: ${{ steps.filter.outputs.changes }}
+        run: |
+          if [[ "$EVENT" == pull_request ]]; then
+            echo "languages=$CHANGED" >>"$GITHUB_OUTPUT"
+          else
+            echo 'languages=["actions", "python", "rust"]' >>"$GITHUB_OUTPUT"
+          fi
+
   analyse:
     name: analyse ${{ matrix.language }}
+    needs: languages
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -29,14 +66,29 @@ jobs:
       fail-fast: false
       matrix:
         language: [actions, python, rust]
+    env:
+      CHANGED: ${{ contains(fromJSON(needs.languages.outputs.languages), matrix.language) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        if: env.CHANGED == 'true'
         with:
           languages: ${{ matrix.language }}
           build-mode: none
       - uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        if: env.CHANGED == 'true'
         with:
+          category: /language:${{ matrix.language }}
+      # The ruleset waits for a result in every language. Code this pull request
+      # didn't touch is the code main last analysed, so it reports nothing new.
+      - name: Report no change
+        if: env.CHANGED != 'true'
+        run: |
+          echo '{"version": "2.1.0", "runs": [{"tool": {"driver": {"name": "CodeQL"}}, "results": []}]}' >"$RUNNER_TEMP/unchanged.sarif"
+      - uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        if: env.CHANGED != 'true'
+        with:
+          sarif_file: ${{ runner.temp }}/unchanged.sarif
           category: /language:${{ matrix.language }}
