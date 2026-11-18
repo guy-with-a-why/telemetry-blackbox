@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.8.0...v0.9.0) (2026-11-18)
+
+
+### Features
+
+* **deploy:** check Redpanda keeps every record across a Pod restart ([#128](https://github.com/guy-with-a-why/telemetry-blackbox/issues/128)) ([2bf3ff4](https://github.com/guy-with-a-why/telemetry-blackbox/commit/2bf3ff4972a3f0ce71572aa2789f79074a129a57)), closes [#14](https://github.com/guy-with-a-why/telemetry-blackbox/issues/14)
+* **deploy:** mirror Docker Hub on the host ([#125](https://github.com/guy-with-a-why/telemetry-blackbox/issues/125)) ([61cd2b6](https://github.com/guy-with-a-why/telemetry-blackbox/commit/61cd2b6b645e6a6cfa10727da795f1805900c8ae))
+* **deploy:** run Redpanda on a local volume on data-1 ([#127](https://github.com/guy-with-a-why/telemetry-blackbox/issues/127)) ([48cbcd3](https://github.com/guy-with-a-why/telemetry-blackbox/commit/48cbcd3258caed963aee30fc9373b940a5282e85))
+
 ## [0.8.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.7.0...v0.8.0) (2026-11-17)
 
 
