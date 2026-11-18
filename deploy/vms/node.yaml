@@ -68,6 +68,15 @@ write_files:
 
       [host."http://@GHCR_MIRROR@"]
         capabilities = ["pull", "resolve"]
+  # Redpanda, ClickHouse and Grafana publish to Docker Hub, which limits
+  # anonymous pulls. The mirror fetches each image once. Docker Hub's API
+  # lives on registry-1.docker.io, not docker.io.
+  - path: /etc/containerd/certs.d/docker.io/hosts.toml
+    content: |
+      server = "https://registry-1.docker.io"
+
+      [host."http://@DOCKERHUB_MIRROR@"]
+        capabilities = ["pull", "resolve"]
   - path: /usr/local/sbin/prepare-node
     permissions: "0755"
     content: |

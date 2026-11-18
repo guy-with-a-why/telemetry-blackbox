@@ -2,8 +2,8 @@
 # Runs what the VMs use from the host, and prints the host's address on the
 # Multipass bridge:
 #   - the image registry, on localhost for pushes and the bridge for pulls
-#   - pull-through mirrors of registry.k8s.io, quay.io and ghcr.io, for the
-#     control-plane, Cilium and kube-vip images
+#   - pull-through mirrors of registry.k8s.io, quay.io, ghcr.io and Docker
+#     Hub, for the control-plane, Cilium, kube-vip and workload images
 #   - an apt cache, so each package crosses the internet once
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -47,6 +47,7 @@ mirror() {
 mirror k8s "$k8s_mirror_port" registry.k8s.io
 mirror quay "$quay_mirror_port" quay.io
 mirror ghcr "$ghcr_mirror_port" ghcr.io
+mirror dockerhub "$dockerhub_mirror_port" registry-1.docker.io
 
 docker build -q -t blackbox-apt-cache deploy/apt-cache >/dev/null
 ensure blackbox-apt-cache \
