@@ -55,10 +55,11 @@ spec:
     spec:
       # Time to flush and close the log segments on SIGTERM.
       terminationGracePeriodSeconds: 60
+      # No fsGroup: scripts/redpanda.sh creates the volume's directory as 101,
+      # and fsGroup would re-own every file in it on each mount.
       securityContext:
         runAsUser: 101
         runAsGroup: 101
-        fsGroup: 101
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
