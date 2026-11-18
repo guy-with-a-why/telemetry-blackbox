@@ -218,9 +218,11 @@ data-1. The manifests are in [`redpanda/`](redpanda/).
   `--overprovisioned` stops it pinning and busy-polling data-1's two shared
   vCPUs. The container's limit is 1 GiB, because Seastar's share doesn't cover
   the binary or its thread stacks.
-- Dev mode turns write caching on, which acknowledges a write before it
-  reaches the disk. With one broker, a crash would lose frames, so a bootstrap
-  file turns it off. It also stops a producer creating topics by accident.
+- Dev mode skips fsync and turns write caching on, so a write is acknowledged
+  before it reaches the disk. With one broker, a power cut or a crash of
+  data-1 would lose frames, so `--unsafe-bypass-fsync=false` and a bootstrap
+  file turn both off. The bootstrap file also stops a producer creating topics
+  by accident.
 - Clients reach the broker at
   `redpanda-0.redpanda.blackbox.svc.cluster.local:9092`, through a headless
   Service.
