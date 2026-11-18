@@ -1,0 +1,12 @@
+# The cluster's only StorageClass. It has no provisioner: I create each
+# PersistentVolume by hand, on one node's own disk, and the class only says
+# how a claim binds to one. Binding waits for the first Pod that uses the
+# claim, so the claim gets a volume on a node the Pod can actually run on.
+# Each volume sets its own reclaim policy, because a class's policy only
+# applies to volumes a provisioner creates.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer

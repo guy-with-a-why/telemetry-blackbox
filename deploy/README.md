@@ -186,6 +186,24 @@ so it works while the API is down or etcd has lost quorum. The file holds
 every Secret in plain text, so only I can read it.
 [The etcd runbook](../docs/runbooks/etcd.md) restores one.
 
+## Storage
+
+The cluster has one StorageClass, `local`, in
+[`storage/local.yaml`](storage/local.yaml). It has no provisioner. I create
+each PersistentVolume by hand, as a directory on one node's disk, and a claim
+binds to it.
+
+- Binding waits for the first Pod that uses the claim. With `Immediate`, a
+  claim could bind to a volume on a node the Pod can't run on.
+- Node affinity pins each volume to its node, so the Pod follows its data.
+- Each volume keeps its data when its claim is deleted (`Retain`). It then
+  shows `Released` and won't bind again until I clear its `claimRef`.
+
+The cost is that a stateful Pod can't move. Draining data-1 stops Redpanda
+until the node is back, and the drain drill in #27 will show it. Redpanda and
+ClickHouse replicate their own data, so replicated storage underneath them
+buys nothing on one data node. #124 adds a provisioner for everything else.
+
 ## Drills
 
 The drills break the cluster on purpose, so there has to be something
