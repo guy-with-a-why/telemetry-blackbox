@@ -12,6 +12,7 @@ registry_port=5000
 k8s_mirror_port=5001
 quay_mirror_port=5002
 ghcr_mirror_port=5003
+dockerhub_mirror_port=5004
 apt_cache_port=3142
 
 # The API's virtual IP, which kube-vip moves between the control planes. The
