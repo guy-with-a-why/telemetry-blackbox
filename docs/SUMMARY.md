@@ -12,6 +12,7 @@
   - [Autostart: the whole cluster in one command](blog/2026-11-15-autostart.md)
   - [Deadstick: two control planes down](blog/2026-11-16-deadstick.md)
   - [Last known fix: etcd restored from a snapshot](blog/2026-11-17-last-known-fix.md)
+  - [Holding pattern: Redpanda on data-1's own disk](blog/2026-11-18-holding-pattern.md)
 - [Decisions](adr/README.md)
   - [0005. just, mise and a local registry](adr/0005-just-mise-and-a-local-registry.md)
   - [0006. A scripted kubeadm bootstrap](adr/0006-scripted-kubeadm-bootstrap.md)
