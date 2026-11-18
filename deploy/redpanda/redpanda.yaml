@@ -4,6 +4,10 @@ kind: ConfigMap
 metadata:
   name: redpanda-bootstrap
   namespace: blackbox
+  labels:
+    app.kubernetes.io/name: redpanda
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: telemetry-blackbox
 data:
   # Cluster settings Redpanda reads once, when the cluster first starts, then
   # keeps in its own log. Dev mode turns write caching on, one of two ways it
@@ -24,11 +28,16 @@ kind: Service
 metadata:
   name: redpanda
   namespace: blackbox
+  labels:
+    app.kubernetes.io/name: redpanda
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: telemetry-blackbox
 spec:
   clusterIP: None
   publishNotReadyAddresses: true
   selector:
-    app: redpanda
+    app.kubernetes.io/name: redpanda
+    app.kubernetes.io/component: broker
   ports:
     - name: kafka
       port: 9092
@@ -42,16 +51,25 @@ kind: StatefulSet
 metadata:
   name: redpanda
   namespace: blackbox
+  labels:
+    app.kubernetes.io/name: redpanda
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: telemetry-blackbox
 spec:
   serviceName: redpanda
   replicas: 1
+  # The selector can't change once the StatefulSet exists. The component
+  # keeps the topic Job's Pods out of it.
   selector:
     matchLabels:
-      app: redpanda
+      app.kubernetes.io/name: redpanda
+      app.kubernetes.io/component: broker
   template:
     metadata:
       labels:
-        app: redpanda
+        app.kubernetes.io/name: redpanda
+        app.kubernetes.io/component: broker
+        app.kubernetes.io/part-of: telemetry-blackbox
     spec:
       # Time to flush and close the log segments on SIGTERM.
       terminationGracePeriodSeconds: 60
