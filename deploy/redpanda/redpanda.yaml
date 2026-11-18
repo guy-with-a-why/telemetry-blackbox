@@ -21,8 +21,8 @@ data:
 ---
 # A headless Service gives the broker a stable name,
 # redpanda-0.redpanda.blackbox.svc.cluster.local, which it advertises to
-# clients. The name resolves before the Pod is ready, because the broker looks
-# up its own address while it starts.
+# clients. The name keeps resolving while the broker isn't ready, so through a
+# restart clients retry the same address instead of failing to look it up.
 apiVersion: v1
 kind: Service
 metadata:
