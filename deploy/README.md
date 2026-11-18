@@ -186,6 +186,50 @@ so it works while the API is down or etcd has lost quorum. The file holds
 every Secret in plain text, so only I can read it.
 [The etcd runbook](../docs/runbooks/etcd.md) restores one.
 
+## Storage
+
+The cluster has one StorageClass, `local`, in
+[`storage/local.yaml`](storage/local.yaml). It has no provisioner. I create
+each PersistentVolume by hand, as a directory on one node's disk, and a claim
+binds to it.
+
+- Binding waits for the first Pod that uses the claim. With `Immediate`, a
+  claim could bind to a volume on a node the Pod can't run on.
+- Node affinity pins each volume to its node, so the Pod follows its data.
+- Each volume keeps its data when its claim is deleted (`Retain`). It then
+  shows `Released` and won't bind again until I clear its `claimRef`.
+
+The cost is that a stateful Pod can't move. Draining data-1 stops Redpanda
+until the node is back, and the drain drill in #27 will show it. There's one
+data node, so replicated storage has nowhere to copy to. With more, Redpanda
+and ClickHouse would replicate their own data, which beats copying the disk
+underneath them. #124 adds a provisioner for everything else.
+
+## Redpanda
+
+```bash
+just redpanda    # on the server: the volume, the broker and its topics
+```
+
+One broker runs as a StatefulSet in dev mode, on a 10 Gi local volume on
+data-1. The manifests are in [`redpanda/`](redpanda/).
+
+- Redpanda is built on Seastar, which runs one thread per core and claims its
+  memory up front. `--smp=1 --memory=512M` gives it one core and 512 MB, and
+  `--overprovisioned` stops it pinning and busy-polling data-1's two shared
+  vCPUs. The container's limit is 1 GiB, because Seastar's share doesn't cover
+  the binary or its thread stacks.
+- Dev mode skips fsync and turns write caching on, so a write is acknowledged
+  before it reaches the disk. With one broker, a power cut or a crash of
+  data-1 would lose frames, so `--unsafe-bypass-fsync=false` and a bootstrap
+  file turn both off. The bootstrap file also stops a producer creating topics
+  by accident.
+- Clients reach the broker at
+  `redpanda-0.redpanda.blackbox.svc.cluster.local:9092`, through a headless
+  Service.
+- A Job creates `telemetry.raw` with six partitions and 1 GiB of retention on
+  each.
+
 ## Drills
 
 The drills break the cluster on purpose, so there has to be something

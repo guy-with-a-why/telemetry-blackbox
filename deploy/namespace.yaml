@@ -1,0 +1,6 @@
+# The data path runs in one namespace: Redpanda now, then the gateway, the
+# pipeline, ClickHouse and Grafana.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: blackbox

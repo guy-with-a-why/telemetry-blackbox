@@ -1,0 +1,154 @@
+# One Redpanda broker in dev mode, on the local volume in volume.yaml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redpanda-bootstrap
+  namespace: blackbox
+  labels:
+    app.kubernetes.io/name: redpanda
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: telemetry-blackbox
+data:
+  # Cluster settings Redpanda reads once, when the cluster first starts, then
+  # keeps in its own log. Dev mode turns write caching on, one of two ways it
+  # acknowledges a write before it reaches the disk. With one broker, a crash
+  # would then lose frames the gateway was told are safe, so it stays off. The
+  # StatefulSet closes the other way. Topics are made on purpose, never by a
+  # producer's typo.
+  .bootstrap.yaml: |
+    write_caching_default: "false"
+    auto_create_topics_enabled: false
+---
+# A headless Service gives the broker a stable name,
+# redpanda-0.redpanda.blackbox.svc.cluster.local, which it advertises to
+# clients. The name keeps resolving while the broker isn't ready, so through a
+# restart clients retry the same address instead of failing to look it up.
+apiVersion: v1
+kind: Service
+metadata:
+  name: redpanda
+  namespace: blackbox
+  labels:
+    app.kubernetes.io/name: redpanda
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: telemetry-blackbox
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: redpanda
+    app.kubernetes.io/component: broker
+  ports:
+    - name: kafka
+      port: 9092
+    - name: admin
+      port: 9644
+    - name: rpc
+      port: 33145
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redpanda
+  namespace: blackbox
+  labels:
+    app.kubernetes.io/name: redpanda
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: telemetry-blackbox
+spec:
+  serviceName: redpanda
+  replicas: 1
+  # The selector can't change once the StatefulSet exists. The component
+  # keeps the topic Job's Pods out of it.
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: redpanda
+      app.kubernetes.io/component: broker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: redpanda
+        app.kubernetes.io/component: broker
+        app.kubernetes.io/part-of: telemetry-blackbox
+    spec:
+      # Time to flush and close the log segments on SIGTERM.
+      terminationGracePeriodSeconds: 60
+      # No fsGroup: scripts/redpanda.sh creates the volume's directory as 101,
+      # and fsGroup would re-own every file in it on each mount.
+      securityContext:
+        runAsUser: 101
+        runAsGroup: 101
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: redpanda
+          image: docker.io/redpandadata/redpanda:v26.2.7@sha256:43545ee03966431f5451e0b3c1e651b39fbe3eb383360220311021f50133b649
+          # The root filesystem stays writable, because rpk writes
+          # /etc/redpanda/redpanda.yaml every time it starts.
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          args:
+            - redpanda
+            - start
+            - --mode=dev-container
+            # Dev mode also skips fsync, so an ack would only mean the page
+            # cache. A power cut or a crash of data-1 would lose those frames.
+            - --unsafe-bypass-fsync=false
+            # Seastar runs one thread per core and claims its memory up front.
+            # One core and 512 MB carry a flight easily. Overprovisioned stops
+            # it pinning and busy-polling the node's two shared vCPUs.
+            - --smp=1
+            - --memory=512M
+            - --reserve-memory=0M
+            - --overprovisioned
+            - --kafka-addr=internal://0.0.0.0:9092
+            - --advertise-kafka-addr=internal://$(POD_NAME).redpanda.blackbox.svc.cluster.local:9092
+            - --rpc-addr=0.0.0.0:33145
+            - --advertise-rpc-addr=$(POD_NAME).redpanda.blackbox.svc.cluster.local:33145
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          ports:
+            - name: kafka
+              containerPort: 9092
+            - name: admin
+              containerPort: 9644
+            - name: rpc
+              containerPort: 33145
+          readinessProbe:
+            httpGet:
+              path: /v1/status/ready
+              port: admin
+            periodSeconds: 5
+          # Seastar's 512 MB doesn't cover the binary, thread stacks or rpk,
+          # so the limit leaves room for them.
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/redpanda/data
+            - name: bootstrap
+              mountPath: /etc/redpanda/.bootstrap.yaml
+              subPath: .bootstrap.yaml
+      volumes:
+        - name: bootstrap
+          configMap:
+            name: redpanda-bootstrap
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        storageClassName: local
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 10Gi
