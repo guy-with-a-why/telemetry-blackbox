@@ -16,6 +16,8 @@ build it, so they keep the history clean and the site honest.
 - If I change a diagram, I edit the `.d2` file and run `just diagrams`.
 - If I learn something worth keeping, it goes in an ADR or a runbook, in my own
   words.
+- ADRs, runbooks, blog posts and leg debriefs each start from a template
+  beside them in `docs/`.
 
 ## Before I push
 
