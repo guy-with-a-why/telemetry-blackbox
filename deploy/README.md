@@ -200,9 +200,10 @@ binds to it.
   shows `Released` and won't bind again until I clear its `claimRef`.
 
 The cost is that a stateful Pod can't move. Draining data-1 stops Redpanda
-until the node is back, and the drain drill in #27 will show it. Redpanda and
-ClickHouse replicate their own data, so replicated storage underneath them
-buys nothing on one data node. #124 adds a provisioner for everything else.
+until the node is back, and the drain drill in #27 will show it. There's one
+data node, so replicated storage has nowhere to copy to. With more, Redpanda
+and ClickHouse would replicate their own data, which beats copying the disk
+underneath them. #124 adds a provisioner for everything else.
 
 ## Redpanda
 
