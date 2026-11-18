@@ -1,7 +1,8 @@
 # Runbooks
 
 Every drill I run gets a runbook: the steps, what I expected and the real
-output. They fill in as the drills happen.
+output. They fill in as the drills happen, and each one starts from
+`_template.md`.
 
 | Runbook | Drill | Status |
 |---|---|---|

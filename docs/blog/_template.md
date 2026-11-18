@@ -1,7 +1,9 @@
 <!-- Write it like you're telling a colleague how the day went over a coffee. Plain prose, no lists. Proficient,
 grounded and experienced: decisions and reasons, never "I learned". One joke at most and at least one real
-specific, such as a number, a wrong turn or something I said. Put the post's date under the title. Add it as
-the last row of the table in blog/README.md and the last blog entry in SUMMARY.md. -->
+specific, such as a number, a wrong turn or something I said. No stacked groups of three, and never an event or
+a feeling that didn't happen. Put the post's date under the title. Add it as the last row of the table in
+blog/README.md and the last blog entry in SUMMARY.md. The end of a leg gets a debrief instead, from
+_debrief.md. -->
 # Title
 
 *14 November 2026*

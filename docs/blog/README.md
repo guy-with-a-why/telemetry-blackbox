@@ -1,6 +1,6 @@
 # Cockpit voice recorder
 
-A flight recorder has two halves. The [flight log](../flight-log.md) is the data recorder. This is the voice: a short post at the end of each leg on what I built, what broke and what I learned.
+A flight recorder has two halves. The [flight log](../flight-log.md) is the data recorder. This is the voice: a short post after each evening's flying, on what I built and what broke, and a debrief when each leg lands. Posts start from `_template.md` and debriefs from `_debrief.md`.
 
 | Date | Post |
 |---|---|
