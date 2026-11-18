@@ -16,9 +16,16 @@ spec:
       securityContext:
         runAsUser: 101
         runAsGroup: 101
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: rpk
           image: docker.io/redpandadata/redpanda:v26.2.7@sha256:43545ee03966431f5451e0b3c1e651b39fbe3eb383360220311021f50133b649
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
           env:
             - name: RPK_BROKERS
               value: redpanda-0.redpanda.blackbox.svc.cluster.local:9092

@@ -59,9 +59,18 @@ spec:
         runAsUser: 101
         runAsGroup: 101
         fsGroup: 101
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: redpanda
           image: docker.io/redpandadata/redpanda:v26.2.7@sha256:43545ee03966431f5451e0b3c1e651b39fbe3eb383360220311021f50133b649
+          # The root filesystem stays writable, because rpk writes
+          # /etc/redpanda/redpanda.yaml every time it starts.
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
           args:
             - redpanda
             - start
