@@ -1,0 +1,28 @@
+# Redpanda's disk: a directory on data-1, which scripts/redpanda.sh creates
+# before the broker starts. The node affinity pins the volume to data-1, so
+# the Pod that claims it can only run there. claimRef reserves it for the
+# StatefulSet's one claim. Retain keeps the frames if the claim is deleted,
+# and the volume then waits for me to release it by hand. A local volume's
+# capacity is a label, not a quota: the broker's retention keeps it in bounds.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redpanda
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local
+  claimRef:
+    namespace: blackbox
+    name: data-redpanda-0
+  local:
+    path: /var/lib/blackbox/redpanda
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values: [data-1]

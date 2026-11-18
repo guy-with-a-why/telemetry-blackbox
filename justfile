@@ -110,6 +110,10 @@ cluster-check:
 etcd-snapshot:
     scripts/etcd-snapshot.sh
 
+# Deploy Redpanda on data-1's own disk and create its topics. Safe to run again
+redpanda:
+    scripts/redpanda.sh
+
 # Build the VMs and the cluster from nothing, then check it
 up: vms cluster-up cluster-check
 

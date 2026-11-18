@@ -1,0 +1,40 @@
+# Creates the topics, then sets their config, so a change here reaches a topic
+# that already exists. scripts/redpanda.sh replaces the Job each time, because
+# a Job's Pod template can't change. One retry, then Failed, so the script
+# shows rpk's error instead of waiting out the backoff. Each attempt gets its
+# own Pod, which stays after a failure, so its logs are still there to read.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: redpanda-topics
+  namespace: blackbox
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsUser: 101
+        runAsGroup: 101
+      containers:
+        - name: rpk
+          image: docker.io/redpandadata/redpanda:v26.2.7@sha256:43545ee03966431f5451e0b3c1e651b39fbe3eb383360220311021f50133b649
+          env:
+            - name: RPK_BROKERS
+              value: redpanda-0.redpanda.blackbox.svc.cluster.local:9092
+          # Six partitions let up to six consumers in one group share the
+          # frames. Partitions can only be added, and that changes which
+          # partition each key lands on, so a new count is a deliberate
+          # `rpk topic add-partitions`, not an edit here. Retention counts per
+          # partition, so six of 1 GiB fit the 10 Gi volume with room to spare.
+          command: [bash, -euc]
+          args:
+            - |
+              rpk topic create telemetry.raw --partitions=6 --replicas=1 --if-not-exists
+              rpk topic alter-config telemetry.raw --set retention.bytes=1073741824
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
