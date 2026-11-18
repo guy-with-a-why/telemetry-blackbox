@@ -114,6 +114,10 @@ etcd-snapshot:
 redpanda:
     scripts/redpanda.sh
 
+# Check Redpanda keeps every record across a Pod restart, e.g. just redpanda-check 50000
+redpanda-check records="10000":
+    scripts/redpanda-check.sh {{ quote(records) }}
+
 # Build the VMs and the cluster from nothing, then check it
 up: vms cluster-up cluster-check
 
