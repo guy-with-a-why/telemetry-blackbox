@@ -63,3 +63,59 @@ TTL toDateTime(received_at) + INTERVAL 30 DAY;
 -- Copies each insert into frames_raw on to frames, so Spate writes one table.
 CREATE MATERIALIZED VIEW IF NOT EXISTS frames_mv TO frames
 AS SELECT * FROM frames_raw;
+
+-- One row per second for each boot, system and message: how many frames
+-- arrived and how long the first copy took from the gateway to ClickHouse.
+-- Each refresh writes the second again, so the latest refresh wins.
+CREATE TABLE IF NOT EXISTS frames_per_second
+(
+    boot_id      UUID,
+    system_id    UInt8,
+    msg_id       UInt32,
+    second       DateTime('UTC'),
+    frames       UInt64,
+    latency_p50  Float64,
+    latency_p99  Float64,
+    refreshed_at DateTime64(6, 'UTC')
+)
+ENGINE = ReplacingMergeTree(refreshed_at)
+ORDER BY (boot_id, system_id, msg_id, second)
+TTL second + INTERVAL 90 DAY;
+
+-- A plain materialised view runs on each insert, before any merge, so it
+-- would count a redelivered batch twice. This one runs every 10 seconds
+-- instead. It finds the seconds that gained a row in the last five minutes,
+-- however old they are, and recounts them from frames_raw, grouping by
+-- offset so each frame counts once at its first arrival.
+CREATE MATERIALIZED VIEW IF NOT EXISTS frames_per_second_mv
+REFRESH EVERY 10 SECOND APPEND TO frames_per_second
+AS
+WITH touched AS
+(
+    SELECT DISTINCT boot_id, system_id, toStartOfSecond(received_at) AS second
+    FROM frames_raw
+    WHERE inserted_at >= now64(6) - INTERVAL 5 MINUTE
+)
+SELECT
+    boot_id,
+    system_id,
+    msg_id,
+    toDateTime(second) AS second,
+    count() AS frames,
+    quantileExact(0.5)(latency_ms) AS latency_p50,
+    quantileExact(0.99)(latency_ms) AS latency_p99,
+    now64(6) AS refreshed_at
+FROM
+(
+    SELECT
+        boot_id,
+        system_id,
+        any(msg_id) AS msg_id,
+        toStartOfSecond(any(received_at)) AS second,
+        dateDiff('millisecond', any(received_at), min(inserted_at)) AS latency_ms
+    FROM frames_raw
+    WHERE (boot_id, system_id, toStartOfSecond(received_at)) IN (SELECT * FROM touched)
+      AND received_at >= (SELECT min(second) FROM touched)
+    GROUP BY boot_id, system_id, partition, offset
+)
+GROUP BY boot_id, system_id, msg_id, second;
