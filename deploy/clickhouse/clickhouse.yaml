@@ -42,6 +42,25 @@ data:
       <max_server_memory_usage>1288490188</max_server_memory_usage>
       <mark_cache_size>268435456</mark_cache_size>
 
+      <!-- ClickHouse logs itself into system tables that nothing deletes
+           by default, and text_log records every trace line. These would
+           fill the disk quietly. The ones I keep go after three days:
+           part_log shows each part made and merged, query_log each query. -->
+      <query_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></query_log>
+      <part_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></part_log>
+      <error_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></error_log>
+      <text_log remove="1"/>
+      <trace_log remove="1"/>
+      <metric_log remove="1"/>
+      <query_metric_log remove="1"/>
+      <asynchronous_metric_log remove="1"/>
+      <processors_profile_log remove="1"/>
+      <background_schedule_pool_log remove="1"/>
+      <query_views_log remove="1"/>
+      <query_thread_log remove="1"/>
+      <instrumentation_trace_log remove="1"/>
+      <opentelemetry_span_log remove="1"/>
+
       <!-- Only HTTP and the native protocol, the two the Service exposes.
            The interserver port is for replicas, and there's one server. -->
       <mysql_port remove="1"/>
