@@ -91,8 +91,9 @@ tune once the firmware's real frame rates arrive.
 
 ClickHouse also logs itself into system tables that nothing deletes, and
 `text_log` records every trace line. I keep three of them for three days and
-drop the rest. Its mark cache defaults to 5 GiB, more memory than data-1 has,
-so it gets 256 MiB.
+drop the rest. ClickHouse's mark cache, which remembers where each block of rows
+starts in a table's files, defaults to 5 GiB. That's more memory than data-1
+has, so it gets 256 MiB.
 
 ## What challenges were faced
 
