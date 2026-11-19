@@ -331,8 +331,10 @@ a row since its last refresh, grouping by offset so each frame counts once. Its
 watermark is its own latest `refreshed_at`, so a missed refresh or a stopped
 server is caught up on the next run.
 On data-1, with a two-hour flight of 1.8 million rows already stored, a
-refresh takes about 40 ms and reads 22,500 rows. That flight takes 50 MiB in
-each frame table, so a month of evening flights fits in about 2 GiB.
+refresh takes 42 to 46 ms and reads about 51,000 rows: 22,500 new frames, and
+the rollup itself to find its watermark. That second part grows with the
+rollup's history, up to 90 days of it. That flight takes 50 MiB in each frame
+table, so a month of evening flights fits in about 2 GiB.
 
 ## Drills
 
