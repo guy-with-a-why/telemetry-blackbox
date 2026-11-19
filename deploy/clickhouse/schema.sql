@@ -2,6 +2,10 @@
 -- database, and clickhouse-check runs it in a scratch one. Every statement
 -- is safe to run again. Changing a table that exists is a migration, written
 -- as an ALTER below, never an edit to its CREATE.
+--
+-- Every table drops a part whole once all its rows have expired
+-- (ttl_only_drop_parts), rather than rewriting it in a merge. Near the disk
+-- floor ClickHouse only picks small merges, and a drop needs no free space.
 
 -- Every delivery of every frame, as Spate inserts it, duplicates included.
 -- (partition, offset) is where the gateway's record sits in telemetry.raw.
@@ -32,7 +36,8 @@ CREATE TABLE IF NOT EXISTS frames_raw
 ENGINE = MergeTree
 PARTITION BY toDate(received_at)
 ORDER BY (boot_id, system_id, received_at, partition, offset)
-TTL toDateTime(inserted_at) + INTERVAL 7 DAY;
+TTL toDateTime(inserted_at) + INTERVAL 7 DAY
+SETTINGS ttl_only_drop_parts = 1;
 
 -- One row per frame, eventually. A part is immutable once written, so a
 -- duplicate isn't found when it's inserted. It goes when a background merge
@@ -60,7 +65,8 @@ CREATE TABLE IF NOT EXISTS frames
 ENGINE = ReplacingMergeTree
 PARTITION BY toDate(received_at)
 ORDER BY (boot_id, system_id, received_at, partition, offset)
-TTL toDateTime(received_at) + INTERVAL 30 DAY;
+TTL toDateTime(received_at) + INTERVAL 30 DAY
+SETTINGS ttl_only_drop_parts = 1;
 
 -- Copies each insert into frames_raw on to frames, so Spate writes one table.
 CREATE MATERIALIZED VIEW IF NOT EXISTS frames_mv TO frames
@@ -81,8 +87,10 @@ CREATE TABLE IF NOT EXISTS frames_per_second
     refreshed_at DateTime64(6, 'UTC')
 )
 ENGINE = ReplacingMergeTree(refreshed_at)
+PARTITION BY toYYYYMM(second)
 ORDER BY (boot_id, system_id, msg_id, second)
-TTL second + INTERVAL 90 DAY;
+TTL second + INTERVAL 90 DAY
+SETTINGS ttl_only_drop_parts = 1;
 
 -- A plain materialised view runs on each insert, before any merge, so it
 -- would count a redelivered batch twice. This one runs every 10 seconds

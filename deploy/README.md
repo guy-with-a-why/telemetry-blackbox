@@ -302,6 +302,10 @@ table that exists takes an `ALTER`.
 Spate writes only `frames_raw`. A materialised view copies each insert on to
 `frames`.
 
+Near the disk floor, ClickHouse picks smaller merges before it stops inserts,
+so duplicates can linger in `frames` for longer. Expiry doesn't wait on
+merges: each table drops a part whole once every row in it has expired.
+
 The key that removes duplicates is Redpanda's partition and offset. Redpanda
 gives each frame one offset, and Spate redelivers a frame from the same one.
 MAVLink's `seq` would be the obvious key, but it's one byte, so it would
