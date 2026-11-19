@@ -36,6 +36,12 @@ data:
         </disks>
       </storage_configuration>
 
+      <!-- 1.2 GiB of the container's 1.5 GiB. The rest covers the binary
+           and memory ClickHouse doesn't track. The mark cache defaults to
+           5 GiB, more than data-1 has. -->
+      <max_server_memory_usage>1288490188</max_server_memory_usage>
+      <mark_cache_size>268435456</mark_cache_size>
+
       <!-- Only HTTP and the native protocol, the two the Service exposes.
            The interserver port is for replicas, and there's one server. -->
       <mysql_port remove="1"/>
