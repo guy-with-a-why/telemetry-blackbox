@@ -45,12 +45,17 @@ if ! "${kubectl[@]}" -n blackbox get secret clickhouse >/dev/null 2>&1; then
 fi
 
 # The config is mounted by subPath, which the kubelet never refreshes. Its
-# hash on the Pod template means a changed ConfigMap rolls the Pod, and an
-# unchanged one leaves it alone.
-"${kubectl[@]}" apply -f deploy/clickhouse/clickhouse.yaml >/dev/null
-hash=$("${kubectl[@]}" -n blackbox get configmap clickhouse-config -o jsonpath='{.data}' | sha256sum | cut -c1-16)
-"${kubectl[@]}" -n blackbox patch statefulset clickhouse --type merge \
-  -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"blackbox/config-hash\":\"$hash\"}}}}}" >/dev/null
+# hash goes on the Pod template before the first apply, so a changed
+# ConfigMap rolls the Pod once and an unchanged one leaves it alone.
+manifest=deploy/clickhouse/clickhouse.yaml
+# The jsonpath runs on each object, and only the ConfigMap has data.
+data=$("${kubectl[@]}" create -f "$manifest" --dry-run=client -o jsonpath='{.data}')
+if [[ -z $data ]]; then
+  echo "no ConfigMap data in $manifest" >&2
+  exit 1
+fi
+hash=$(sha256sum <<<"$data" | cut -c1-16)
+sed "s/CONFIG_HASH/$hash/" "$manifest" | "${kubectl[@]}" apply -f - >/dev/null
 if ! "${kubectl[@]}" -n blackbox rollout status statefulset/clickhouse --timeout 5m; then
   "${kubectl[@]}" -n blackbox get pvc data-clickhouse-0 >&2 || true
   "${kubectl[@]}" -n blackbox events --for pod/clickhouse-0 >&2 || true

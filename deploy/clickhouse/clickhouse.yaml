@@ -112,6 +112,10 @@ spec:
         app.kubernetes.io/name: clickhouse
         app.kubernetes.io/component: server
         app.kubernetes.io/part-of: telemetry-blackbox
+      annotations:
+        # scripts/clickhouse.sh fills in the ConfigMap's hash, so a changed
+        # config rolls the Pod and an unchanged one leaves it alone.
+        blackbox/config-hash: CONFIG_HASH
     spec:
       # Time to finish merges and flush on SIGTERM.
       terminationGracePeriodSeconds: 60
