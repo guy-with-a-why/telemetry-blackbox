@@ -1,0 +1,26 @@
+# ClickHouse's disk: a directory on data-1, beside Redpanda's, which
+# scripts/clickhouse.sh creates before the server starts. Both share data-1's
+# one filesystem, so the capacity is the room ClickHouse is promised, not a
+# quota.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: clickhouse
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local
+  claimRef:
+    namespace: blackbox
+    name: data-clickhouse-0
+  local:
+    path: /var/lib/blackbox/clickhouse
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values: [data-1]
