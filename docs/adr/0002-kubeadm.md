@@ -15,7 +15,8 @@ virtual IP, so the API stays up when one goes down
 ([#12](https://github.com/guy-with-a-why/telemetry-blackbox/issues/12)).
 etcd has to come back from a snapshot
 ([#13](https://github.com/guy-with-a-why/telemetry-blackbox/issues/13)). The
-upgrade from 1.36 to 1.37 has to work one node at a time.
+upgrade from 1.36 to 1.37 has to work one node at a time
+([#140](https://github.com/guy-with-a-why/telemetry-blackbox/issues/140)).
 
 The constraints:
 
