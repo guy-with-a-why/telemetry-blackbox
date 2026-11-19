@@ -14,6 +14,8 @@
   - [Last known fix: etcd restored from a snapshot](blog/2026-11-17-last-known-fix.md)
   - [Holding pattern: Redpanda on data-1's own disk](blog/2026-11-18-holding-pattern.md)
 - [Decisions](adr/README.md)
+  - [0002. kubeadm](adr/0002-kubeadm.md)
+  - [0003. Redpanda](adr/0003-redpanda.md)
   - [0005. just, mise and a local registry](adr/0005-just-mise-and-a-local-registry.md)
   - [0006. A scripted kubeadm bootstrap](adr/0006-scripted-kubeadm-bootstrap.md)
 - [Runbooks](runbooks/README.md)

@@ -260,11 +260,15 @@ which is built on the STM32F407VG, a Cortex-M4F.
 - [Cilium on a kubeadm cluster](https://docs.cilium.io/en/stable/installation/k8s-install-kubeadm/).
 - [etcd disaster recovery](https://etcd.io/docs/v3.5/op-guide/recovery/).
 - [Upgrading kubeadm clusters](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/).
+- [Certificate management with kubeadm](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/).
+- [k3s architecture](https://docs.k3s.io/architecture) and [Talos Linux](https://www.talos.dev/), the two I turned down in ADR 2.
 - [The Distribution registry](https://distribution.github.io/distribution/) and [containerd registry hosts](https://github.com/containerd/containerd/blob/main/docs/hosts.md), for the local image registry.
 
 **Data path (Legs 1 and 3)**
 
 - [Redpanda on Kubernetes](https://docs.redpanda.com/current/deploy/redpanda/kubernetes/).
+- [Redpanda's development mode](https://docs.redpanda.com/current/reference/rpk/rpk-redpanda/rpk-redpanda-mode/) and [Seastar](https://seastar.io/), the framework under it.
+- [Apache Iggy](https://iggy.apache.org/) and [Apache Kafka](https://kafka.apache.org/documentation/), the logs I turned down in ADR 3.
 - [ClickHouse ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree).
 - [Spate's connector contracts](https://spate.kainth.dev/docs/user-guide/extending/contracts) and its [delivery invariants](https://github.com/spate-etl/spate/blob/main/docs/INVARIANTS.md).
 
