@@ -42,9 +42,10 @@ is the real reserve. Evicting wouldn't even help, because both Pods are pinned
 to data-1 by their volumes. ClickHouse stops
 taking inserts while less than 14 GiB is free. That's the reserve plus
 everything Redpanda might still use and a little spare, so ClickHouse can never
-be the one that runs data-1 dry. The order they stop in matters. If ClickHouse stops, Spate stops committing and the
-frames wait in Redpanda. If Redpanda stopped, the gateway would have nowhere to
-put them. A two-hour flight at 250 frames a second takes 50 MiB per table, so a
+be the one that runs data-1 dry. The order they stop in matters. If ClickHouse
+stops, Spate stops committing and the frames wait in Redpanda, for as long as
+its retention keeps them. If Redpanda stopped, the gateway would have nowhere
+to put them. A two-hour flight at 250 frames a second takes 50 MiB per table, so a
 month of evenings fits in about 2 GiB of the almost 10 GiB ClickHouse keeps
 even with Redpanda full.
 
@@ -138,7 +139,9 @@ on quorum, static Pods and MergeTree merges, then the leg's debrief. The
 biggest risk on data-1 is now memory rather than disk. Redpanda and ClickHouse
 claim 2.5 GiB of its 4 between them, before the pipeline and Grafana arrive in
 Leg 3. The fallback is to give data-1 another gigabyte from the host's
-headroom.
+headroom. Disk has one risk left. A ClickHouse that stays stopped past
+Redpanda's 6 GiB of retention loses the oldest frames, whether Spate has read
+them or not.
 
 ## Quiz
 
