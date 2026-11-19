@@ -12,11 +12,18 @@ delivery, duplicates included, for seven days. `frames` keeps one row per
 frame for thirty, and `frames_per_second` rolls them up for ninety.
 
 `just clickhouse` deploys the lot in about 11 seconds once the image is on the
-node, and a second run changes nothing. `just clickhouse-check` covers the
-issue's other box. It inserts 10,000 frames twice, the way Spate redelivers a
-batch after a crash, then counts. `frames` held 20,000 rows in two parts
-before a merge, 10,000 with `FINAL` and 10,000 in one part after the merge.
-The rollup counted 10,000. The server landed in
+node, and a second run changes nothing. `just clickhouse-check` shows what the
+issue's other box asks me to explain. It inserts 10,000 frames twice, the way
+Spate redelivers a batch after a crash, then counts. `frames` held 20,000 rows
+in two parts before a merge, 10,000 with `FINAL` and 10,000 in one part after
+the merge. The rollup counted 10,000.
+
+`frames` is a
+[ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree).
+Every insert writes a new part, and a part never changes once written, so a
+duplicate isn't spotted on the way in. It goes when a background merge folds
+both copies into one part, and until then a query needs `FINAL` to see one row
+per frame. That's why deduplication here is eventual. The server landed in
 [#141](https://github.com/guy-with-a-why/telemetry-blackbox/pull/141), and the
 tables and the check in
 [#142](https://github.com/guy-with-a-why/telemetry-blackbox/pull/142).
