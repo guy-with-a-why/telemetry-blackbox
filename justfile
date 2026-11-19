@@ -118,7 +118,7 @@ redpanda:
 redpanda-check records="10000":
     scripts/redpanda-check.sh {{ quote(records) }}
 
-# Deploy ClickHouse on data-1's own disk, inside Redpanda's free-space floor. Safe to run again
+# Deploy ClickHouse on data-1's own disk, inside Redpanda's free-space floor, and apply its schema. Safe to run again
 clickhouse:
     scripts/clickhouse.sh
 

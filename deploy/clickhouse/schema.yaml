@@ -1,0 +1,65 @@
+# Applies schema.sql to the blackbox database. scripts/clickhouse.sh makes the
+# ConfigMap from the file and replaces the Job each time, because a Job's Pod
+# template can't change. One retry, then Failed, and the Pod stays so its
+# logs are still there to read, as with redpanda-topics.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: clickhouse-schema
+  namespace: blackbox
+  labels:
+    app.kubernetes.io/name: clickhouse
+    app.kubernetes.io/component: schema
+    app.kubernetes.io/part-of: telemetry-blackbox
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: clickhouse
+        app.kubernetes.io/component: schema
+        app.kubernetes.io/part-of: telemetry-blackbox
+    spec:
+      restartPolicy: Never
+      # data-1 already has the image. Pulling 267 MB on edge-1 takes minutes.
+      nodeSelector:
+        kubernetes.io/hostname: data-1
+      securityContext:
+        runAsUser: 101
+        runAsGroup: 101
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: client
+          image: docker.io/clickhouse/clickhouse-server:26.3.66.4@sha256:e0504b765b22caa05d6f12a81f05c79c75e80936b57ed2235dc75a0f36d0805e
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          env:
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: clickhouse
+                  key: password
+          command: [bash, -euc]
+          args:
+            - |
+              ch() { clickhouse-client --host clickhouse-0.clickhouse --password "$CLICKHOUSE_PASSWORD" "$@"; }
+              ch --query "CREATE DATABASE IF NOT EXISTS blackbox"
+              ch --database blackbox --multiquery --queries-file /schema/schema.sql
+              ch --database blackbox --query "SHOW TABLES"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: schema
+              mountPath: /schema
+      volumes:
+        - name: schema
+          configMap:
+            name: clickhouse-schema
