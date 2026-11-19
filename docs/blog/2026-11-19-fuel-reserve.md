@@ -48,8 +48,8 @@ put them. A two-hour flight at 250 frames a second takes 50 MiB per table, so a
 month of evenings fits in about 2 GiB of the almost 10 GiB ClickHouse keeps
 even with Redpanda full.
 
-Then the key. The issue said the deduplicated table was keyed on
-`(boot_id, system_id, seq)`, and so did the README. MAVLink's `seq` is one byte
+Then the key. I'd written it as `(boot_id, system_id, seq)` in the issue and
+the README. MAVLink's `seq` is one byte
 and wraps at 255, so that key would treat frame 1 and frame 257 as the same
 frame and quietly delete real data. The key has to be unique per frame and
 identical on every redelivery, and I weighed two ways to get one.
