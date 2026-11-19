@@ -168,7 +168,7 @@ everywhere?</summary>
 
 It does the merge's deduplication at query time, so the answer is right before
 the merge runs. It costs work on every query, so it's for reads that must be
-exact, such as bbcheck's.
+exact, such as clickhouse-check's count.
 
 </details>
 
