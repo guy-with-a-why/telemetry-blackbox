@@ -267,6 +267,8 @@ which is built on the STM32F407VG, a Cortex-M4F.
 **Data path (Legs 1 and 3)**
 
 - [Redpanda on Kubernetes](https://docs.redpanda.com/current/deploy/redpanda/kubernetes/).
+- [Redpanda's development mode](https://docs.redpanda.com/current/reference/rpk/rpk-redpanda/rpk-redpanda-mode/) and [Seastar](https://seastar.io/), the framework under it.
+- [Apache Iggy](https://iggy.apache.org/) and [Apache Kafka](https://kafka.apache.org/documentation/), the logs I turned down in ADR 3.
 - [ClickHouse ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree).
 - [Spate's connector contracts](https://spate.kainth.dev/docs/user-guide/extending/contracts) and its [delivery invariants](https://github.com/spate-etl/spate/blob/main/docs/INVARIANTS.md).
 
