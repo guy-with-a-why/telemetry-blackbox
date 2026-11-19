@@ -50,8 +50,8 @@ The constraints:
 - **kind or minikube.** kind's nodes are containers on one kernel, so
   stopping a machine or moving an ARP virtual IP isn't real. minikube runs
   kubeadm for me, behind its own bootstrapper.
-- **A managed service such as EKS or GKE.** The provider runs the control
-  plane, so there's nothing to break. It also costs money every hour it runs.
+- **A managed service such as EKS or GKE.** The provider owns the control
+  plane and etcd, so #12 and #13 can't run.
 
 ## Consequences
 
