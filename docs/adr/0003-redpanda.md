@@ -79,7 +79,7 @@ The constraints:
   [#27](https://github.com/guy-with-a-why/telemetry-blackbox/issues/27) tests it.
 - Seastar claims its memory up front and wants a core of its own. The flags
   and a 1 GiB limit keep it to its share of data-1.
-- Redpanda is source-available under the Business Source Licence, not open
+- Redpanda is source-available under the Business Source License, not open
   source. That's fine for running it myself.
 - I'd revisit this if Spate gained an Iggy source, if a second and third data
   node arrived for replication, or if the licence changed.
