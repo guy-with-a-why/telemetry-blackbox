@@ -99,8 +99,9 @@ Here it reads the TCP socket Renode exposes.
 
 The last step matters most. Spate only commits an offset once ClickHouse has
 confirmed the batch is durable, so a crash can repeat work but never skip it.
-That is where duplicates come from, and why the table removes them by
-`(boot_id, system_id, seq)`.
+That is where duplicates come from. A redelivered frame comes from the same
+place in Redpanda, so the table removes duplicates by partition and offset.
+MAVLink's `seq` can't do that job, because it wraps at 255.
 
 ## The wire format
 
