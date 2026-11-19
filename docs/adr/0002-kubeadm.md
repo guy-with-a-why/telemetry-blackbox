@@ -68,6 +68,8 @@ The constraints:
   control plane swaps or is OOM-killed, memory moves from data-1.
   [The deploy notes](https://github.com/guy-with-a-why/telemetry-blackbox/blob/main/deploy/README.md#why-the-kubeadm-memory-check-is-skipped)
   have the reasoning.
+- It's slower to build than k3s. The first bootstrap took 47 minutes by hand,
+  in a leg due on 20 November.
 - The bootstrap and its checks are bash I maintain, for the reasons in
   ADR 6.
 - I'd revisit this once the Leg 4 drills pass. By then kubeadm has taught
