@@ -20,7 +20,10 @@ kubectl=(kubectl --kubeconfig "$kubeconfig" -n blackbox)
 client=(bash -c 'clickhouse-client --password "$CLICKHOUSE_PASSWORD" "$@"' client)
 ch() { "${kubectl[@]}" exec clickhouse-0 -- "${client[@]}" --database "$db" --query "$1"; }
 
-"${kubectl[@]}" exec clickhouse-0 -- "${client[@]}" --query "CREATE DATABASE IF NOT EXISTS $db"
+# A run that was killed leaves its database behind, with its rows and maybe
+# an older schema, so each run starts from an empty one.
+"${kubectl[@]}" exec clickhouse-0 -- "${client[@]}" --query "DROP DATABASE IF EXISTS $db SYNC"
+"${kubectl[@]}" exec clickhouse-0 -- "${client[@]}" --query "CREATE DATABASE $db"
 trap 'ch "DROP DATABASE IF EXISTS $db SYNC" >/dev/null 2>&1 || true' EXIT
 "${kubectl[@]}" exec -i clickhouse-0 -- "${client[@]}" --database "$db" --multiquery \
   <deploy/clickhouse/schema.sql
@@ -29,12 +32,13 @@ trap 'ch "DROP DATABASE IF EXISTS $db SYNC" >/dev/null 2>&1 || true' EXIT
 # shows the table as it is between the redelivery and the merge.
 ch "SYSTEM STOP MERGES frames"
 
-# One boot's frames at 250 a second, ending a minute ago. Both inserts are
-# the same records, so they carry the same offsets and receive times.
+# One boot's frames at 250 a second, from the start of today in UTC. They
+# all land in one day's partition, so the part counts below mean one thing
+# even when the check runs near midnight. Both inserts are the same records,
+# so they carry the same offsets and receive times.
 boot=$(cat /proc/sys/kernel/random/uuid)
-start=$(($(date +%s) - 60 - frames / 250))
 insert="INSERT INTO frames_raw (boot_id, system_id, component_id, seq, msg_id, partition, offset, received_at, payload)
-  SELECT '$boot', 1, 1, number % 256, 30, 0, number, toDateTime64($start, 6, 'UTC') + number / 250, 'frame'
+  SELECT '$boot', 1, 1, number % 256, 30, 0, number, toDateTime64(toStartOfDay(now(), 'UTC'), 6, 'UTC') + number / 250, 'frame'
   FROM numbers($frames)"
 ch "$insert"
 ch "$insert"
@@ -59,4 +63,13 @@ ch "SYSTEM WAIT VIEW frames_per_second_mv"
 read -r rolled seconds < <(ch "SELECT sum(frames), count() FROM frames_per_second FINAL")
 echo "frames_per_second counts $rolled frames over $seconds seconds"
 
-((raw == 2 * frames && before == 2 * frames && final == frames && after == frames && rolled == frames))
+failed=()
+((raw == 2 * frames)) || failed+=("frames_raw holds $raw rows, not $((2 * frames))")
+((before == 2 * frames)) || failed+=("frames held $before rows before the merge, not $((2 * frames))")
+((final == frames)) || failed+=("FINAL gave $final rows, not $frames")
+((after == frames)) || failed+=("frames holds $after rows after the merge, not $frames")
+((rolled == frames)) || failed+=("frames_per_second counts $rolled frames, not $frames")
+if ((${#failed[@]})); then
+  printf 'FAIL: %s\n' "${failed[@]}" >&2
+  exit 1
+fi
