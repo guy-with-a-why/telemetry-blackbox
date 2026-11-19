@@ -45,7 +45,8 @@ everything Redpanda might still use and a little spare, so ClickHouse can never
 be the one that runs data-1 dry. The order they stop in matters. If ClickHouse stops, Spate stops committing and the
 frames wait in Redpanda. If Redpanda stopped, the gateway would have nowhere to
 put them. A two-hour flight at 250 frames a second takes 50 MiB per table, so a
-month of evenings fits in about 2 GiB of the almost 10 ClickHouse is left with.
+month of evenings fits in about 2 GiB of the almost 10 GiB ClickHouse keeps
+even with Redpanda full.
 
 Then the key. The issue said the deduplicated table was keyed on
 `(boot_id, system_id, seq)`, and so did the README. MAVLink's `seq` is one byte
