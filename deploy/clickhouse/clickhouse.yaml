@@ -13,8 +13,9 @@ metadata:
 data:
   blackbox.xml: |
     <clickhouse>
-      <!-- Logs go to stdout, where the kubelet rotates them. The image's
-           default writes them to files on the node's disk with no cap. -->
+      <!-- Logs go to stdout, where the kubelet rotates them at 10 MiB. The
+           image's default keeps ten 1000 MB files on the node's disk, 10 GB
+           this disk can't spare. -->
       <logger>
         <level>information</level>
         <console>1</console>
