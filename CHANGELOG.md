@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.9.0...v0.10.0) (2026-11-19)
+
+
+### Features
+
+* **deploy:** add ClickHouse's frame tables, deduplicated by Redpanda offset ([#142](https://github.com/guy-with-a-why/telemetry-blackbox/issues/142)) ([d9b4d78](https://github.com/guy-with-a-why/telemetry-blackbox/commit/d9b4d784d6f2bcdaf3a62bf545d8e8b72d42919c)), closes [#15](https://github.com/guy-with-a-why/telemetry-blackbox/issues/15)
+* **deploy:** run ClickHouse on data-1 inside Redpanda's free-space floor ([#141](https://github.com/guy-with-a-why/telemetry-blackbox/issues/141)) ([812a2ac](https://github.com/guy-with-a-why/telemetry-blackbox/commit/812a2ac0e03f7caddebb879db6e8ac3d59d15316))
+
 ## [0.9.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.8.0...v0.9.0) (2026-11-18)
 
 
