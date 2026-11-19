@@ -110,12 +110,14 @@ StatefulSet with claim templates as changed on every run. The script now puts a
 hash of the ConfigMap on the Pod template, so a change rolls the Pod in about
 15 seconds and a rerun leaves it alone.
 
-A second pass over both PRs found two things I'd got wrong. My first floor was
-12 GiB, sized against Redpanda's 5 GiB and blind to the kubelet's 15%. And the
-rollup only looked back five minutes, so frames from a refresh missed for longer
-than that, say the VMs stopping straight after a flight, would never have been
-counted. Both are fixed, each in a commit that answers its comment on the PR,
-and the check passes on data-1 with the fixes in.
+A second pass over both PRs left eight comments, each fixed in a commit that
+answers it, and two of them changed the design. My first floor was 12 GiB,
+sized against Redpanda's 5 GiB and blind to the kubelet's 15%. And the rollup
+only looked back five minutes, so frames from a refresh missed for longer than
+that, say the VMs stopping straight after a flight, would never have been
+counted. The floor is now worked out from the kubelet's line, and the deploy's
+README shows the sum. The rollup has no window left to outlast. The check
+passed on data-1 with all eight fixes in.
 
 ## What's next
 
