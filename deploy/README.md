@@ -295,7 +295,7 @@ table that exists takes an `ALTER`.
 
 | Table | Engine | Holds | Kept |
 |---|---|---|---|
-| `frames_raw` | MergeTree | every delivery of every frame, as Spate inserts it | 7 days |
+| `frames_raw` | MergeTree | every delivery of every frame, as Spate inserts it | 7 days from delivery |
 | `frames` | ReplacingMergeTree | one row per frame, once merges catch up | 30 days |
 | `frames_per_second` | ReplacingMergeTree | frames and latency per second, boot and message | 90 days |
 

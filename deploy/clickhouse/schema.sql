@@ -9,7 +9,9 @@
 -- carries the same one. received_at is the gateway's clock, also in the
 -- record, so it's the same on every delivery too. inserted_at is
 -- ClickHouse's own clock, so it isn't. bbcheck counts duplicates here, and
--- seven days outlives any drill report.
+-- seven days outlives any drill report. Rows expire seven days after they're
+-- delivered, not after the gateway saw them, so a replay of old frames from
+-- Redpanda stays long enough to be counted.
 CREATE TABLE IF NOT EXISTS frames_raw
 (
     boot_id      UUID,
@@ -30,7 +32,7 @@ CREATE TABLE IF NOT EXISTS frames_raw
 ENGINE = MergeTree
 PARTITION BY toDate(received_at)
 ORDER BY (boot_id, system_id, received_at, partition, offset)
-TTL toDateTime(received_at) + INTERVAL 7 DAY;
+TTL toDateTime(inserted_at) + INTERVAL 7 DAY;
 
 -- One row per frame, eventually. A part is immutable once written, so a
 -- duplicate isn't found when it's inserted. It goes when a background merge
