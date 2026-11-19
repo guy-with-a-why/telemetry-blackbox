@@ -64,7 +64,10 @@ The constraints:
   behave as they would on any kubeadm cluster.
 - It costs more memory than k3s. Each control plane runs etcd, the API
   server, the scheduler and the controller manager on 1.5 GB, below kubeadm's
-  1.7 GB preflight check, so init and the control-plane joins skip it.
+  1.7 GB preflight check, so init and the control-plane joins skip it. If a
+  control plane swaps or is OOM-killed, memory moves from data-1.
+  [The deploy notes](https://github.com/guy-with-a-why/telemetry-blackbox/blob/main/deploy/README.md#why-the-kubeadm-memory-check-is-skipped)
+  have the reasoning.
 - The bootstrap and its checks are bash I maintain, for the reasons in
   ADR 6.
 - I'd revisit this once the Leg 4 drills pass. By then kubeadm has taught
