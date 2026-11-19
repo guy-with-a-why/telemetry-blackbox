@@ -34,10 +34,14 @@ fi
 multipass exec "$node" -- sudo install -d -o 101 -g 101 -m 0750 "$path"
 
 # The password is made here, once, and never reaches the repo. A second run
-# keeps the first password, so clients don't lose access.
+# keeps the first password, so clients don't lose access. It's made on its
+# own line, so set -e stops the script if openssl fails, and goes in on stdin,
+# so it never shows in a process list.
 if ! "${kubectl[@]}" -n blackbox get secret clickhouse >/dev/null 2>&1; then
-  "${kubectl[@]}" -n blackbox create secret generic clickhouse \
-    --from-literal=password="$(openssl rand -hex 24)" >/dev/null
+  password=$(openssl rand -hex 24)
+  printf %s "$password" | "${kubectl[@]}" -n blackbox create secret generic clickhouse \
+    --from-file=password=/dev/stdin >/dev/null
+  unset password
 fi
 
 # The config is mounted by subPath, which the kubelet never refreshes. Its
