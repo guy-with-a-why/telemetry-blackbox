@@ -44,10 +44,9 @@ The constraints:
   load balancer in the box. The bundle is the problem. Certificates, etcd and
   the control plane's static Pods sit behind k3s's own packaging, so the
   drills would test k3s rather than upstream Kubernetes.
-- **Talos.** An immutable OS with no shell, run through an API. It's what I'd
-  pick for a production fleet, and that's why it loses here. `talosctl` does
-  the bootstrap, the joins and the upgrades, so I'd never touch the steps I
-  set out to learn.
+- **Talos.** An immutable OS with no shell, run through an API. `talosctl` does
+  the bootstrap, the joins and the upgrades, so I'd never run the steps I set
+  out to learn.
 - **kind or minikube.** Fast, but the nodes are containers on one kernel.
   Stopping a node, moving a virtual IP or draining a worker isn't the real
   thing.
