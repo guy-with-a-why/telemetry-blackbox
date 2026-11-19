@@ -260,6 +260,8 @@ which is built on the STM32F407VG, a Cortex-M4F.
 - [Cilium on a kubeadm cluster](https://docs.cilium.io/en/stable/installation/k8s-install-kubeadm/).
 - [etcd disaster recovery](https://etcd.io/docs/v3.5/op-guide/recovery/).
 - [Upgrading kubeadm clusters](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/).
+- [Certificate management with kubeadm](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/).
+- [k3s architecture](https://docs.k3s.io/architecture) and [Talos Linux](https://www.talos.dev/), the two I turned down in ADR 2.
 - [The Distribution registry](https://distribution.github.io/distribution/) and [containerd registry hosts](https://github.com/containerd/containerd/blob/main/docs/hosts.md), for the local image registry.
 
 **Data path (Legs 1 and 3)**
