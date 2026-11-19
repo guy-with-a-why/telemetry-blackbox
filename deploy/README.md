@@ -253,13 +253,19 @@ stop in matters.
 - Redpanda refuses writes when less than 5 GiB is free
   (`storage_min_free_bytes`). Its retention lets it grow to about 7 GiB: six
   partitions of 1 GiB, plus the 128 MiB segment each one is writing.
-- ClickHouse stops taking inserts while less than 12 GiB is free
-  (`keep_free_space_bytes`). That's Redpanda's floor plus all its room to
-  grow, so ClickHouse can never be what pushes Redpanda under it.
+- The kubelet marks the node under DiskPressure, and starts evicting Pods,
+  at 15% free (`imagefs.available`), because containerd shares the
+  filesystem. That's about 5.7 GiB, above Redpanda's own floor, so it's the
+  real line. Evicting won't help: both Pods are pinned to data-1 by their
+  volumes.
+- ClickHouse stops taking inserts while less than 14 GiB is free
+  (`keep_free_space_bytes`). That's the kubelet's line plus all Redpanda's
+  room to grow and 1.3 GiB to spare, so ClickHouse can never be what pushes
+  data-1 over it.
 - If ClickHouse stops, Spate stops committing and Redpanda holds the frames.
   If Redpanda stopped, the gateway would lose them.
 - With Redpanda full and the system's 7 GiB today, ClickHouse still has
-  about 11 GiB. Retention on the tables keeps them well inside it.
+  almost 10 GiB. Retention on the tables keeps them well inside it.
 
 ClickHouse also logs itself into system tables that nothing deletes by
 default, and `text_log` records every trace line. I keep `query_log`,

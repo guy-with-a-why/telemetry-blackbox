@@ -22,16 +22,18 @@ data:
         <errorlog remove="1"/>
       </logger>
 
-      <!-- Redpanda refuses writes when free space on data-1 falls under
-           5 GiB, and its retention lets it grow by up to 7 GiB. ClickHouse
-           stops taking inserts while less than 12 GiB is free, so it can
-           never be the one that pushes Redpanda under its floor. If
-           ClickHouse stops, Spate stops committing and Redpanda holds the
-           frames. If Redpanda stopped, the gateway would lose them. -->
+      <!-- The kubelet marks data-1 under DiskPressure, and starts evicting,
+           at 15% free, about 5.7 GiB. That's above Redpanda's own 5 GiB
+           floor, so it's the line to stay clear of. Redpanda's retention
+           lets it grow by up to 7 GiB. ClickHouse stops taking inserts while
+           less than 14 GiB is free, which leaves both and 1.3 GiB to spare,
+           so it can never be the one that pushes data-1 over. If ClickHouse
+           stops, Spate stops committing and Redpanda holds the frames. If
+           Redpanda stopped, the gateway would lose them. -->
       <storage_configuration>
         <disks>
           <default>
-            <keep_free_space_bytes>12884901888</keep_free_space_bytes>
+            <keep_free_space_bytes>15032385536</keep_free_space_bytes>
           </default>
         </disks>
       </storage_configuration>
