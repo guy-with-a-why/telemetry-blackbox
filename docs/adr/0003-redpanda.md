@@ -8,8 +8,8 @@
 
 The gateway reads frames off the serial link, and Spate loads them into
 ClickHouse. Something has to sit between them and hold every frame while the
-pipeline is down. The drills kill the pipeline, restart the log and drain its
-node, so that buffer is where a lost frame would come from.
+pipeline is down. The drills kill the pipeline, restart the log and drain
+data-1, so that buffer is where a lost frame would come from.
 
 What the log has to do:
 
@@ -62,10 +62,12 @@ The constraints:
 - The Kafka protocol is the contract. Spate's source, `rpk` and any Kafka
   client work against it, and the broker behind it can change.
 - One broker with one replica means a lost disk on data-1 loses every frame
-  Spate hasn't loaded. Draining data-1 stops Redpanda until the node is back,
-  and the drain drill in
-  [#27](https://github.com/guy-with-a-why/telemetry-blackbox/issues/27) will
-  show it.
+  Spate hasn't loaded. Draining data-1 stops Redpanda until the node is back.
+  Meanwhile the gateway will hold frames in a bounded buffer and apply
+  backpressure once it fills
+  ([#19](https://github.com/guy-with-a-why/telemetry-blackbox/issues/19)). The
+  drain drill in [#27](https://github.com/guy-with-a-why/telemetry-blackbox/issues/27)
+  proves none go missing.
 - Dev mode's defaults are unsafe for this job. I missed the fsync bypass the
   first time, and a restart check can't catch it. The flag is now explicit in
   the manifest, and the Leg 4 drills should stop data-1 hard.
