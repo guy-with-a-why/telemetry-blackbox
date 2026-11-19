@@ -81,8 +81,8 @@ The constraints:
   and a 1 GiB limit keep it to its share of data-1.
 - Redpanda is source-available under the Business Source License, not open
   source. That's fine for running it myself.
-- I'd revisit this if Spate gained an Iggy source, if a second and third data
-  node arrived for replication, or if the licence changed.
+- I'd revisit this if Spate gained an Iggy source, or if the licence stopped me
+  running it myself.
 
 ## References
 
