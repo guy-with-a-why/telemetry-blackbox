@@ -48,8 +48,8 @@ The constraints:
 ## Options I turned down
 
 - **Apache Kafka.** The reference implementation, with the same protocol.
-  It runs on a JVM with its own heap, which is a poor fit for 2 shared vCPUs
-  next to ClickHouse. The clients wouldn't notice the difference, so I can
+  It runs on a JVM with a heap of its own, which competes with ClickHouse for
+  data-1's 4 GB. The clients wouldn't notice the difference, so I can
   swap it in later.
 - **Apache Iggy.** Written in Rust and lighter still. It speaks its own
   protocol and Spate has no Iggy source yet, so choosing it would put a new
