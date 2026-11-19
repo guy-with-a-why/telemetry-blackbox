@@ -84,9 +84,11 @@ TTL second + INTERVAL 90 DAY;
 
 -- A plain materialised view runs on each insert, before any merge, so it
 -- would count a redelivered batch twice. This one runs every 10 seconds
--- instead. It finds the seconds that gained a row in the last five minutes,
+-- instead. It finds the seconds that gained a row since its last refresh,
 -- however old they are, and recounts them from frames_raw, grouping by
--- offset so each frame counts once at its first arrival.
+-- offset so each frame counts once at its first arrival. The watermark is
+-- the rollup's own latest refreshed_at, so a refresh that was missed, or a
+-- server that was down, is caught up on the next run.
 CREATE MATERIALIZED VIEW IF NOT EXISTS frames_per_second_mv
 REFRESH EVERY 10 SECOND APPEND TO frames_per_second
 AS
@@ -94,7 +96,9 @@ WITH touched AS
 (
     SELECT DISTINCT boot_id, system_id, toStartOfSecond(received_at) AS second
     FROM frames_raw
-    WHERE inserted_at >= now64(6) - INTERVAL 5 MINUTE
+    -- A minute's overlap catches rows that landed while the last refresh
+    -- ran. An empty rollup counts everything once.
+    WHERE inserted_at >= (SELECT max(refreshed_at) FROM frames_per_second) - INTERVAL 1 MINUTE
 )
 SELECT
     boot_id,

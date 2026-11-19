@@ -323,7 +323,9 @@ frames_per_second counts 10000 frames over 40 seconds
 A plain materialised view runs on each insert, before any merge, so a rollup
 built that way would count a redelivered batch twice. The rollup is a
 refreshable view instead. Every 10 seconds it recounts the seconds that gained
-a row in the last five minutes, grouping by offset so each frame counts once.
+a row since its last refresh, grouping by offset so each frame counts once. Its
+watermark is its own latest `refreshed_at`, so a missed refresh or a stopped
+server is caught up on the next run.
 On data-1, with a two-hour flight of 1.8 million rows already stored, a
 refresh takes about 40 ms and reads 22,500 rows. That flight takes 50 MiB in
 each frame table, so a month of evening flights fits in about 2 GiB.
