@@ -37,10 +37,11 @@ The constraints:
   and `just redpanda` applies them.
 - `telemetry.raw` has six partitions, one replica and 1 GiB of retention per
   partition.
-- The broker starts in dev mode with one core and 512 MB. Write caching and
-  the fsync bypass that dev mode turns on are both off, so an `acks=all` ack
-  means the frame is on disk. The gateway's idempotent producer will
-  use `acks=all` ([#19](https://github.com/guy-with-a-why/telemetry-blackbox/issues/19)).
+- The broker starts in dev mode with one core and 512 MB. Production mode
+  expects a tuned host and 2 GB per core, which data-1 can't spare. Write
+  caching and the fsync bypass that dev mode turns on are both off, so an
+  `acks=all` ack means the frame is on disk. The gateway's idempotent
+  producer will use `acks=all` ([#19](https://github.com/guy-with-a-why/telemetry-blackbox/issues/19)).
 - `just redpanda-check` proves a Pod restart loses nothing.
   [Holding pattern](../blog/2026-11-18-holding-pattern.md) has the detail.
 
@@ -54,6 +55,9 @@ The constraints:
   protocol and Spate has no Iggy source yet, so choosing it would put a new
   connector on the critical path. That connector is stretch work in
   [#32](https://github.com/guy-with-a-why/telemetry-blackbox/issues/32).
+- **Redpanda's Helm chart or Operator.** Both default to three brokers with
+  TLS from cert-manager, and I have one data node. A StatefulSet I wrote
+  shows every setting, and the fsync flag is one line in it.
 - **A home-made log.** I'd be writing offsets, retention, consumer groups and
   fsync handling myself. Every bug in them would show up as a lost frame, and
   the drills would blame the pipeline for it.
