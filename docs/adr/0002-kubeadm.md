@@ -31,8 +31,9 @@ The constraints:
 - kubeadm builds the cluster on Kubernetes v1.36, with stacked etcd on three
   control planes. Its v1beta4 files are in
   [`deploy/cluster/`](https://github.com/guy-with-a-why/telemetry-blackbox/tree/main/deploy/cluster).
-- kube-vip runs as a static Pod on each control plane and holds the API's
-  virtual IP. Cilium is the CNI, installed with Helm.
+- kubeadm leaves the virtual IP and the CNI to me. kube-vip runs as a static
+  Pod on each control plane and holds the API's virtual IP, and Cilium is the
+  CNI, installed with Helm.
 - I bootstrapped it by hand first, following
   [the bootstrap runbook](../runbooks/bootstrap.md).
   [ADR 6](0006-scripted-kubeadm-bootstrap.md) scripts the same steps.
