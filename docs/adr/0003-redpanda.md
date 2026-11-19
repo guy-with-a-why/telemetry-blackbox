@@ -38,8 +38,9 @@ The constraints:
 - `telemetry.raw` has six partitions, one replica and 1 GiB of retention per
   partition.
 - The broker starts in dev mode with one core and 512 MB. Write caching and
-  the fsync bypass that dev mode turns on are both off, so an ack means the
-  frame is on disk.
+  the fsync bypass that dev mode turns on are both off, so an `acks=all` ack
+  means the frame is on disk. The gateway's idempotent producer will
+  use `acks=all` ([#19](https://github.com/guy-with-a-why/telemetry-blackbox/issues/19)).
 - `just redpanda-check` proves a Pod restart loses nothing.
   [Holding pattern](../blog/2026-11-18-holding-pattern.md) has the detail.
 
