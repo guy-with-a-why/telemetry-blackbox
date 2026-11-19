@@ -1,0 +1,182 @@
+# One ClickHouse server on data-1, on the local volume in volume.yaml. It
+# shares data-1's 4 GB and 40 GB disk with Redpanda, so most of this file is
+# about staying inside that.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clickhouse-config
+  namespace: blackbox
+  labels:
+    app.kubernetes.io/name: clickhouse
+    app.kubernetes.io/component: server
+    app.kubernetes.io/part-of: telemetry-blackbox
+data:
+  blackbox.xml: |
+    <clickhouse>
+      <!-- Logs go to stdout, where the kubelet rotates them at 10 MiB. The
+           image's default keeps ten 1000 MB files on the node's disk, 10 GB
+           this disk can't spare. -->
+      <logger>
+        <level>information</level>
+        <console>1</console>
+        <log remove="1"/>
+        <errorlog remove="1"/>
+      </logger>
+
+      <!-- The kubelet marks data-1 under DiskPressure, and starts evicting,
+           at 15% free, about 5.7 GiB. That's above Redpanda's own 5 GiB
+           floor, so it's the line to stay clear of. Redpanda's retention
+           lets it grow by up to 7 GiB. ClickHouse stops taking inserts while
+           less than 14 GiB is free, which leaves both and 1.3 GiB to spare,
+           so it can never be the one that pushes data-1 over. If ClickHouse
+           stops, Spate stops committing and Redpanda holds the frames. If
+           Redpanda stopped, the gateway would lose them. -->
+      <storage_configuration>
+        <disks>
+          <default>
+            <keep_free_space_bytes>15032385536</keep_free_space_bytes>
+          </default>
+        </disks>
+      </storage_configuration>
+
+      <!-- 1.2 GiB of the container's 1.5 GiB. The rest covers the binary
+           and memory ClickHouse doesn't track. The mark cache defaults to
+           5 GiB, more than data-1 has. -->
+      <max_server_memory_usage>1288490188</max_server_memory_usage>
+      <mark_cache_size>268435456</mark_cache_size>
+
+      <!-- ClickHouse logs itself into system tables that nothing deletes
+           by default, and text_log records every trace line. These would
+           fill the disk quietly. The ones I keep go after three days:
+           part_log shows each part made and merged, query_log each query. -->
+      <query_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></query_log>
+      <part_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></part_log>
+      <error_log><ttl>event_date + INTERVAL 3 DAY DELETE</ttl></error_log>
+      <text_log remove="1"/>
+      <trace_log remove="1"/>
+      <metric_log remove="1"/>
+      <query_metric_log remove="1"/>
+      <asynchronous_metric_log remove="1"/>
+      <processors_profile_log remove="1"/>
+      <background_schedule_pool_log remove="1"/>
+      <query_views_log remove="1"/>
+      <query_thread_log remove="1"/>
+      <instrumentation_trace_log remove="1"/>
+      <opentelemetry_span_log remove="1"/>
+
+      <!-- Only HTTP and the native protocol, the two the Service exposes.
+           The interserver port is for replicas, and there's one server. -->
+      <mysql_port remove="1"/>
+      <postgresql_port remove="1"/>
+      <interserver_http_port remove="1"/>
+    </clickhouse>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse
+  namespace: blackbox
+  labels:
+    app.kubernetes.io/name: clickhouse
+    app.kubernetes.io/component: server
+    app.kubernetes.io/part-of: telemetry-blackbox
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: clickhouse
+    app.kubernetes.io/component: server
+  ports:
+    - name: http
+      port: 8123
+    - name: native
+      port: 9000
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse
+  namespace: blackbox
+  labels:
+    app.kubernetes.io/name: clickhouse
+    app.kubernetes.io/component: server
+    app.kubernetes.io/part-of: telemetry-blackbox
+spec:
+  serviceName: clickhouse
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: clickhouse
+      app.kubernetes.io/component: server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: clickhouse
+        app.kubernetes.io/component: server
+        app.kubernetes.io/part-of: telemetry-blackbox
+      annotations:
+        # scripts/clickhouse.sh fills in the ConfigMap's hash, so a changed
+        # config rolls the Pod and an unchanged one leaves it alone.
+        blackbox/config-hash: CONFIG_HASH
+    spec:
+      # Time to finish merges and flush on SIGTERM.
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsUser: 101
+        runAsGroup: 101
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: clickhouse
+          # 26.3 is the last LTS that runs on x86-64-v2. From 26.6 the image
+          # needs AVX2, which my home server's 2012 CPU doesn't have, and the
+          # VMs see the host's CPU as it is. 26.3 is supported until March
+          # 2027, and real hardware would take 26.8.
+          image: docker.io/clickhouse/clickhouse-server:26.3.66.4@sha256:e0504b765b22caa05d6f12a81f05c79c75e80936b57ed2235dc75a0f36d0805e
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          env:
+            # With a password, the image's entrypoint opens the default
+            # user to the network. Without one, it only answers localhost.
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: clickhouse
+                  key: password
+          ports:
+            - name: http
+              containerPort: 8123
+            - name: native
+              containerPort: 9000
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+            limits:
+              memory: 1536Mi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/clickhouse
+            - name: config
+              mountPath: /etc/clickhouse-server/config.d/blackbox.xml
+              subPath: blackbox.xml
+      volumes:
+        - name: config
+          configMap:
+            name: clickhouse-config
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        storageClassName: local
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 10Gi

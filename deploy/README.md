@@ -237,6 +237,55 @@ has replaced it. It only needs the kubeconfig, so it runs from my laptop too.
 On the fresh cluster the broker came back in 7 s with none missing, and 100,000
 records came back the same way.
 
+## ClickHouse
+
+```bash
+just clickhouse    # on the server: the volume, a password and the server
+```
+
+One ClickHouse server runs as a StatefulSet on data-1, on a second local
+volume beside Redpanda's. The manifests are in [`clickhouse/`](clickhouse/).
+
+Both volumes are directories on data-1's one 38 GiB filesystem, so neither
+capacity is a quota. The free space is what they share, and the order they
+stop in matters.
+
+- Redpanda refuses writes when less than 5 GiB is free
+  (`storage_min_free_bytes`). Its retention lets it grow to about 7 GiB: six
+  partitions of 1 GiB, plus the 128 MiB segment each one is writing.
+- The kubelet marks the node under DiskPressure, and starts evicting Pods,
+  at 15% free (`imagefs.available`), because containerd shares the
+  filesystem. That's about 5.7 GiB, above Redpanda's own floor, so it's the
+  real line. Evicting won't help: both Pods are pinned to data-1 by their
+  volumes.
+- ClickHouse stops taking inserts while less than 14 GiB is free
+  (`keep_free_space_bytes`). That's the kubelet's line plus all Redpanda's
+  room to grow and 1.3 GiB to spare, so ClickHouse can never be what pushes
+  data-1 over it.
+- If ClickHouse stops, Spate stops committing and Redpanda holds the frames.
+  If Redpanda stopped, the gateway would lose them.
+- With Redpanda full and the system's 7 GiB today, ClickHouse still has
+  almost 10 GiB. Retention on the tables keeps them well inside it.
+
+ClickHouse also logs itself into system tables that nothing deletes by
+default, and `text_log` records every trace line. I keep `query_log`,
+`part_log` and `error_log` for three days and drop the rest. The server log
+goes to stdout, where the kubelet rotates it.
+
+- The container gets 1.5 GiB and ClickHouse 1.2 GiB of it. The mark cache
+  drops from its 5 GiB default to 256 MiB. Idle, it holds 635 MiB.
+- It runs 26.3, the last LTS that runs on x86-64-v2. From 26.6 the image needs
+  AVX2, and my home server's 2012 CPU stops at AVX. 26.8 died with
+  `Illegal instruction` before it logged a line.
+- The default user's password is random, made once by the script and kept in
+  a Secret. Only HTTP on 8123 and the native protocol on 9000 listen.
+- The config is mounted by `subPath`, which the kubelet never refreshes. The
+  script puts its hash on the Pod template, so a change rolls the Pod.
+
+A StatefulSet won't replace a Pod that never became Ready, so a bad image or
+config stays stuck after the fix. `kubectl delete pod clickhouse-0` lets the
+new revision through.
+
 ## Drills
 
 The drills break the cluster on purpose, so there has to be something

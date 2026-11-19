@@ -118,6 +118,10 @@ redpanda:
 redpanda-check records="10000":
     scripts/redpanda-check.sh {{ quote(records) }}
 
+# Deploy ClickHouse on data-1's own disk, inside Redpanda's free-space floor. Safe to run again
+clickhouse:
+    scripts/clickhouse.sh
+
 # Build the VMs and the cluster from nothing, then check it
 up: vms cluster-up cluster-check
 
