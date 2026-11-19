@@ -73,9 +73,10 @@ The constraints:
   ([#19](https://github.com/guy-with-a-why/telemetry-blackbox/issues/19)). The
   drain drill in [#27](https://github.com/guy-with-a-why/telemetry-blackbox/issues/27)
   proves none go missing.
-- Dev mode's defaults are unsafe for this job. I missed the fsync bypass the
-  first time, and a restart check can't catch it. The flag is now explicit in
-  the manifest, and the Leg 4 drills should stop data-1 hard.
+- Dev mode's defaults are unsafe for this job. A restart check can't catch
+  the fsync bypass, because the page cache survives a Pod restart. The flag is
+  explicit in the manifest, and stopping data-1 hard in
+  [#27](https://github.com/guy-with-a-why/telemetry-blackbox/issues/27) tests it.
 - Seastar claims its memory up front and wants a core of its own. The flags
   and a 1 GiB limit keep it to its share of data-1.
 - Redpanda is source-available under the Business Source Licence, not open
