@@ -13,3 +13,4 @@ A flight recorder has two halves. The [flight log](../flight-log.md) is the data
 | 16 Nov 2026 | [Deadstick: two control planes down](2026-11-16-deadstick.md) |
 | 17 Nov 2026 | [Last known fix: etcd restored from a snapshot](2026-11-17-last-known-fix.md) |
 | 18 Nov 2026 | [Holding pattern: Redpanda on data-1's own disk](2026-11-18-holding-pattern.md) |
+| 19 Nov 2026 | [Fuel reserve: ClickHouse beside Redpanda](2026-11-19-fuel-reserve.md) |
