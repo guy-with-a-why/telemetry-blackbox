@@ -34,10 +34,12 @@ The disk came first. data-1 has one 38 GiB filesystem, and both Redpanda and
 ClickHouse live on it. Redpanda
 [refuses writes](https://docs.redpanda.com/current/manage/cluster-maintenance/disk-utilization/)
 when free space falls under 5 GiB, and its retention lets it burn about 7 GiB
-more. The kubelet draws its line higher. Containerd shares the disk, so the
-kubelet starts
+more. The kubelet draws its line higher. It starts
 [evicting](https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/)
-at 15% free, about 5.7 GiB, and that's the real reserve. ClickHouse stops
+at 10% free on the node's own disk, but at 15% on the disk that holds images,
+and containerd keeps its images on the same filesystem. So 15%, about 5.7 GiB,
+is the real reserve. Evicting wouldn't even help, because both Pods are pinned
+to data-1 by their volumes. ClickHouse stops
 taking inserts while less than 14 GiB is free. That's the reserve plus
 everything Redpanda might still use and a little spare, so ClickHouse can never
 be the one that runs data-1 dry. The order they stop in matters. If ClickHouse stops, Spate stops committing and the
