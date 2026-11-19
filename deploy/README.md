@@ -240,7 +240,8 @@ records came back the same way.
 ## ClickHouse
 
 ```bash
-just clickhouse    # on the server: the volume, a password and the server
+just clickhouse          # on the server: the volume, a password, the server and its tables
+just clickhouse-check    # insert frames twice and watch the duplicates go
 ```
 
 One ClickHouse server runs as a StatefulSet on data-1, on a second local
@@ -285,6 +286,53 @@ goes to stdout, where the kubelet rotates it.
 A StatefulSet won't replace a Pod that never became Ready, so a bad image or
 config stays stuck after the fix. `kubectl delete pod clickhouse-0` lets the
 new revision through.
+
+### The tables
+
+A Job applies [`schema.sql`](clickhouse/schema.sql) to the `blackbox`
+database on every deploy. Each statement is safe to run again, so changing a
+table that exists takes an `ALTER`.
+
+| Table | Engine | Holds | Kept |
+|---|---|---|---|
+| `frames_raw` | MergeTree | every delivery of every frame, as Spate inserts it | 7 days from delivery |
+| `frames` | ReplacingMergeTree | one row per frame, once merges catch up | 30 days |
+| `frames_per_second` | ReplacingMergeTree | frames and latency per second, boot and message | 90 days |
+
+Spate writes only `frames_raw`. A materialised view copies each insert on to
+`frames`.
+
+Near the disk floor, ClickHouse picks smaller merges before it stops inserts,
+so duplicates can linger in `frames` for longer. Expiry doesn't wait on
+merges: each table drops a part whole once every row in it has expired.
+
+The key that removes duplicates is Redpanda's partition and offset. Redpanda
+gives each frame one offset, and Spate redelivers a frame from the same one.
+MAVLink's `seq` would be the obvious key, but it's one byte, so it would
+merge frame 1 with frame 257 and delete a real frame.
+
+Deduplication is eventual. A part is never changed once written, so a
+duplicate isn't spotted on insert. It goes when a background merge puts both
+copies in one part. Until then, a query needs `FINAL`. `clickhouse-check`
+shows it, in a scratch database it drops afterwards:
+
+```text
+inserted 10000 frames twice
+frames_raw holds 20000 rows, one for each delivery
+frames holds 20000 rows in 2 parts before a merge, and 10000 with FINAL
+frames holds 10000 rows in 1 part after a merge
+frames_per_second counts 10000 frames over 40 seconds
+```
+
+A plain materialised view runs on each insert, before any merge, so a rollup
+built that way would count a redelivered batch twice. The rollup is a
+refreshable view instead. Every 10 seconds it recounts the seconds that gained
+a row since its last refresh, grouping by offset so each frame counts once. Its
+watermark is its own latest `refreshed_at`, so a missed refresh or a stopped
+server is caught up on the next run.
+On data-1, with a two-hour flight of 1.8 million rows already stored, a
+refresh takes about 40 ms and reads 22,500 rows. That flight takes 50 MiB in
+each frame table, so a month of evening flights fits in about 2 GiB.
 
 ## Drills
 

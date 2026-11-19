@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Runs on the server. Deploys ClickHouse on data-1's own disk: the volume, its
-# directory on the node, the password Secret, then the server. Safe to run
-# again. Each wait that fails says why, rather than ending on a bare timeout.
+# directory on the node, the password Secret, the server, then its tables.
+# Safe to run again. Each wait that fails says why, rather than ending on a
+# bare timeout.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # shellcheck source=deploy/vms/config.sh
@@ -61,6 +62,35 @@ if ! "${kubectl[@]}" -n blackbox rollout status statefulset/clickhouse --timeout
   "${kubectl[@]}" -n blackbox events --for pod/clickhouse-0 >&2 || true
   exit 1
 fi
+
+# Waits for the Job to finish either way, so a failure shows the SQL error at once.
+job_finished() {
+  local state
+  for _ in {1..60}; do
+    state=$("${kubectl[@]}" -n blackbox get job clickhouse-schema \
+      -o jsonpath='{.status.conditions[?(@.status=="True")].type}')
+    case $state in
+      *Complete*) return 0 ;;
+      *Failed*) return 1 ;;
+    esac
+    sleep 5
+  done
+  echo "job/clickhouse-schema didn't finish in 5 minutes" >&2
+  return 1
+}
+
+"${kubectl[@]}" -n blackbox create configmap clickhouse-schema \
+  --from-file=deploy/clickhouse/schema.sql --dry-run=client -o yaml |
+  "${kubectl[@]}" apply -f - >/dev/null
+"${kubectl[@]}" -n blackbox delete job clickhouse-schema --ignore-not-found >/dev/null
+"${kubectl[@]}" apply -f deploy/clickhouse/schema.yaml >/dev/null
+if ! job_finished; then
+  "${kubectl[@]}" -n blackbox logs --prefix --tail 20 \
+    -l batch.kubernetes.io/job-name=clickhouse-schema >&2 || true
+  exit 1
+fi
+"${kubectl[@]}" -n blackbox logs job/clickhouse-schema
+
 # shellcheck disable=SC2016 # expanded in the Pod, where the password lives
 "${kubectl[@]}" -n blackbox exec clickhouse-0 -- bash -c 'clickhouse-client --password "$CLICKHOUSE_PASSWORD" \
   --query "SELECT version() AS version, formatReadableSize(free_space) AS free, formatReadableSize(keep_free_space) AS kept FROM system.disks FORMAT PrettyCompact"'

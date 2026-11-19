@@ -118,9 +118,13 @@ redpanda:
 redpanda-check records="10000":
     scripts/redpanda-check.sh {{ quote(records) }}
 
-# Deploy ClickHouse on data-1's own disk, inside Redpanda's free-space floor. Safe to run again
+# Deploy ClickHouse on data-1's own disk, inside Redpanda's free-space floor, and apply its schema. Safe to run again
 clickhouse:
     scripts/clickhouse.sh
+
+# Insert frames twice and show the duplicates go at the merge, e.g. just clickhouse-check 50000
+clickhouse-check frames="10000":
+    scripts/clickhouse-check.sh {{ quote(frames) }}
 
 # Build the VMs and the cluster from nothing, then check it
 up: vms cluster-up cluster-check
