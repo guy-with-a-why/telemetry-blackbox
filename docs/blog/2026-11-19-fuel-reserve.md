@@ -82,12 +82,12 @@ redelivered batch twice. The rollup is a
 [refreshable view](https://clickhouse.com/docs/materialized-view/refreshable-materialized-view)
 instead. Every 10 seconds it finds the seconds that gained a row since its last
 refresh and recounts them from `frames_raw`, grouping by offset so each frame
-counts once, at its first arrival. Its own latest refresh is the watermark, so
-a stopped server catches up on the next run. With a two-hour flight already
-stored, a refresh on data-1 takes 42 to 46 ms and reads about 51,000 rows:
-22,500 new frames, and the rollup itself to find its watermark. That second
-part grows with the rollup's history, so it's the first thing to tune once the
-firmware's real frame rates arrive.
+counts once, in the second the gateway received it. Its own latest refresh is
+the watermark, so a stopped server catches up on the next run. With a two-hour
+flight already stored, a refresh on data-1 takes 42 to 46 ms and reads about
+51,000 rows: 22,500 new frames, and the rollup itself to find its watermark.
+That second part grows with the rollup's history, so it's the first thing to
+tune once the firmware's real frame rates arrive.
 
 ClickHouse also logs itself into system tables that nothing deletes, and
 `text_log` records every trace line. I keep three of them for three days and
