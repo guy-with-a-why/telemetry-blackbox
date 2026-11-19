@@ -47,9 +47,9 @@ The constraints:
 - **Talos.** An immutable OS with no shell, run through an API. `talosctl` does
   the bootstrap, the joins and the upgrades, so I'd never run the steps I set
   out to learn.
-- **kind or minikube.** Fast, but the nodes are containers on one kernel.
-  Stopping a node, moving a virtual IP or draining a worker isn't the real
-  thing.
+- **kind or minikube.** kind's nodes are containers on one kernel, so
+  stopping a machine or moving an ARP virtual IP isn't real. minikube runs
+  kubeadm for me, behind its own bootstrapper.
 - **A managed service such as EKS or GKE.** The provider runs the control
   plane, so there's nothing to break. It also costs money every hour it runs.
 
