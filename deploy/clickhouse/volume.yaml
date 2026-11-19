@@ -1,7 +1,8 @@
 # ClickHouse's disk: a directory on data-1, beside Redpanda's, which
 # scripts/clickhouse.sh creates before the server starts. Both share data-1's
 # one filesystem, so the capacity is the room ClickHouse is promised, not a
-# quota.
+# quota. Retention keeps the tables well inside it, and keep_free_space_bytes
+# in clickhouse.yaml stops ClickHouse before it can starve Redpanda.
 apiVersion: v1
 kind: PersistentVolume
 metadata:
