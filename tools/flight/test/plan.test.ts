@@ -11,7 +11,7 @@ import {
   status,
   totals,
 } from "../src/plan";
-import { LEG_0, LEG_1, LEG_2, NOW, STRETCH, issue, leg } from "./fixtures";
+import { LEG_0, LEG_1, LEG_2, NOW, SECURITY, STRETCH, issue, leg } from "./fixtures";
 
 describe("countable", () => {
   test.each([
@@ -38,6 +38,15 @@ describe("plan", () => {
     const flight = plan(issues, NOW);
     expect(flight.legs.map((l) => l.title)).toEqual([LEG_0.title, LEG_1.title, LEG_2.title]);
     expect(flight.bonus.map((i) => i.number)).toEqual([3, 4]);
+  });
+
+  it("keeps ongoing milestones off the strip", () => {
+    const flight = plan(
+      [issue(1, "open", STRETCH), issue(2, "open", SECURITY), issue(3), issue(4, "open", LEG_0)],
+      NOW,
+    );
+    expect(flight.bonus.map((i) => i.number)).toEqual([1, 3]);
+    expect(flight.legs.flatMap((l) => l.issues).map((i) => i.number)).toEqual([4]);
   });
 
   it("breaks a tie on due date by milestone number", () => {
