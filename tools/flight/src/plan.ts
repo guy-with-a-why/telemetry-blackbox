@@ -1,7 +1,8 @@
 /**
  * The flight plan: every milestone with a due date is a leg, flown in due-date
  * order. Progress counts every issue in the legs. Stretch has no due date, so
- * its issues are a bonus. Issues closed as not planned or as duplicates drop
+ * its issues are a bonus. Milestones that never land, such as Security, stay
+ * off the strip altogether. Issues closed as not planned or as duplicates drop
  * out, and issues opened after takeoff (the moment the tracker launched) are
  * headwind: scope that crept in on the way.
  *
@@ -18,6 +19,9 @@ export const STAMPS: Record<number, string> = {
   27: "Zero frames lost",
   30: "Defended the design",
 };
+
+/** Ongoing milestones, by title. They have no due date and no end, so they're neither a leg nor Stretch. */
+export const OFF_STRIP = new Set(["Security"]);
 
 /** The fields used from an issue as the GitHub REST API returns it. */
 export interface Issue {
@@ -65,7 +69,7 @@ export function plan(issues: Issue[], now: string): Flight {
     if (m?.due_on) {
       if (!legs.has(m.number)) legs.set(m.number, { title: m.title, dueOn: m.due_on, issues: [] });
       legs.get(m.number)!.issues.push(issue);
-    } else {
+    } else if (!(m && OFF_STRIP.has(m.title))) {
       bonus.push(issue);
     }
   }
