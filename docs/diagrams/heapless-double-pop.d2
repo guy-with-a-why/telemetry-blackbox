@@ -1,0 +1,82 @@
+# heapless 0.9.3: FindMutView::pop after a write unlinks one node twice (AD 2026-001).
+# The list holds three Strings, largest first, as in the reproduction harness.
+direction: right
+
+head: head
+charlie: "node 2\ncharlie"
+bravo: "node 1\nbravo"
+alpha: "node 0\nalpha"
+free: "free list\nempty"
+buffer: "heap buffer\n\"bravo\"" {shape: stored_data}
+caller: caller
+
+head -> charlie
+charlie -> bravo: next
+bravo -> alpha: next
+charlie -> alpha: next {style.opacity: 0}
+free -> bravo {style.opacity: 0}
+bravo -> buffer: owns
+caller -> buffer: owns {style.opacity: 0}
+
+caption: "heapless 0.9.3: pop after a write through the view" {shape: text; near: bottom-center}
+
+steps: {
+  1: {
+    caption: Three Strings, sorted largest first
+  }
+  2: {
+    caption: find_mut returns a view of bravo, and a write through it sets maybe_changed
+    bravo.label: "node 1\nbravo! (changed)"
+    buffer.label: "heap buffer\n\"bravo!\""
+  }
+  3: {
+    caption: pop() unlinks node 1, puts it on the free list and hands bravo! to the caller
+    bravo.label: "node 1\nfree"
+    free.label: "free list"
+    (charlie -> bravo)[0].style.opacity: 0
+    (bravo -> alpha)[0].style.opacity: 0
+    (charlie -> alpha)[0].style.opacity: 1
+    (free -> bravo)[0].style.opacity: 1
+    (bravo -> buffer)[0].style.opacity: 0
+    (caller -> buffer)[0].style.opacity: 1
+  }
+  4: {
+    caption: The view drops with the flag still set and unlinks node 1 again, cutting alpha off
+    bravo.label: "node 1\nfree, next: itself"
+    alpha.label: "node 0\nalpha (lost)"
+    alpha.style: {stroke: "#e5534b"; stroke-dash: 3}
+    (charlie -> alpha)[0].style.opacity: 0
+  }
+  5: {
+    caption: It reads bravo! out a second time and pushes the copy back, into a node still on the free list
+    bravo.label: "node 1\nbravo! (copy)"
+    bravo.style: {stroke: "#c69026"; stroke-width: 3}
+    buffer.label: "heap buffer\n\"bravo!\", two owners"
+    buffer.style: {stroke: "#c69026"; stroke-width: 3}
+    (charlie -> bravo)[0].style.opacity: 1
+    (bravo -> buffer)[0].style.opacity: 1
+  }
+  6: {
+    caption: The caller drops its String, and the list now points at freed memory
+    buffer.label: "heap buffer\nfreed"
+    buffer.style: {stroke: "#e5534b"; stroke-width: 3}
+    bravo.style: {stroke: "#e5534b"; stroke-width: 3}
+    (caller -> buffer)[0].style.opacity: 0
+    (bravo -> buffer)[0].label: dangling
+    (bravo -> buffer)[0].style: {stroke: "#e5534b"; stroke-width: 3}
+  }
+  7: {
+    caption: "heapless 0.9.4: pop() clears the flag first, so the view does nothing when it drops"
+    bravo.label: "node 1\nfree"
+    bravo.style: {stroke: "#46954a"; stroke-width: 2}
+    alpha.label: "node 0\nalpha"
+    alpha.style: {stroke: "#46954a"; stroke-dash: 0}
+    buffer.label: "heap buffer\n\"bravo!\""
+    buffer.style: {stroke: "#46954a"; stroke-width: 3}
+    (charlie -> bravo)[0].style.opacity: 0
+    (charlie -> alpha)[0].style.opacity: 1
+    (bravo -> buffer)[0].label: owns
+    (bravo -> buffer)[0].style: {opacity: 0; stroke-width: 2}
+    (caller -> buffer)[0].style.opacity: 1
+  }
+}

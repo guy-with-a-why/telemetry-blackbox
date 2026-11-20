@@ -15,6 +15,7 @@
   - [Holding pattern: Redpanda on data-1's own disk](blog/2026-11-18-holding-pattern.md)
   - [Fuel reserve: ClickHouse beside Redpanda](blog/2026-11-19-fuel-reserve.md)
 - [Airworthiness directives](directives/README.md)
+  - [AD 2026-001: Nine heapless advisories](directives/2026-11-20-heapless.md)
 - [Decisions](adr/README.md)
   - [0002. kubeadm](adr/0002-kubeadm.md)
   - [0003. Redpanda](adr/0003-redpanda.md)

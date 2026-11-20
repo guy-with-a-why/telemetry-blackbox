@@ -20,5 +20,6 @@ stays out of the build and its lockfile is ignored in the nearest
 `osv-scanner.toml` with a reason. I reproduce only advisories that are already
 public and already fixed.
 
-None yet. The first covers heapless, in
-[#150](https://github.com/guy-with-a-why/telemetry-blackbox/issues/150).
+| Directive | Date | Weakness | Verdict |
+|---|---|---|---|
+| [AD 2026-001: Nine heapless advisories and a use after free](2026-11-20-heapless.md) | 20 Nov 2026 | [CWE-416](https://cwe.mitre.org/data/definitions/416.html) | Fixed |

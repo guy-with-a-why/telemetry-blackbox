@@ -1,0 +1,3 @@
+# Build under the repo's target/, so nothing lands in docs/ for mdBook to copy.
+[build]
+target-dir = "../../../../target/repro-heapless"

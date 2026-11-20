@@ -1,0 +1,49 @@
+# This crate pins heapless 0.9.3 on purpose, to reproduce RUSTSEC-2026-0574
+# for AD 2026-001. It's its own workspace and nothing links it, so these
+# advisories never reach anything the project ships. OSV-Scanner reads this
+# file for the lockfile beside it.
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0574"
+ignoreUntil = 2027-05-20
+reason = "Pinned on purpose: this harness reproduces it for AD 2026-001."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0575"
+ignoreUntil = 2027-05-20
+reason = "Comes with the 0.9.3 pin this harness needs. Nothing links the crate."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0576"
+ignoreUntil = 2027-05-20
+reason = "Comes with the 0.9.3 pin this harness needs. Nothing links the crate."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0577"
+ignoreUntil = 2027-05-20
+reason = "Comes with the 0.9.3 pin this harness needs. Nothing links the crate."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0578"
+ignoreUntil = 2027-05-20
+reason = "Comes with the 0.9.3 pin this harness needs. Nothing links the crate."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0579"
+ignoreUntil = 2027-05-20
+reason = "Comes with the 0.9.3 pin this harness needs. Nothing links the crate."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0580"
+ignoreUntil = 2027-05-20
+reason = "Comes with the 0.9.3 pin this harness needs. Nothing links the crate."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0581"
+ignoreUntil = 2027-05-20
+reason = "Comes with the 0.9.3 pin this harness needs. Nothing links the crate."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0582"
+ignoreUntil = 2027-05-20
+reason = "Comes with the 0.9.3 pin this harness needs. Nothing links the crate."

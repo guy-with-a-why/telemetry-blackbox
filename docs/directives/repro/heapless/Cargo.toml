@@ -1,0 +1,15 @@
+# Reproduces RUSTSEC-2026-0574 for AD 2026-001: a use after free in heapless's
+# FindMutView::pop. The lockfile pins the vulnerable 0.9.3 on purpose. This
+# crate is its own workspace, so nothing in the project links it. Run it with
+# `cargo miri test --locked`.
+[workspace]
+
+[package]
+name = "repro-heapless"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "MIT OR Apache-2.0"
+
+[dev-dependencies]
+heapless = "0.9.3"
