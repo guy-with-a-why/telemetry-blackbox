@@ -22,6 +22,9 @@ jobs:
   release-please:
     name: release pull request
     runs-on: ubuntu-latest
+    # The App's key lives in this environment, which only main can deploy to,
+    # so a workflow pushed to another branch can't read it.
+    environment: release
     outputs:
       created: ${{ steps.release.outputs.release_created }}
       tag: ${{ steps.release.outputs.tag_name }}
