@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.2](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.10.1...v0.10.2) (2026-11-20)
+
+
+### Bug Fixes
+
+* **flight:** keep the Security milestone off the Stretch strip ([#166](https://github.com/guy-with-a-why/telemetry-blackbox/issues/166)) ([eab497f](https://github.com/guy-with-a-why/telemetry-blackbox/commit/eab497f248de9a2843f218d31e0ae6ef28ae5cbf))
+
 ## [0.10.1](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.10.0...v0.10.1) (2026-11-20)
 
 
