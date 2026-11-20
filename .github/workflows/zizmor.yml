@@ -1,0 +1,47 @@
+name: zizmor
+
+# zizmor audits the workflows and the Dependabot config for GitHub Actions
+# problems CodeQL misses, such as template injection, cache poisoning and a
+# token left on disk (ADR 7). A finding fails the run and lands in code
+# scanning. With a token it also checks every pinned action against known
+# advisories and impostor commits.
+on:
+  pull_request:
+    paths: [".github/workflows/**", ".github/dependabot.yml"]
+  push:
+    branches: [main]
+    paths: [".github/workflows/**", ".github/dependabot.yml"]
+  schedule:
+    - cron: "45 7 * * 1" # Mondays, so new audits and advisories meet old workflows
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: zizmor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: audit the workflows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # read the workflows and look up the pinned actions
+      security-events: write # upload the findings to code scanning
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+        with:
+          install_args: zizmor
+      - name: Audit the workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: zizmor --format sarif . >"$RUNNER_TEMP/zizmor.sarif"
+      # upload whatever was found, even when the audit failed the run
+      - uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        if: ${{ !cancelled() }}
+        with:
+          sarif_file: ${{ runner.temp }}/zizmor.sarif
+          category: zizmor

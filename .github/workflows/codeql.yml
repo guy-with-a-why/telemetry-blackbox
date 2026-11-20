@@ -1,6 +1,7 @@
 name: codeql
 
-# Static analysis of the Rust crates, bbcheck and the workflows themselves.
+# Static analysis of the Rust crates, bbcheck, the flight tool's TypeScript and
+# the workflows themselves.
 # Findings land in the repo's code scanning alerts. Nothing needs building:
 # CodeQL reads the source directly. A pull request analyses only the languages
 # it changes and reports an empty result for the rest. Main, the weekly run and
@@ -43,7 +44,13 @@ jobs:
               - "**/*.rs"
               - "**/Cargo.toml"
               - "**/Cargo.lock"
-      # higher up a stack, Rust and Python wait until the pull request targets main
+            javascript-typescript:
+              - "**/*.ts"
+              - "**/*.tsx"
+              - "**/package.json"
+              - "**/package-lock.json"
+      # higher up a stack, everything but the workflows waits until the pull
+      # request targets main
       - id: pick
         env:
           EVENT: ${{ github.event_name }}
@@ -55,7 +62,7 @@ jobs:
           elif [[ "$EVENT" == pull_request ]]; then
             echo "languages=$(jq -c 'map(select(. == "actions"))' <<<"$CHANGED")" >>"$GITHUB_OUTPUT"
           else
-            echo 'languages=["actions", "python", "rust"]' >>"$GITHUB_OUTPUT"
+            echo 'languages=["actions", "python", "rust", "javascript-typescript"]' >>"$GITHUB_OUTPUT"
           fi
 
   analyse:
@@ -69,7 +76,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [actions, python, rust]
+        language: [actions, python, rust, javascript-typescript]
     env:
       CHANGED: ${{ contains(fromJSON(needs.languages.outputs.languages), matrix.language) }}
     steps:
