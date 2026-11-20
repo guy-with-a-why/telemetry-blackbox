@@ -1,0 +1,44 @@
+name: images
+
+# Scans the third-party images the cluster runs, every Monday and whenever a
+# change touches deploy/. It only reports: their advisories are mostly in base
+# packages only the publisher can fix, so the action is to move the digest once
+# they ship one (ADR 7). The table lands in the run's summary and the full
+# results in an artifact.
+on:
+  pull_request:
+    paths: ["deploy/**", "scripts/image-scan.sh", ".github/workflows/images.yml"]
+  schedule:
+    - cron: "0 8 * * 1" # Mondays, after the lockfile scan
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: images-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    name: scan the third-party images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # read the manifests in deploy/
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+        with:
+          install_args: osv-scanner
+      # every image pinned by digest, so the scan follows the manifests
+      - name: Scan the images
+        run: |
+          mapfile -t images < <(grep -rhoE 'image: *[^ ]+@sha256:[0-9a-f]{64}' deploy | awk '{print $2}' | sort -u)
+          { echo "### Third-party images"; echo; scripts/image-scan.sh --out "$RUNNER_TEMP/scan" "${images[@]}"; } >>"$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: image-scan
+          path: ${{ runner.temp }}/scan
+          retention-days: 30
