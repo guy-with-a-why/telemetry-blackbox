@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.1](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.10.0...v0.10.1) (2026-11-20)
+
+
+### Bug Fixes
+
+* **firmware:** update heapless to 0.9.4 for nine advisories ([#159](https://github.com/guy-with-a-why/telemetry-blackbox/issues/159)) ([5625a3d](https://github.com/guy-with-a-why/telemetry-blackbox/commit/5625a3dc2473d7b6f3ac1174f4d0c98d1c761067))
+* **flight:** override fflate to 0.7.5 until satori ships the bump ([#160](https://github.com/guy-with-a-why/telemetry-blackbox/issues/160)) ([0f321c1](https://github.com/guy-with-a-why/telemetry-blackbox/commit/0f321c1c16d065071ff47da4962aec1d08ed5b39))
+
 ## [0.10.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.9.0...v0.10.0) (2026-11-19)
 
 
