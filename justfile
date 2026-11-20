@@ -24,6 +24,16 @@ diagrams:
 audit:
     gitleaks git --no-banner --redact .
 
+# OSV-Scanner gets the lockfiles by name, so local worktrees and build output
+# stay out of the scan. CI scans the whole checkout (ADR 7).
+
+# Scan every lockfile for advisories, then check the crates' licences, bans and sources
+vulns:
+    osv-scanner scan source --lockfile Cargo.lock --lockfile firmware/Cargo.lock \
+        --lockfile tools/bbcheck/uv.lock --lockfile tools/flight/package-lock.json
+    cargo deny check bans licenses sources
+    cd firmware && cargo deny --target thumbv7em-none-eabihf check bans licenses sources
+
 # Build the docs site into book/: the README becomes its introduction, the
 # flight strip and log come from the issues and the coverage badge from
 # `just coverage`, if it has run. The introduction links the strips this build
@@ -53,13 +63,15 @@ test-scripts:
     npm --prefix tools/flight run --silent lint
     npm --prefix tools/flight test
 
-# Check formatting and lints for the crates, the firmware, bbcheck and the shell scripts
+# Check formatting, lints and licences for the crates, the firmware, bbcheck and the shell scripts
 lint:
     shfmt --diff --indent 2 --case-indent scripts deploy
     shellcheck --external-sources $(shfmt --find scripts deploy)
     cargo fmt --all --check
     cargo clippy --workspace --all-targets --locked -- -D warnings
+    cargo deny check bans licenses sources
     cd firmware && cargo fmt --check && cargo clippy --locked -- -D warnings
+    cd firmware && cargo deny --target thumbv7em-none-eabihf check bans licenses sources
     uv run --locked --project tools/bbcheck ruff check tools/bbcheck
 
 # Run the tests and build the firmware

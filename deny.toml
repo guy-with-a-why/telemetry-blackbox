@@ -1,0 +1,27 @@
+# cargo-deny checks licences, bans and sources for both Rust workspaces, and
+# finds this file from firmware/ too. Advisories are OSV-Scanner's job (ADR 7),
+# so every advisory has one record, in osv-scanner.toml, and the advisories
+# check isn't run.
+
+[licenses]
+# unicode-ident adds Unicode-3.0. The crates that offer Unlicense also offer MIT.
+allow = ["MIT", "Apache-2.0", "Unicode-3.0"]
+confidence-threshold = 0.9
+# the host crates have no dependencies yet, so most of the list goes unused there
+unused-allowed-license = "allow"
+
+[licenses.private]
+# the workspace crates aren't published
+ignore = true
+
+[bans]
+# embassy pulls in two majors of embedded-hal, embedded-io and others, so
+# duplicates warn. The firmware checks only its own target, which leaves out
+# the Windows crates a host build would pull in
+multiple-versions = "warn"
+wildcards = "deny"
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

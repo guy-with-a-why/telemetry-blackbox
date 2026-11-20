@@ -1,0 +1,40 @@
+name: osv-scanner
+
+# OSV-Scanner checks every lockfile against OSV, which carries GitHub's
+# advisories, RustSec and PyPA (ADR 7). A pull request fails only on a
+# vulnerability it adds. Main, the Monday run and a manual run scan everything,
+# send the findings to code scanning and fail while any is untriaged. An
+# advisory that doesn't apply is ignored in the nearest osv-scanner.toml, with
+# the reason and a date to look at it again.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "15 7 * * 1" # Mondays, so new advisories meet old code
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: osv-scanner-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pull-request:
+    name: new vulnerabilities
+    if: github.event_name == 'pull_request'
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@32d3cd482bdadfb38b186c0ad1b031902d55d932 # v2.7.1
+    permissions:
+      actions: read
+      contents: read
+      security-events: write # upload the findings to code scanning
+
+  full:
+    name: every lockfile
+    if: github.event_name != 'pull_request'
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@32d3cd482bdadfb38b186c0ad1b031902d55d932 # v2.7.1
+    permissions:
+      actions: read
+      contents: read
+      security-events: write # upload the findings to code scanning
