@@ -19,6 +19,7 @@
   - [0003. Redpanda](adr/0003-redpanda.md)
   - [0005. just, mise and a local registry](adr/0005-just-mise-and-a-local-registry.md)
   - [0006. A scripted kubeadm bootstrap](adr/0006-scripted-kubeadm-bootstrap.md)
+  - [0007. OSV-Scanner and a triage routine](adr/0007-osv-scanner-and-a-triage-routine.md)
 - [Runbooks](runbooks/README.md)
   - [Bootstrap the cluster by hand](runbooks/bootstrap.md)
   - [Lose one control plane, then two](runbooks/control-plane.md)
