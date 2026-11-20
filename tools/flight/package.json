@@ -16,6 +16,10 @@
     "react": "19.3.1",
     "satori": "0.63.2"
   },
+  "//overrides": "satori pins fflate to 0.7.3, which has GHSA-px8p-9vwx-vf98 (CVE-2026-45820). Pinned to 0.7.5 here; drop once satori ships https://github.com/vercel/satori/pull/952",
+  "overrides": {
+    "fflate": "0.7.5"
+  },
   "devDependencies": {
     "@types/node": "26.6.6",
     "@types/react": "19.3.0",
