@@ -75,7 +75,8 @@ gh attestation verify firmware-<tag>.elf --repo guy-with-a-why/telemetry-blackbo
 
 Severity is the CVSS base score from the advisory's vector, not GitHub's
 label. fflate's vector scores 7.5, High, where GitHub says Moderate. Where
-there isn't one, I write my own estimate in the issue.
+there isn't one, I write my own estimate in the pull request or the ignore's
+reason.
 
 ### 5. Pick the outcome
 
@@ -133,8 +134,8 @@ For an image finding, the next run's summary table no longer counts it.
 
 ### 8. Clean up
 
-I close the issue with the outcome and check every new ignore has a date and
-a reason. Then I add the run below.
+I close the issue, if there is one, with the outcome and check every new
+ignore has a date and a reason. Then I add the run below.
 
 ## What I saw
 
