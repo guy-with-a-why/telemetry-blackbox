@@ -5,6 +5,7 @@ export const LEG_0 = { number: 1, title: "Leg 0 · The bench", due_on: "2026-11-
 export const LEG_1 = { number: 3, title: "Leg 1 · A cluster I built myself", due_on: "2026-11-20T00:00:00Z" };
 export const LEG_2 = { number: 2, title: "Leg 2 · Firmware and the wire", due_on: "2026-11-24T00:00:00Z" };
 export const STRETCH = { number: 6, title: "Stretch", due_on: null };
+export const SECURITY = { number: 7, title: "Security", due_on: null };
 
 export function issue(
   number: number,
