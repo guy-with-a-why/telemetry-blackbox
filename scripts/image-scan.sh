@@ -36,7 +36,8 @@ if [[ $# -eq 0 ]]; then
   exit 2
 fi
 mkdir -p "$out"
-# image ignores live beside the root workspace's, in the root osv-scanner.toml
+# Image ignores go in a root osv-scanner.toml, shared with Cargo.lock's, once
+# there are any. There aren't yet.
 config=()
 if [[ -f osv-scanner.toml ]]; then config=(--config osv-scanner.toml); fi
 
