@@ -61,7 +61,10 @@ The constraints:
   are reported, never blocking: their fix is a newer base digest, which
   Dependabot proposes each week. Each architecture
   gets an SPDX SBOM, attested against its own image and attached to the
-  release. A Monday scan covers the third-party images and only reports. #153.
+  release. A scan of the third-party images runs every Monday and on any pull
+  request that touches `deploy/`, and only reports. It reads each image field
+  in the manifests and kube-vip's pin in `config.sh`. Cilium's images come from
+  its Helm chart, so it can't see them yet. #153.
 - CodeQL adds `javascript-typescript`, and zizmor audits the workflows. #154.
 - I triage every finding within 7 days, as `SECURITY.md` promises a reporter.
   Each gets one of four outcomes:
