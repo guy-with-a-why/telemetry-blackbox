@@ -94,7 +94,5 @@ rate.
 data-1 has 2.5 of its 4 GiB claimed before the pipeline and Grafana arrive in
 Leg 3, and the fallback is another gigabyte from the host.
 [#130](https://github.com/guy-with-a-why/telemetry-blackbox/issues/130) is the
-debt I chose, and it starts once Leg 4 lands. And the project stays on 0.x. A 1.0.0 promises a stable API, and
-Legs 2 and 3 still build the gateway, the pipeline and the wire format. 1.0
-waits until the end of Leg 4, when the claim is proven with numbers. A leg is
-marked by its debrief and its milestone, not by a version.
+debt I chose, and it starts once Leg 4 lands. The project stays on 0.x until
+then, when the Results table holds real numbers.
