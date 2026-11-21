@@ -100,7 +100,8 @@ Scorecard only reads `ignoreUntil`, so I keep it over `effectiveUntil`.
 ### 6. Fix a weakness in my own code
 
 1. I open a draft security advisory and request a CVE on it. If it came in as
-   a private report, I accept the report as that draft.
+   a private report, I accept the report as that draft, agree a disclosure date
+   with the reporter and credit them.
 2. I start a temporary private fork from the advisory and fix it there, with a
    regression test that fails before the fix.
 3. CI doesn't run in the fork and the ruleset isn't enforced on its merge, so I
