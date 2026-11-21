@@ -176,11 +176,6 @@ upstream's fix was still open.
 45 advisories, 16 High or Critical, none with a Debian 13 fix and none in Rust
 crates. Reported, not blocked.
 
-## Why one record per advisory
-
-The `osv-scanner.toml` entry lapses, so the decision comes back for a second
-look. A dismissed alert never does. Two records would drift apart.
-
 ## When it goes wrong
 
 ### The Monday scan fails on main with nothing merged
@@ -191,10 +186,6 @@ A new advisory, or an ignore that lapsed. I triage it again from step 2.
 
 An advisory in a Rust crate. A rerun builds from the release tag, so an ignore
 added on `main` won't free it. The way out is a fix and a new release.
-
-### Dependabot can't open a fix
-
-A parent pins the package exactly. I override it and go upstream.
 
 ### OSV-Scanner flags what Dependabot doesn't
 
