@@ -17,7 +17,7 @@ nodeRegistration:
 ---
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
-kubernetesVersion: @KUBERNETES_VERSION@
+kubernetesVersion: "@KUBERNETES_VERSION@"
 # Every kubeconfig and every join goes through the VIP, so the API survives
 # losing whichever control plane holds it.
 controlPlaneEndpoint: "@VIP@:6443"
