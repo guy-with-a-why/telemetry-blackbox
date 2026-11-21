@@ -14,6 +14,7 @@
   - [Last known fix: etcd restored from a snapshot](blog/2026-11-17-last-known-fix.md)
   - [Holding pattern: Redpanda on data-1's own disk](blog/2026-11-18-holding-pattern.md)
   - [Fuel reserve: ClickHouse beside Redpanda](blog/2026-11-19-fuel-reserve.md)
+  - [Leg 1 debrief: A cluster I built myself](blog/2026-11-21-leg-1-debrief.md)
 - [Airworthiness directives](directives/README.md)
 - [Decisions](adr/README.md)
   - [0002. kubeadm](adr/0002-kubeadm.md)
