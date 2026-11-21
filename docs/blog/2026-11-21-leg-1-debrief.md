@@ -69,11 +69,11 @@ exec` truncated an etcd snapshot to 2.2 of 15 MB, so the runbook copies with
 while every box on it was still unticked, so I now check which issues a pull
 request will close before it merges.
 
-The lesson that leads is to budget for the machine I have. My home server is a
-2012 two-core i5 on a link of about 1.1 MB/s. ClickHouse 26.8 needs AVX2, and I
-found out after almost five minutes spent pulling an image that couldn't run.
-From here I check an image's CPU baseline before pulling it, and I size work
-for this box, not an ideal one.
+Nor did I budget for the machine I have. My home server is a 2012 two-core i5
+on a link of about 1.1 MB/s. ClickHouse 26.8 needs AVX2, and I found out after
+almost five minutes spent pulling an image that couldn't run. From here I
+check an image's CPU baseline before pulling it, and I size work for this box,
+not an ideal one.
 
 ## Into the next leg
 
