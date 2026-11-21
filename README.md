@@ -291,7 +291,7 @@ which is built on the STM32F407VG, a Cortex-M4F.
 Dependencies and code are scanned on every pull request and every Monday. The
 [security policy](https://github.com/guy-with-a-why/telemetry-blackbox/security/policy)
 says how to report a vulnerability and the order I handle one in, from triage
-to the public write-up. Each one that reaches this project gets a
+to the public write-up. A weakness found in my own code gets a
 [directive](docs/directives/).
 
 ## Licence

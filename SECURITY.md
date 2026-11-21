@@ -26,8 +26,6 @@ routine are in [ADR 7](docs/adr/0007-osv-scanner-and-a-triage-routine.md).
    the reason and a date to look at it again.
 5. A fix that belongs upstream gets an issue there, or a private report if the
    flaw isn't public yet. I carry a workaround until it ships.
-6. Once the advisory is public and the fix has shipped, I write it up as a
-   [directive](docs/directives/README.md).
 
 ### In my own code
 

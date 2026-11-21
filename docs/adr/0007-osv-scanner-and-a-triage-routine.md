@@ -125,8 +125,6 @@ The constraints:
   job: heapless arrived that way.
 - Every `osv-scanner.toml` ignore expires, so each advisory decision comes back
   for a second look.
-- A reproduction harness pins a flawed version on purpose, so each one needs an
-  ignore that points at its directive.
 - An advisory in a Rust crate published between merge and release holds the
   image tags. The job builds from the release tag, so an ignore added on main
   can't free it. The way out is a fix and a new release.
