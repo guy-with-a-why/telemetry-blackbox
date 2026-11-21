@@ -12,9 +12,13 @@
 
 [Leg 1](https://github.com/guy-with-a-why/telemetry-blackbox/milestone/3)
 set out to build a highly available cluster, break it on purpose and put the
-stores on it. It did all three. Five VMs run on my home server, and caches on
-the host cut building them from 18 minutes to 6. I bootstrapped three control
-planes behind a virtual IP by hand in
+stores on it. It did all three. Five VMs from
+[#10](https://github.com/guy-with-a-why/telemetry-blackbox/issues/10) run on
+my home server, and caches on the host from
+[#75](https://github.com/guy-with-a-why/telemetry-blackbox/issues/75) and
+[#82](https://github.com/guy-with-a-why/telemetry-blackbox/issues/82) cut
+building them from 18 minutes to 6. I bootstrapped three control planes
+behind a virtual IP by hand in
 [#11](https://github.com/guy-with-a-why/telemetry-blackbox/issues/11), then
 turned the same steps into one command in
 [#105](https://github.com/guy-with-a-why/telemetry-blackbox/issues/105).
@@ -29,8 +33,10 @@ runbook. Redpanda in
 [#14](https://github.com/guy-with-a-why/telemetry-blackbox/issues/14) kept all
 100,000 acknowledged records through a Pod delete. ClickHouse in
 [#15](https://github.com/guy-with-a-why/telemetry-blackbox/issues/15) took
-10,000 frames twice and kept 10,000. ADRs 2 and 3 record why I chose kubeadm
-and Redpanda, and the checkpoint in
+10,000 frames twice and kept 10,000. [ADR 2](../adr/0002-kubeadm.md) and
+[ADR 3](../adr/0003-redpanda.md) record why I chose kubeadm and Redpanda in
+[#16](https://github.com/guy-with-a-why/telemetry-blackbox/issues/16), and the
+checkpoint in
 [#17](https://github.com/guy-with-a-why/telemetry-blackbox/issues/17) closed
 the leg.
 
