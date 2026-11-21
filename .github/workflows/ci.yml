@@ -191,9 +191,12 @@ jobs:
   deploy:
     name: publish the docs site
     needs: [audit, docs]
-    # docs can run after a skipped job, so check the results explicitly
+    # docs can run after a skipped job, so check the results explicitly. The
+    # secret scan skips issue events and the daily run, which add no commits.
     if: >-
-      !cancelled() && needs.audit.result == 'success' && needs.docs.result == 'success' &&
+      !cancelled() && needs.docs.result == 'success' &&
+      (needs.audit.result == 'success' ||
+      (needs.audit.result == 'skipped' && (github.event_name == 'issues' || github.event_name == 'schedule'))) &&
       github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
