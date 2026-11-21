@@ -31,10 +31,11 @@ routine are in [ADR 7](docs/adr/0007-osv-scanner-and-a-triage-routine.md).
 
 ### In my own code
 
-1. I open a draft GitHub security advisory. If you reported it, I add you.
+1. I open a draft GitHub security advisory and request a CVE on it. If you
+   reported it privately, I accept your report as that draft.
 2. I fix it in the advisory's private fork, out of public view.
 3. I merge the fix and cut a release.
-4. I publish the advisory, and GitHub assigns a CVE.
+4. I publish the advisory, and the CVE goes public with it.
 5. The directive goes up after that, never before.
 
 ### Deadlines

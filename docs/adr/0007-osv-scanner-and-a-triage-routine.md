@@ -76,8 +76,8 @@ The constraints:
   within 7 days. Medium: within 30 days. Low and informational: the next weekly
   sweep.
 - A weakness in my own code goes in a fixed order: a draft GitHub security
-  advisory, the fix in its private fork, a release, the advisory published with
-  a CVE, then a directive in `docs/directives/`.
+  advisory with a CVE requested on it, the fix in its private fork, a release,
+  the advisory published, then a directive in `docs/directives/`.
 - The order is public in `SECURITY.md`.
 
 ## Options I turned down
