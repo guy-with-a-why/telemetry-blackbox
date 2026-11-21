@@ -53,9 +53,12 @@ Reachable means the flawed code is in something I ship, on a path it runs.
 
 ```bash
 cargo tree -i <crate> --locked -e normal
-npm ls <package>
-uv tree --invert --package <package>
+cargo tree -i <crate> --locked -e normal --manifest-path firmware/Cargo.toml --target thumbv7em-none-eabihf
+npm ls <package> --prefix tools/flight --package-lock-only
+uv tree --directory tools/bbcheck --locked --invert --package <package>
 ```
+
+Each runs from the repo root. An empty tree means it isn't there.
 
 For the firmware I check the binary that shipped. Fat LTO inlines most crates,
 so `llvm-nm` misses them, but the debug info keeps their names. Zero means none
