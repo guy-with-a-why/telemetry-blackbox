@@ -87,8 +87,9 @@ The milestones moved in
 
 Leg 2 builds the firmware. Its biggest risk is MAVLink over UART with DMA in
 [#6](https://github.com/guy-with-a-why/telemetry-blackbox/issues/6). If DMA
-eats the evenings, interrupt-driven writes still keep up with the frame rate,
-and DMA moves to Stretch.
+eats the evenings, it moves to Stretch and the fallback is interrupt-driven
+writes, as long as the UART budget in #6 shows they keep up with the frame
+rate.
 
 Two things carry forward. data-1 has 2.5 of its 4 GiB claimed before the
 pipeline and Grafana arrive in Leg 3, and the fallback is another gigabyte from
