@@ -133,8 +133,9 @@ The constraints:
 - A release can ship with a High advisory in the base image that Debian hasn't
   fixed. It shows in the run's summary, and that's the cost of not waiting
   on Debian.
-- The OSV-Scanner check becomes required, which is a ruleset change I make by
-  hand.
+- The `main` ruleset already blocks a merge on a High or Critical alert from
+  OSV-Scanner or CodeQL. Making the OSV-Scanner check itself required is a
+  ruleset change I make by hand (#152).
 - Findings in third-party images are visible but not mine to fix. I move the
   digest when upstream ships.
 - I'd revisit this if Dependabot gained RustSec, if the project gained
