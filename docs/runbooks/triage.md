@@ -35,7 +35,10 @@ request or waits on upstream. It goes in the Security milestone with a
 ### 2. Read the advisory
 
 ```bash
-curl -fsS https://api.osv.dev/v1/vulns/<ID> | jq '{id, aliases, severity, affected}'
+curl -fsS https://api.osv.dev/v1/vulns/<ID> | jq '{id, summary, aliases,
+  cwe: .database_specific.cwe_ids, severity: [.severity[]?.score],
+  functions: [.affected[].ecosystem_specific.affects.functions[]?],
+  fixed: [.affected[].ranges[]?.events[]?.fixed // empty]}'
 ```
 
 I note the aliases, the CWE and the affected functions where RustSec lists
@@ -70,8 +73,9 @@ gh attestation verify firmware-<tag>.elf --repo guy-with-a-why/telemetry-blackbo
 "$(rustc --print sysroot)"/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-readobj --string-dump=.debug_str firmware-<tag>.elf | grep -c <crate_name>
 ```
 
-Severity is the advisory's CVSS score. Where there isn't one, I write my own
-estimate in the issue.
+Severity is the CVSS base score from the advisory's vector, not GitHub's
+label. fflate's vector scores 7.5, High, where GitHub says Moderate. Where
+there isn't one, I write my own estimate in the issue.
 
 ### 5. Pick the outcome
 
