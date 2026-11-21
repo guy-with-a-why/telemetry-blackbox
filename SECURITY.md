@@ -43,7 +43,7 @@ routine are in [ADR 7](docs/adr/0007-osv-scanner-and-a-triage-routine.md).
 | Finding | Fixed and released within, from triage |
 |---|---|
 | High or Critical, and reachable | 7 days |
-| Medium | 30 days |
+| High or Critical but not reachable, or Medium | 30 days |
 | Low or informational | the next weekly sweep |
 
 Triage takes up to a week from your report, so the worst case for a reachable

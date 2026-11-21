@@ -81,9 +81,11 @@ The constraints:
     workaround that links it. A public issue only for a public advisory.
     Anything new goes to the maintainer privately.
   - **Accepted.** Recorded like "not affected", with the risk as the reason.
-- Deadlines run from triage. High or Critical and reachable: fixed and released
-  within 7 days. Medium: within 30 days. Low and informational: the next weekly
-  sweep.
+- Deadlines run from triage. Severity is the advisory's CVSS score, or my own
+  estimate in the issue where it has none. Reachable means the flawed code is
+  in something I ship, on a path it runs. High or Critical and reachable: fixed
+  and released within 7 days. High or Critical but not reachable, and Medium:
+  within 30 days. Low and informational: the next weekly sweep.
 - A weakness in my own code goes in a fixed order: a draft GitHub security
   advisory with a CVE requested on it, the fix in its private fork, a release,
   the advisory published, then a directive in `docs/directives/`.
