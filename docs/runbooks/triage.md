@@ -125,7 +125,7 @@ gh api "repos/guy-with-a-why/telemetry-blackbox/dependabot/alerts/<n>" --jq .sta
 ```
 
 OSV-Scanner prints `No issues found` and the alert is `fixed` or `dismissed`.
-For an image finding, the next release's `manifest` job is green.
+For an image finding, the next run's summary table no longer counts it.
 
 ### 8. Clean up
 
@@ -182,7 +182,7 @@ look. A dismissed alert never does. Two records would drift apart.
 
 A new advisory, or an ignore that lapsed. I triage it again from step 2.
 
-### The release's `manifest` job fails the image gate
+### The release's `multi-arch image` job fails the image gate
 
 An advisory in a Rust crate. A rerun builds from the release tag, so an ignore
 added on `main` won't free it. The way out is a fix and a new release.
