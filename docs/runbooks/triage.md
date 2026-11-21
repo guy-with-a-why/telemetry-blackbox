@@ -44,8 +44,8 @@ and release. A Debian 14 fix doesn't help a Debian 13 base.
 
 ### 3. Ours or a dependency's
 
-A dependency goes through steps 4 and 5. A weakness in my own code goes to
-step 6.
+A dependency goes through steps 4 and 5, and so does a CodeQL or zizmor
+finding. A weakness someone could exploit in something I ship goes to step 6.
 
 ### 4. Check whether it's reachable
 
