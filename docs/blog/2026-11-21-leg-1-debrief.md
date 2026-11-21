@@ -91,6 +91,11 @@ evening. Leg 2 gets six evenings and lands on 27 November, Leg 3 eight by
 The milestones moved in
 [#176](https://github.com/guy-with-a-why/telemetry-blackbox/issues/176).
 
+*Update, 21 November: every leg now has reading days and a reading list of its
+own, and Leg 4 lands on 24 December.
+[#185](https://github.com/guy-with-a-why/telemetry-blackbox/issues/185) has the
+new dates.*
+
 Leg 2 builds the firmware. Its biggest risk is MAVLink over UART with DMA in
 [#6](https://github.com/guy-with-a-why/telemetry-blackbox/issues/6). If DMA
 eats the evenings, it moves to Stretch and the fallback is interrupt-driven
