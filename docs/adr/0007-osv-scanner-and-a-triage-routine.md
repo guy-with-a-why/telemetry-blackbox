@@ -55,9 +55,11 @@ The constraints:
   #152.
 - Dependabot stays, for its version and security pull requests.
 - The gateway and pipeline build with `cargo auditable`. The release scans
-  both architectures before it tags anything, and stops on any advisory in a
-  Rust crate. Base-image advisories are reported, never blocking: their fix is
-  a newer base digest, which Dependabot proposes each week. Each architecture
+  both architectures before it tags the images, and stops on any advisory in a
+  Rust crate. release-please has tagged the release by then, so the gate holds
+  the image tags, provenance and SBOMs, not the release. Base-image advisories
+  are reported, never blocking: their fix is a newer base digest, which
+  Dependabot proposes each week. Each architecture
   gets an SPDX SBOM, attested against its own image and attached to the
   release. A Monday scan covers the third-party images and only reports. #153.
 - CodeQL adds `javascript-typescript`, and zizmor audits the workflows. #154.
@@ -110,10 +112,11 @@ The constraints:
 - Every ignore expires, so each decision comes back for a second look.
 - A reproduction harness pins a flawed version on purpose, so each one needs an
   ignore that points at its directive.
-- An advisory in a Rust crate published between merge and release can hold a
-  release until I triage it.
+- An advisory in a Rust crate published between merge and release holds the
+  image tags. The job builds from the release tag, so an ignore added on main
+  can't free it. The way out is a fix and a new release.
 - A release can ship with a High advisory in the base image that Debian hasn't
-  fixed. It shows in the release's summary, and that's the cost of not waiting
+  fixed. It shows in the run's summary, and that's the cost of not waiting
   on Debian.
 - The OSV-Scanner check becomes required, which is a ruleset change I make by
   hand.
