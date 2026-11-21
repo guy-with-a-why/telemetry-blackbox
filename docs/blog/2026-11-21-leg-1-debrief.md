@@ -13,7 +13,7 @@
 [Leg 1](https://github.com/guy-with-a-why/telemetry-blackbox/milestone/3)
 set out to build a highly available cluster, break it on purpose and put the
 stores on it. It did all three. Five VMs run on my home server, and caches on
-the host cut a full rebuild from 18 minutes to 6. I bootstrapped three control
+the host cut building them from 18 minutes to 6. I bootstrapped three control
 planes behind a virtual IP by hand in
 [#11](https://github.com/guy-with-a-why/telemetry-blackbox/issues/11), then
 turned the same steps into one command in
