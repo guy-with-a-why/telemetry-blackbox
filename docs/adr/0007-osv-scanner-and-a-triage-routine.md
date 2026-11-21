@@ -72,9 +72,11 @@ The constraints:
     ship is `fix(...)`, so it cuts a release. Dependabot titles every bump
     `chore(deps)`, a new base digest included, so I retitle one that touches
     what I ship to `fix(deps)` before I squash it.
-  - **Not affected.** The reason goes in the nearest `osv-scanner.toml`, with an
-    `ignoreUntil` no more than 6 months out. I dismiss the alert with the same
-    reason.
+  - **Not affected.** For an advisory, the reason goes in the nearest
+    `osv-scanner.toml`, with an `ignoreUntil` no more than 6 months out. That
+    entry is the record, because it lapses and a dismissed alert never comes
+    back. For a CodeQL or zizmor finding, the reason goes in the alert's
+    dismissal or a zizmor ignore comment.
   - **Upstream.** I link the upstream issue, or file one, and carry a
     workaround that links it. A public issue only for a public advisory.
     Anything new goes to the maintainer privately.
@@ -114,7 +116,8 @@ The constraints:
 - Two more workflows, and a few more minutes of CI on each pull request.
 - The Monday scan raises findings against code I haven't touched. That's its
   job: heapless arrived that way.
-- Every ignore expires, so each decision comes back for a second look.
+- Every `osv-scanner.toml` ignore expires, so each advisory decision comes back
+  for a second look.
 - A reproduction harness pins a flawed version on purpose, so each one needs an
   ignore that points at its directive.
 - An advisory in a Rust crate published between merge and release holds the
