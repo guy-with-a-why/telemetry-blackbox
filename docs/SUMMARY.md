@@ -25,4 +25,5 @@
   - [Bootstrap the cluster by hand](runbooks/bootstrap.md)
   - [Lose one control plane, then two](runbooks/control-plane.md)
   - [Snapshot and restore etcd](runbooks/etcd.md)
+  - [Triage a vulnerability alert](runbooks/triage.md)
 - [Brand](brand/README.md)
