@@ -12,9 +12,10 @@ you'd rather I didn't.
 
 ## How I handle a vulnerability
 
-OSV-Scanner, Dependabot and CodeQL raise findings in the repo's security
-alerts. I triage each one within a week. The reasons behind this routine are in
-[ADR 7](docs/adr/0007-osv-scanner-and-a-triage-routine.md).
+OSV-Scanner, CodeQL and zizmor raise findings in the repo's code scanning
+alerts, and Dependabot in its own. The image scans report in each workflow
+run's summary. I triage each finding within a week. The reasons behind this
+routine are in [ADR 7](docs/adr/0007-osv-scanner-and-a-triage-routine.md).
 
 ### In a dependency
 
