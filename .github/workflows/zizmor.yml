@@ -4,13 +4,13 @@ name: zizmor
 # problems CodeQL misses, such as template injection, cache poisoning and a
 # token left on disk (ADR 7). A finding fails the run and lands in code
 # scanning. With a token it also checks every pinned action against known
-# advisories and impostor commits.
+# advisories and impostor commits. It runs on every pull request, so its check
+# can be required. With a path filter it would never report on a pull request
+# that doesn't touch the workflows.
 on:
   pull_request:
-    paths: [".github/workflows/**", ".github/dependabot.yml"]
   push:
     branches: [main]
-    paths: [".github/workflows/**", ".github/dependabot.yml"]
   schedule:
     - cron: "45 7 * * 1" # Mondays, so new audits and advisories meet old workflows
   workflow_dispatch:
