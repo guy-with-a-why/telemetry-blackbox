@@ -57,9 +57,9 @@ leave a few hours at most. Three issues of headwind added to it. The caches and
 the one-command bootstrap paid for themselves within the leg, but they weren't
 in the plan.
 
-The due day went on the wrong work. On 20 November I opened and closed nine
-security issues instead of sitting the checkpoint, and the leg landed a day
-late. From now on, work outside a leg waits until that leg has landed. Security
+The due day went on the wrong work. On 20 November I opened nine security
+issues and closed four of them instead of sitting the checkpoint. The other
+five closed the next day before it did, and the leg landed a day late. From now on, work outside a leg waits until that leg has landed. Security
 keeps its own milestone, but it never takes a leg's last evening.
 
 The tools cost evenings of their own. A snap refresh downgraded Multipass
