@@ -66,7 +66,9 @@ The constraints:
 - I triage every finding within 7 days, as `SECURITY.md` promises a reporter.
   Each gets one of four outcomes:
   - **Fix.** A bump or a code change, naming the advisory. A fix to something I
-    ship is `fix(...)`, so it cuts a release.
+    ship is `fix(...)`, so it cuts a release. Dependabot titles every bump
+    `chore(deps)`, a new base digest included, so I retitle one that touches
+    what I ship to `fix(deps)` before I squash it.
   - **Not affected.** The reason goes in the nearest `osv-scanner.toml`, with an
     `ignoreUntil` no more than 6 months out. I dismiss the alert with the same
     reason.
