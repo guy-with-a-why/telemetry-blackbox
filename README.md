@@ -292,7 +292,7 @@ Dependencies and code are scanned on every pull request and every Monday. The
 [security policy](https://github.com/guy-with-a-why/telemetry-blackbox/security/policy)
 says how to report a vulnerability and the order I handle one in, from triage
 to the public write-up. Each one that reaches this project gets a
-[directive](docs/directives/README.md).
+[directive](docs/directives/).
 
 ## Licence
 
