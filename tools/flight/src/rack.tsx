@@ -349,8 +349,9 @@ export async function render(flight: Flight, { narrow = false } = {}): Promise<s
   });
   const { title, desc } = summary(flight);
   return (
-    svg
-      .replace("<svg ", `<svg role="img" aria-label="${xml(title)}" `)
-      .replace(/>/, `><title>${xml(title)}</title><desc>${xml(desc)}</desc>`) + "\n"
+    svg.replace(/<svg\b[^>]*>/, (open) => {
+      const withA11y = open.replace("<svg ", `<svg role="img" aria-label="${xml(title)}" `);
+      return `${withA11y}<title>${xml(title)}</title><desc>${xml(desc)}</desc>`;
+    }) + "\n"
   );
 }
