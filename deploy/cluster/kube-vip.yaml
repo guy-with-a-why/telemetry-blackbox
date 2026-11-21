@@ -17,7 +17,7 @@ metadata:
 spec:
   containers:
     - name: kube-vip
-      image: @IMAGE@
+      image: "@IMAGE@"
       imagePullPolicy: IfNotPresent
       args: [manager]
       env:

@@ -30,11 +30,19 @@ jobs:
           persist-credentials: false
       - uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
         with:
-          install_args: osv-scanner
-      # every image pinned by digest, so the scan follows the manifests
+          install_args: osv-scanner yq
+      # Every image pinned by digest: each image field in the manifests, read
+      # with yq, and kube-vip's, which config.sh pins for cluster-files.sh
       - name: Scan the images
         run: |
-          mapfile -t images < <(grep -rhoE 'image: *[^ ]+@sha256:[0-9a-f]{64}' deploy | awk '{print $2}' | sort -u)
+          # shellcheck source=/dev/null # plain assignments, checked where the scripts source it
+          source deploy/vms/config.sh
+          mapfile -t images < <(
+            {
+              find deploy -name '*.yaml' -exec yq -N '.. | select(tag == "!!map" and has("image")) | .image | select(test("@sha256:"))' {} +
+              echo "$kube_vip_image"
+            } | sort -u
+          )
           { echo "### Third-party images"; echo; scripts/image-scan.sh --out "$RUNNER_TEMP/scan" "${images[@]}"; } >>"$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: ${{ !cancelled() }}
