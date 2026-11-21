@@ -2,8 +2,9 @@
 # Usage: image-scan.sh [--gate] [--out DIR] IMAGE...
 # Scans container images with OSV-Scanner and prints a Markdown table, one row
 # per image: its platform, every advisory found, the High or Critical ones and
-# how many of those have a fixed version. DIR gets each image's full JSON and
-# an SPDX SBOM, named after the image and its platform (ADR 7).
+# how many of those have a fix in the image's own release. DIR gets each
+# image's full JSON and an SPDX SBOM, named after the image and its platform
+# (ADR 7).
 #
 # With --gate it fails if any advisory is in a Rust crate. Those come from the
 # lockfile, so they're mine to fix. Base-image packages are only reported:
@@ -41,14 +42,17 @@ if [[ -f osv-scanner.toml ]]; then config=(--config osv-scanner.toml); fi
 
 # One entry per advisory, counted once even when it hits several binary
 # packages from the same source: its ecosystem, its highest CVSS score and
-# whether any of its records names a fixed version.
+# whether it names a fixed version for this package in this release. A fix in
+# Debian 14 doesn't help a Debian 13 base.
 # shellcheck disable=SC2016 # a jq program, not shell
 summary='[ .results[]?.packages[]? | . as $p | ($p.vulnerabilities // []) as $v
   | ($p.groups // [])[] | . as $g
   | { id: $g.ids[0], eco: $p.package.ecosystem,
       sev: ($g.max_severity | tonumber? // 0),
-      fix: ([ $v[] | select(.id as $id | $g.ids | index($id))
-              | .affected[]?.ranges[]?.events[]? | select(.fixed) ] | length > 0) } ]
+      fix: ([ $v[] | select(.id as $id | $g.ids | index($id)) | .affected[]?
+              | select(.package.ecosystem == $p.package.ecosystem
+                       and .package.name == $p.package.name)
+              | .ranges[]?.events[]? | select(.fixed) ] | length > 0) } ]
   | unique_by(.id)
   | [ length,
       (map(select(.sev >= 7)) | length),
