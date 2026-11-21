@@ -104,11 +104,14 @@ jobs:
         crate: [gateway, pipeline]
     runs-on: ubuntu-latest
     permissions:
+      contents: write # attach the SBOMs to the release
       packages: write
       id-token: write
       attestations: write
     env:
       IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.crate }}
+      TAG: ${{ needs.release-please.outputs.tag }}
+      CRATE: ${{ matrix.crate }}
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -121,27 +124,80 @@ jobs:
           images: ${{ env.IMAGE }}
           flavor: latest=true
           tags: |
-            type=semver,pattern={{version}},value=${{ needs.release-please.outputs.tag }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release-please.outputs.tag }}
+            type=semver,pattern={{version}},value=${{ env.TAG }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.TAG }}
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+      # no tool cache: a release job shouldn't restore anything another run wrote
+      - uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+        with:
+          install_args: osv-scanner
+          cache: false
+      # Each architecture's digest is an index of its image and build
+      # attestation. This finds the Linux image in each, once, for the scan and
+      # both SBOM attestations.
+      - id: arch
+        name: Find each architecture's image
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          for digest in *; do
+            docker buildx imagetools inspect "$IMAGE@sha256:$digest" --format '{{json .Manifest}}' |
+              jq -r '.manifests[] | select(.platform.os == "linux") | "\(.platform.architecture)=\(.digest)"'
+          done >>"$GITHUB_OUTPUT"
+      # Both architectures are scanned before anything is tagged, so an advisory
+      # in a Rust crate stops the release here. Base-image advisories are only
+      # reported (ADR 7).
+      - name: Scan the image
+        env:
+          AMD64: ${{ steps.arch.outputs.amd64 }}
+          ARM64: ${{ steps.arch.outputs.arm64 }}
+        run: |
+          { echo "### $CRATE $TAG"; echo; scripts/image-scan.sh --gate --out "$RUNNER_TEMP/scan" "$IMAGE@$AMD64" "$IMAGE@$ARM64"; } >>"$GITHUB_STEP_SUMMARY"
       - id: push
         name: Tag the multi-arch image
         working-directory: ${{ runner.temp }}/digests
         run: |
           mapfile -t tags < <(jq -r '.tags[] | "--tag=" + .' <<<"$DOCKER_METADATA_OUTPUT_JSON")
-          docker buildx imagetools create "${tags[@]}" $(printf "$IMAGE@sha256:%s " *)
+          refs=()
+          for digest in *; do refs+=("$IMAGE@sha256:$digest"); done
+          docker buildx imagetools create "${tags[@]}" "${refs[@]}"
           digest=$(docker buildx imagetools inspect "$IMAGE:$DOCKER_METADATA_OUTPUT_VERSION" --format '{{json .Manifest}}' | jq -r .digest)
-          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          echo "digest=$digest" >>"$GITHUB_OUTPUT"
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-name: ${{ env.IMAGE }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+      # each architecture's SBOM is signed against that architecture's image, so
+      # gh attestation verify --predicate-type https://spdx.dev/Document checks it
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.arch.outputs.amd64 }}
+          sbom-path: ${{ runner.temp }}/scan/${{ matrix.crate }}-linux-amd64.spdx.json
+          push-to-registry: true
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.arch.outputs.arm64 }}
+          sbom-path: ${{ runner.temp }}/scan/${{ matrix.crate }}-linux-arm64.spdx.json
+          push-to-registry: true
+      - name: Attach the SBOMs to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for platform in linux-amd64 linux-arm64; do
+            cp "$RUNNER_TEMP/scan/$CRATE-$platform.spdx.json" "$CRATE-$TAG-$platform.spdx.json"
+          done
+          gh release upload "$TAG" "$CRATE-$TAG"-linux-*.spdx.json --clobber
 
   # The ELF ships with SLSA provenance. The .intoto.jsonl file is the signed
   # in-toto statement and the .sigstore.json file is the whole bundle, so
