@@ -88,7 +88,10 @@ The constraints:
   within 30 days. Low and informational: the next weekly sweep.
 - A weakness in my own code goes in a fixed order: a draft GitHub security
   advisory with a CVE requested on it, the fix in its private fork, a release,
-  the advisory published, then a directive in `docs/directives/`.
+  the advisory published, then a directive in `docs/directives/`. CI doesn't
+  run in the private fork and the ruleset isn't enforced on that merge, so I run
+  `just lint`, `just test` and `just vulns` locally first and title the fix
+  `fix(...)` so it cuts the release.
 - The order is public in `SECURITY.md`.
 
 ## Options I turned down
