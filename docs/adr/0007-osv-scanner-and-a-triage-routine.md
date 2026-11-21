@@ -118,7 +118,9 @@ The constraints:
 
 ## Consequences
 
-- Two more workflows, and a few more minutes of CI on each pull request.
+- Three more workflows: `osv-scanner.yml`, `zizmor.yml` and `images.yml`. zizmor
+  and the image scan only run when their paths change, so most pull requests
+  only pay for OSV-Scanner.
 - The Monday scan raises findings against code I haven't touched. That's its
   job: heapless arrived that way.
 - Every `osv-scanner.toml` ignore expires, so each advisory decision comes back
