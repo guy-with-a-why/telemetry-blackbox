@@ -52,7 +52,8 @@ trigger, rather than polish code it will replace.
 
 The budget was wrong, not the work. Four evenings assumed more hours than an
 evening holds after a full working day. Exercise, cooking, dishes and some rest
-leave a few hours at most. Three issues of headwind added to it. The caches and
+leave a few hours at most, and three of the seven evenings were weekend days,
+so the slack went too. Three issues of headwind added to it. The caches and
 the one-command bootstrap paid for themselves within the leg, but they weren't
 in the plan.
 
