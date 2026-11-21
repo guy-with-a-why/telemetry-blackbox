@@ -1,6 +1,6 @@
 # 0007. OSV-Scanner and a fixed triage routine over Dependabot alone
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-20
 - **Issue:** #155
 
