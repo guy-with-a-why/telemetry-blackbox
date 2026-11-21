@@ -40,11 +40,14 @@ routine are in [ADR 7](docs/adr/0007-osv-scanner-and-a-triage-routine.md).
 
 ### Deadlines
 
-| Finding | Fixed and released within |
+| Finding | Fixed and released within, from triage |
 |---|---|
 | High or Critical, and reachable | 7 days |
 | Medium | 30 days |
 | Low or informational | the next weekly sweep |
+
+Triage takes up to a week from your report, so the worst case for a reachable
+High or Critical finding is 14 days from it.
 
 The work that puts the scanners in place is in the
 [Security milestone](https://github.com/guy-with-a-why/telemetry-blackbox/milestone/7).
