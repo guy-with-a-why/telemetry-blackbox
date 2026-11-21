@@ -198,6 +198,8 @@ Each gets a short record in `docs/adr/`.
 3. Redpanda over Apache Iggy or a home-made log.
 4. Deduplicating in ClickHouse over chasing exactly-once.
 5. just and mise over make, and a local registry for images.
+6. A scripted kubeadm bootstrap over Terraform or Ansible.
+7. OSV-Scanner and a fixed triage routine over Dependabot alone.
 
 ## Results
 
@@ -276,6 +278,21 @@ which is built on the STM32F407VG, a Cortex-M4F.
 **Diagrams**
 
 - [A tour of D2](https://d2lang.com/tour/intro/).
+
+**Security**
+
+- [OSV-Scanner](https://google.github.io/osv-scanner/), [cargo-deny](https://embarkstudios.github.io/cargo-deny/) and [cargo-auditable](https://github.com/rust-secure-code/cargo-auditable), the scanners in ADR 7.
+- [The RustSec advisory database](https://rustsec.org/) and [OSV](https://osv.dev/), where the advisories come from.
+- [CWE](https://cwe.mitre.org/) and [CAPEC](https://capec.mitre.org/), for naming the weakness and the attack.
+- [Repository security advisories](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/about-repository-security-advisories), for disclosing a weakness in my own code.
+
+## Security
+
+Dependencies and code are scanned on every pull request and every Monday. The
+[security policy](https://github.com/guy-with-a-why/telemetry-blackbox/security/policy)
+says how to report a vulnerability and the order I handle one in, from triage
+to the public write-up. A weakness found in my own code gets a
+[directive](docs/directives/).
 
 ## Licence
 

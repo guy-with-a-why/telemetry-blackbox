@@ -16,3 +16,4 @@ status says so. Every decision and every reversal stays on file.
 | 4 | Deduplicating in ClickHouse over chasing exactly-once | To write |
 | 5 | [just and mise over make, and a local registry for images](0005-just-mise-and-a-local-registry.md) | Accepted |
 | 6 | [A scripted kubeadm bootstrap over Terraform or Ansible](0006-scripted-kubeadm-bootstrap.md) | Accepted |
+| 7 | [OSV-Scanner and a fixed triage routine over Dependabot alone](0007-osv-scanner-and-a-triage-routine.md) | Accepted |
