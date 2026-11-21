@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.3](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.10.2...v0.10.3) (2026-11-21)
+
+
+### Bug Fixes
+
+* incomplete string escaping or encoding ([#172](https://github.com/guy-with-a-why/telemetry-blackbox/issues/172)) ([549f392](https://github.com/guy-with-a-why/telemetry-blackbox/commit/549f3925f26e4fc30dc2ed33794206f0c60dbec7))
+
 ## [0.10.2](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.10.1...v0.10.2) (2026-11-20)
 
 
