@@ -62,6 +62,20 @@ summary='[ .results[]?.packages[]? | . as $p | ($p.vulnerabilities // []) as $v
 
 archive=$(mktemp --suffix .tar)
 trap 'rm -f "$archive"' EXIT
+
+# scan FORMAT FILE writes one report on the saved image. Exit 1 means it found
+# advisories, which the table reports. A missing tool also exits 1, so the file
+# has to be there too.
+scan() {
+  local rc=0
+  osv-scanner scan image --archive "${config[@]}" --all-packages --verbosity error \
+    --format "$1" --output-file "$2" "$archive" >/dev/null || rc=$?
+  if ((rc > 1)) || [[ ! -s $2 ]]; then
+    echo "OSV-Scanner couldn't scan $image (exit $rc)" >&2
+    exit 1
+  fi
+}
+
 status=0
 echo "| Image | Platform | Advisories | High or Critical | With a fix | In Rust crates |"
 echo "|---|---|---|---|---|---|"
@@ -71,18 +85,8 @@ for image in "$@"; do
   repo=${image%%@*}
   name=$(basename "${repo%:*}")-$platform
   docker save -o "$archive" "$image"
-  for format in json spdx-2-3; do
-    file=$out/$name.$([[ $format == json ]] && echo json || echo spdx.json)
-    rc=0
-    osv-scanner scan image --archive "${config[@]}" --all-packages --verbosity error \
-      --format "$format" --output-file "$file" "$archive" >/dev/null || rc=$?
-    # 1 means it found advisories, which the table reports. A missing tool also
-    # exits 1, so the file has to be there too
-    if ((rc > 1)) || [[ ! -s $file ]]; then
-      echo "OSV-Scanner couldn't scan $image (exit $rc)" >&2
-      exit 1
-    fi
-  done
+  scan json "$out/$name.json"
+  scan spdx-2-3 "$out/$name.spdx.json"
   read -r total high fixable crates < <(jq -r "$summary" "$out/$name.json")
   echo "| \`$image\` | $platform | $total | $high | $fixable | $crates |"
   if $gate && ((crates > 0)); then
