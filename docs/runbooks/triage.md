@@ -13,7 +13,8 @@ terminal.
 ## Before I start
 
 - `gh auth status` shows I'm signed in with access to the security alerts.
-- `mise install` has run, so `osv-scanner`, `cargo-deny` and `yq` are there.
+- `mise install` has run, so `osv-scanner`, `cargo-deny`, `node` and `uv` are
+  there. `jq` is installed.
 - I'm on `main`, up to date.
 - I have the alert's link or number.
 
@@ -56,10 +57,18 @@ npm ls <package>
 uv tree --invert --package <package>
 ```
 
-For the firmware I check the binary that shipped. I verify the release ELF
-with `gh attestation verify`, then look for the crate with
-`llvm-nm --demangle`. Severity is the advisory's CVSS score. Where there isn't
-one, I write my own estimate in the issue.
+For the firmware I check the binary that shipped. Fat LTO inlines most crates,
+so `llvm-nm` misses them, but the debug info keeps their names. Zero means none
+of the crate shipped.
+
+```bash
+gh release download <tag> --pattern 'firmware-*.elf'
+gh attestation verify firmware-<tag>.elf --repo guy-with-a-why/telemetry-blackbox
+"$(rustc --print sysroot)"/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-readobj --string-dump=.debug_str firmware-<tag>.elf | grep -c <crate_name>
+```
+
+Severity is the advisory's CVSS score. Where there isn't one, I write my own
+estimate in the issue.
 
 ### 5. Pick the outcome
 
