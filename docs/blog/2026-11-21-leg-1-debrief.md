@@ -29,8 +29,8 @@ runbook. Redpanda in
 [#14](https://github.com/guy-with-a-why/telemetry-blackbox/issues/14) kept all
 100,000 acknowledged records through a Pod delete. ClickHouse in
 [#15](https://github.com/guy-with-a-why/telemetry-blackbox/issues/15) took
-10,000 frames twice and kept 10,000. ADRs 2 and 3 record why kubeadm and
-Redpanda, and the checkpoint in
+10,000 frames twice and kept 10,000. ADRs 2 and 3 record why I chose kubeadm
+and Redpanda, and the checkpoint in
 [#17](https://github.com/guy-with-a-why/telemetry-blackbox/issues/17) closed
 the leg.
 
