@@ -75,7 +75,7 @@ for image in "$@"; do
     file=$out/$name.$([[ $format == json ]] && echo json || echo spdx.json)
     rc=0
     osv-scanner scan image --archive "${config[@]}" --all-packages \
-      --format "$format" --output "$file" "$archive" >/dev/null 2>&1 || rc=$?
+      --format "$format" --output-file "$file" "$archive" >/dev/null 2>&1 || rc=$?
     # 1 means it found advisories, which the table reports. A missing tool also
     # exits 1, so the file has to be there too
     if ((rc > 1)) || [[ ! -s $file ]]; then
