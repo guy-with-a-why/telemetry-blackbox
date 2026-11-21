@@ -3,7 +3,7 @@
 
 [package]
 name = "firmware"
-version = "0.10.3"
+version = "0.10.4"
 edition = "2024"
 rust-version = "1.100"
 publish = false

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.4](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.10.3...v0.10.4) (2026-11-21)
+
+
+### Bug Fixes
+
+* **ci:** publish the docs site on issue events and the daily run ([#179](https://github.com/guy-with-a-why/telemetry-blackbox/issues/179)) ([aed8475](https://github.com/guy-with-a-why/telemetry-blackbox/commit/aed84753521235b81b7ee35308d6ba236e2c10f0)), closes [#178](https://github.com/guy-with-a-why/telemetry-blackbox/issues/178)
+
 ## [0.10.3](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.10.2...v0.10.3) (2026-11-21)
 
 
