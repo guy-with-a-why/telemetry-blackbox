@@ -77,7 +77,7 @@ not an ideal one.
 
 ## Into the next leg
 
-The plan now follows the pace I actually flew, with room to read. Leg 1 took
+The plan now follows the pace I flew, with room to read. Leg 1 took
 1.75 times its budget, and the legs ahead lean on datasheets, reference
 manuals and protocol specs. So every remaining budget doubles, flown every
 evening. Leg 2 gets six evenings and lands on 27 November, Leg 3 eight by
