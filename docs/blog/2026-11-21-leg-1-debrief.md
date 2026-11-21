@@ -37,7 +37,7 @@ the leg.
 ## How it went
 
 The first call set the rest. My laptop had 6 GB free against a 10.5 GB budget,
-so the cluster moved to my home server before the first VM booted. Building
+so the cluster moved to my home server within the hour. Building
 the control plane by hand first, then scripting it, meant every line of the
 script was a step I'd already run and understood. The plan's order held, and
 every issue landed in it.
