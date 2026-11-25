@@ -78,6 +78,7 @@ lint:
 test:
     cargo test --workspace --locked
     cd firmware && cargo build --locked
+    cd firmware && cargo test --lib --locked --target "$(rustc -vV | sed -n 's/^host: //p')"
     cd tools/bbcheck && uv run --locked pytest
 
 # Measure line coverage across Rust and bbcheck, and write the badge to
