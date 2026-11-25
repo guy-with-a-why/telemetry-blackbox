@@ -52,8 +52,11 @@ async fn main(_spawner: embassy_executor::Spawner) {
             .replace(Some(ControlLoop { timer, led }));
     });
 
-    // The loop's deadline outranks everything else. embassy-time's TIM2
-    // starts at the same top priority, so it moves a level down.
+    // The loop's deadline outranks every other interrupt. embassy-time's TIM2
+    // starts at the same top priority, so it moves a level down. A critical
+    // section still masks P0, so embassy's TIM2 handler and any
+    // CriticalSectionRawMutex channel set the floor for jitter. Keep them
+    // short.
     interrupt::TIM2.set_priority(Priority::P1);
     interrupt::TIM3.set_priority(Priority::P0);
     #[expect(unsafe_code, reason = "unmasking can break a critical section")]
