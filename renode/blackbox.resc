@@ -11,6 +11,13 @@ mach create "blackbox"
 # it, including the green LED on PD12.
 machine LoadPlatformDescription @platforms/boards/stm32f4_discovery-kit.repl
 
+# Renode clocks the timers at a fixed 10 MHz and doesn't model the clock tree.
+# The firmware runs from the 16 MHz internal oscillator with no bus
+# prescalers, so TIM2 (embassy-time) and TIM3 (the control loop) count at
+# 16 MHz. Change these with the firmware's clocks.
+timer2 Frequency 16000000
+timer3 Frequency 16000000
+
 macro reset
 """
     sysbus LoadELF $bin
