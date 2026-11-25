@@ -79,6 +79,9 @@ fn TIM3() {
     cortex_m::interrupt::free(|cs| {
         let mut control = CONTROL_LOOP.borrow(cs).borrow_mut();
         let Some(control) = control.as_mut() else {
+            // Nothing can clear the update flag, so stop the interrupt
+            // re-entering forever.
+            interrupt::TIM3.disable();
             return;
         };
         let regs = control.timer.regs_core();
