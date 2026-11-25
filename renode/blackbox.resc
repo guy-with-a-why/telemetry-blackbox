@@ -24,13 +24,8 @@ macro reset
 """
 runMacro $reset
 
-# `runMacro $timing` prints how well the control loop keeps its deadline. The
-# counters are LOOP_TIMING's fields in order, and TIM3's ARR + 1 is the counts
-# in one period.
-macro timing
-"""
-    python "bus = monitor.Machine.SystemBus; a = bus.GetSymbolAddress('LOOP_TIMING'); r = lambda o: bus.ReadDoubleWord(a + o); counts = bus.ReadDoubleWord(0x4000042C) + 1; print('ticks %d, overruns %d, max jitter %d ns' % (r(0), r(4), r(8) * 1000000 // counts))"
-"""
+# `runMacro $timing` prints how well the control loop keeps its deadline.
+macro timing "include @renode/timing.py"
 
 # Log each time the green LED changes state.
 logLevel -1 gpioPortD.UserLED
