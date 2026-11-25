@@ -15,5 +15,5 @@ def field(index):
 
 
 counts = bus.ReadDoubleWord(TIM3_ARR) + 1
-print("ticks %d, overruns %d, max jitter %d ns"
-      % (field(0), field(1), field(2) * 1000000 // counts))
+print("ticks %d, overruns %d, missed %d, max jitter %d ns"
+      % (field(0), field(1), field(2), field(3) * 1000000 // counts))
