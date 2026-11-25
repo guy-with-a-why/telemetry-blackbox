@@ -57,8 +57,8 @@ async fn main(_spawner: embassy_executor::Spawner) {
     interrupt::TIM2.set_priority(Priority::P1);
     interrupt::TIM3.set_priority(Priority::P0);
     #[expect(unsafe_code, reason = "unmasking can break a critical section")]
-    // SAFETY: the handler only touches CONTROL_LOOP, through its Mutex, and
-    // LOOP_TIMING, which is built for a single writer.
+    // SAFETY: called outside any critical section, and CONTROL_LOOP is
+    // already Some.
     unsafe {
         interrupt::TIM3.enable();
     }
