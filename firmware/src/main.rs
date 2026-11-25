@@ -88,7 +88,7 @@ fn TIM3() {
         control.timer.clear_update_interrupt();
 
         // The work of the loop goes here. For now it blinks the LED at 1 Hz.
-        if LOOP_TIMING.snapshot().ticks.is_multiple_of(LOOP_HZ / 2) {
+        if LOOP_TIMING.ticks().is_multiple_of(LOOP_HZ / 2) {
             control.led.toggle();
         }
 

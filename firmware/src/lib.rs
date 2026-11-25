@@ -70,6 +70,11 @@ impl LoopTiming {
         ticks
     }
 
+    /// Ticks the loop has run, in one load.
+    pub fn ticks(&self) -> u32 {
+        self.ticks.load(Relaxed)
+    }
+
     pub fn snapshot(&self) -> Snapshot {
         Snapshot {
             ticks: self.ticks.load(Relaxed),
@@ -94,7 +99,7 @@ mod tests {
         let timing = LoopTiming::new();
         assert_eq!(timing.record(4, false), 1);
         assert_eq!(timing.record(4, false), 2);
-        assert_eq!(timing.snapshot().ticks, 2);
+        assert_eq!(timing.ticks(), 2);
     }
 
     #[test]
