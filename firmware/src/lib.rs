@@ -85,13 +85,6 @@ impl Default for LoopTiming {
     }
 }
 
-/// Converts timer counts to nanoseconds, given how many counts make one
-/// period of the loop.
-pub fn counts_to_ns(counts: u32, counts_per_period: u32) -> u32 {
-    let ns_per_period = 1_000_000_000 / u64::from(LOOP_HZ);
-    (u64::from(counts) * ns_per_period / u64::from(counts_per_period)) as u32
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -135,12 +128,5 @@ mod tests {
                 max_jitter: 0
             }
         );
-    }
-
-    #[test]
-    fn converts_counts_to_ns() {
-        // At 16 MHz with no prescaler, one period is 16,000 counts.
-        assert_eq!(counts_to_ns(16, 16_000), 1_000);
-        assert_eq!(counts_to_ns(16_000, 16_000), 1_000_000);
     }
 }
