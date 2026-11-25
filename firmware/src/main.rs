@@ -45,6 +45,9 @@ async fn main(_spawner: embassy_executor::Spawner) {
     timer.set_frequency(Hertz(LOOP_HZ), RoundTo::Slower);
     timer.generate_update_event();
     timer.enable_update_interrupt(true);
+    // The NVIC line is still masked, so the first update waits for the
+    // hand-off below.
+    timer.start();
 
     cortex_m::interrupt::free(|cs| {
         CONTROL_LOOP
@@ -66,11 +69,6 @@ async fn main(_spawner: embassy_executor::Spawner) {
         interrupt::TIM3.enable();
     }
 
-    cortex_m::interrupt::free(|cs| {
-        if let Some(control) = CONTROL_LOOP.borrow(cs).borrow().as_ref() {
-            control.timer.start();
-        }
-    });
     // From here the interrupt runs the loop, and the executor sleeps until
     // other tasks have work.
 }
