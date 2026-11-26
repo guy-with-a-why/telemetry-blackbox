@@ -118,10 +118,11 @@ interrupt preempts lower-priority work, so the tick starts on time.
 </details>
 
 <details>
-<summary>Why move embassy-time's TIM2 and DMA down to P1?</summary>
+<summary>Why move TIM2 and the DMA interrupts down to P1?</summary>
 
-Embassy starts them at P0. At equal priority neither preempts the other, so a
-TIM2 or DMA handler already running would hold up the loop.
+Embassy leaves them at P0. At equal priority nothing preempts, and TIM2's lower
+IRQ number wins a tie. At P1 the tick wins every tie and preempts DMA. TIM2's
+handler sits in a critical section, so it can still hold the tick.
 
 </details>
 
