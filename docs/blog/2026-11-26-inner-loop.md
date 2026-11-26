@@ -68,8 +68,8 @@ oscillator clocks them at 16 MHz, so each 16,000-count period took 1.6 ms. The
 same fault had slowed Embassy's clock on TIM2, so the 500 ms blink from
 [#3](https://github.com/guy-with-a-why/telemetry-blackbox/issues/3) really ran
 at 800 ms. Nobody times a blink. The board script now sets the timers to 16 MHz
-by hand. That's a stopgap on purpose. The lasting fix is Renode's F4 clock model
-driving its timers, as its H7 and WBA models already do, and
+by hand. That's a stopgap on purpose. The lasting fix is an F4 clock model in
+Renode that drives its timers, and
 [#188](https://github.com/guy-with-a-why/telemetry-blackbox/issues/188) parks it
 so it doesn't eat into Leg 2.
 
