@@ -55,12 +55,13 @@ The loop times itself with TIM3's own counter. The count when the interrupt
 starts is the latency since the update event, and the change in it from tick to
 tick is the jitter. If the update flag is set again before the work ends, the
 tick overran. TIM3 wraps every period, so a tick that starts a whole period late
-would look on time. A free-running 32-bit TIM5 at 1 MHz times each release, and
-whole periods between two releases show the update events that merged. The
-counters are atomics with one writer, the interrupt, so telemetry can read them
-without ever blocking it. Each counter reads whole, though the four can straddle
-a tick. [#6](https://github.com/guy-with-a-why/telemetry-blackbox/issues/6)
-settles that.
+would look on time. A free-running 32-bit TIM5 at 1 MHz dates each update event,
+worked back from the tick's start, and whole periods between two of them show
+the update events that merged. The counters are atomics with one writer, the
+interrupt, so telemetry can read them without ever blocking it. Each counter
+reads whole, though the four can straddle a tick.
+[#6](https://github.com/guy-with-a-why/telemetry-blackbox/issues/6) settles
+that.
 
 ## What challenges were faced
 
@@ -80,12 +81,12 @@ so it doesn't eat into Leg 2.
 The review on
 [#187](https://github.com/guy-with-a-why/telemetry-blackbox/pull/187) turned up
 ticks that could go missing without a trace, because of that wrap. My first fix
-timed releases with embassy-time's `Instant`, and the overrun drill reported
-128,848,810 missed ticks in 2 seconds. A loop that overruns at P0 is pending
-again the moment it returns, so the NVIC tail-chains straight back into it and
-TIM2 at P1 never wins arbitration. Its period count stalls, and its clock jumps
-back 65.5 ms each time the 16-bit counter wraps. TIM5 needs no interrupt at all,
-and with it the drill accounts for every period.
+dated the update events with embassy-time's `Instant`, and the overrun drill
+reported 128,848,810 missed ticks in 2 seconds. A loop that overruns at P0 is
+pending again the moment it returns, so the NVIC tail-chains straight back into
+it and TIM2 at P1 never wins arbitration. Its period count stalls, and its clock
+jumps back 65.5 ms each time the 16-bit counter wraps. TIM5 needs no interrupt
+at all, and with it the drill accounts for every period.
 
 ## What's next
 
@@ -150,7 +151,7 @@ keeps counting across periods, which shows the gap.
 </details>
 
 <details>
-<summary>Why not time the releases with embassy-time?</summary>
+<summary>Why not date the update events with embassy-time?</summary>
 
 Its clock depends on TIM2's interrupt at P1. A loop that overruns at P0 starves
 that interrupt, and the clock stops being right exactly when it's needed.
