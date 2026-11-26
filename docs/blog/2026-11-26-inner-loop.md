@@ -116,7 +116,8 @@ Five questions on the post. Open one for my answer.
 flag?</summary>
 
 Polling burns the core, and the deadline slips whenever other code runs. The
-interrupt preempts lower-priority work, so the tick starts on time.
+interrupt preempts lower-priority work, so the tick starts after a fixed entry
+latency unless a critical section holds it.
 
 </details>
 
