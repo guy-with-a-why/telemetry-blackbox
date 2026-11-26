@@ -60,18 +60,18 @@ can read them without ever blocking it.
 
 ## What challenges were faced
 
-The first run in Renode gave 1,910 ticks in 3 virtual seconds, a 1.6 ms period.
-Renode's
-[STM32F4 platform](https://github.com/renode/renode/blob/master/platforms/cpus/stm32f4.repl)
+The first run in Renode gave 1,910 ticks in just over 3 virtual seconds, where
+about 3,000 were due. Renode's [STM32F4
+platform](https://github.com/renode/renode/blob/master/platforms/cpus/stm32f4.repl)
 clocks every timer at a fixed 10 MHz. The real chip on its 16 MHz internal
-oscillator clocks them at 16 MHz, so each 16,000-count period ran long. The
+oscillator clocks them at 16 MHz, so each 16,000-count period took 1.6 ms. The
 same fault had slowed Embassy's clock on TIM2, so the 500 ms blink from
 [#3](https://github.com/guy-with-a-why/telemetry-blackbox/issues/3) really ran
 at 800 ms. Nobody times a blink. The board script now sets the timers to 16 MHz
 by hand. That's a stopgap on purpose. The lasting fix is Renode's F4 clock model
 driving its timers, as its H7 and WBA models already do, and
-[#188](https://github.com/guy-with-a-why/telemetry-blackbox/issues/188) parks
-it so it doesn't eat into Leg 2.
+[#188](https://github.com/guy-with-a-why/telemetry-blackbox/issues/188) parks it
+so it doesn't eat into Leg 2.
 
 The review on
 [#187](https://github.com/guy-with-a-why/telemetry-blackbox/pull/187) turned up
