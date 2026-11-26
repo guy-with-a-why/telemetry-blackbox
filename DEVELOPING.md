@@ -34,8 +34,9 @@ microcontroller. bbcheck is a uv project in `tools/bbcheck/`.
 just fly        # build the firmware and boot it on the simulated board
 ```
 
-Renode logs each change of the board's green LED. Type `quit` at the monitor
-prompt to stop it.
+The control loop toggles the board's green LED every 500 ticks, and Renode
+logs each change. `runMacro $timing` at the monitor prompt prints the ticks,
+overruns and worst jitter so far. Type `quit` to stop it.
 
 ## Docs and diagrams
 

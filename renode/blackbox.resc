@@ -11,11 +11,22 @@ mach create "blackbox"
 # it, including the green LED on PD12.
 machine LoadPlatformDescription @platforms/boards/stm32f4_discovery-kit.repl
 
+# Renode clocks the timers at a fixed 10 MHz and doesn't model the clock tree.
+# The firmware runs from the 16 MHz internal oscillator with no bus
+# prescalers, so TIM2 (embassy-time), TIM3 (the control loop) and TIM5 (its
+# clock) count at 16 MHz. Change these with the firmware's clocks.
+timer2 Frequency 16000000
+timer3 Frequency 16000000
+timer5 Frequency 16000000
+
 macro reset
 """
     sysbus LoadELF $bin
 """
 runMacro $reset
+
+# `runMacro $timing` prints how well the control loop keeps its deadline.
+macro timing "include @renode/timing.py"
 
 # Log each time the green LED changes state.
 logLevel -1 gpioPortD.UserLED
