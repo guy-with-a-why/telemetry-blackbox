@@ -99,7 +99,8 @@ channel the telemetry uses set the floor for jitter, whatever the priorities
 say. Keeping them short is the guard, and the jitter counter shows it if one
 grows. If one does, BASEPRI can mask P1 and below and leave the loop running,
 for anything the loop doesn't share. Renode also runs the core at a flat 100
-MIPS, so 187 ns is a figure for the model. My fallback is the same as for
+MIPS, about six times what this chip manages on its 16 MHz oscillator, so 187 ns
+is a figure for the model. My fallback is the same as for
 [#3](https://github.com/guy-with-a-why/telemetry-blackbox/issues/3). Timing
 claims are tied to virtual time, and anything only silicon can prove is marked
 for real hardware.
