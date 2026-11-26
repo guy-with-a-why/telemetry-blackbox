@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.10.4...v0.11.0) (2026-11-26)
+
+
+### Features
+
+* **firmware:** drive the control loop from TIM3 at 1 kHz ([#187](https://github.com/guy-with-a-why/telemetry-blackbox/issues/187)) ([f3f7e7c](https://github.com/guy-with-a-why/telemetry-blackbox/commit/f3f7e7ced3280871a7d2c64261707f99c1895828)), closes [#4](https://github.com/guy-with-a-why/telemetry-blackbox/issues/4)
+
 ## [0.10.4](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.10.3...v0.10.4) (2026-11-21)
 
 
