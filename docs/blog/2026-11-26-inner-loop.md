@@ -42,10 +42,12 @@ task woken by a `Ticker`, which reads well, but its wake-up passes through the
 executor and the time driver, so its jitter would include theirs. Polling a
 timer flag was never in the running. It burns the core and its deadline slips
 whenever anything else runs, while an interrupt arrives on time whatever thread
-mode is doing. TIM3 sits alone at P0. Embassy starts its own TIM2 and DMA at P0
-too. Equal priorities never preempt each other, so a tick would wait for their
-handlers to finish, and TIM2's lower IRQ number, 28 to TIM3's 29, would even
-win a tie. Both move down to P1.
+mode is doing. Embassy leaves its TIM2 and DMA interrupts at P0, the reset
+priority. Equal priorities never preempt each other, and TIM2's lower IRQ
+number, 28 to TIM3's 29, would win a tie. Both move down to P1, so TIM3 sits
+alone at P0 and wins every tie. The loop can now preempt a DMA handler, but
+TIM2's handler runs inside a critical section, so its length still counts
+against the tick.
 
 The loop times itself with TIM3's own counter. The count when the interrupt
 starts is the latency since the update event, and the change in it from tick to
