@@ -12,10 +12,10 @@ between two ticks. That closes
 [#4](https://github.com/guy-with-a-why/telemetry-blackbox/issues/4), in
 [#187](https://github.com/guy-with-a-why/telemetry-blackbox/pull/187).
 
-In 5.064 virtual seconds Renode counted 5,064 ticks, no overruns and a worst
-jitter of 187 ns, three counts of the 16 MHz timer. Then I padded every tick to
-about 8 ms to see the counters under load. 257 ticks ran and 1,792 were missed,
-which is every one of the 2,049 periods in 2.05 seconds.
+In 5.071 virtual seconds Renode counted 5,071 ticks, no overruns, none missed
+and a worst jitter of 187 ns, three counts of the 16 MHz timer. Then I padded
+every tick to about 8 ms to see the counters under load. 257 ticks ran and 1,792
+were missed, which is every one of the 2,049 periods in 2.05 seconds.
 
 ## Why was it done that way
 
