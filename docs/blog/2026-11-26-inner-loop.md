@@ -33,9 +33,11 @@ Embassy runs on it because
 F407's timers, UART and DMA, so the evenings go into the loop rather than
 register plumbing. It also gets out of the way when asked. Its [low-level
 timer](https://docs.embassy.dev/embassy-stm32/git/stm32f407vg/timer/low_level/struct.Timer.html)
-let me hang the loop off a raw interrupt with no executor in between. Renode is
-the bench because it runs in deterministic virtual time, so a timing figure
-repeats run for run. Its monitor scripts the drills.
+and
+[interrupt](https://docs.embassy.dev/embassy-stm32/git/stm32f407vg/interrupt/trait.InterruptExt.html)
+APIs let me hang the loop off a raw interrupt with no executor in between.
+Renode is the bench because it runs in deterministic virtual time, so a timing
+figure repeats run for run. Its monitor scripts the drills.
 
 The loop runs inside the interrupt, at the top priority. I weighed an Embassy
 task woken by a `Ticker`, which reads well, but its wake-up passes through the
