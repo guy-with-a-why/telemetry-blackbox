@@ -77,11 +77,11 @@ The review on
 [#187](https://github.com/guy-with-a-why/telemetry-blackbox/pull/187) turned up
 ticks that could go missing without a trace, because of that wrap. My first fix
 timed releases with embassy-time's `Instant`, and the overrun drill reported
-128,848,810 missed ticks in 2 seconds. A loop that overruns at P0 tail-chains,
-one tick straight into the next without returning to thread mode, so TIM2's
-handler at P1 never gets a turn. Its period count stalls and its clock runs
-backwards after 65 ms. TIM5 needs no interrupt at all, and with it the drill
-accounts for every period.
+128,848,810 missed ticks in 2 seconds. A loop that overruns at P0 is pending
+again the moment it returns, so the NVIC tail-chains straight back into it and
+TIM2 at P1 never wins arbitration. Its period count stalls, and its clock jumps
+back 65.5 ms each time the 16-bit counter wraps. TIM5 needs no interrupt at all,
+and with it the drill accounts for every period.
 
 ## What's next
 
