@@ -52,11 +52,13 @@ against the tick.
 The loop times itself with TIM3's own counter. The count when the interrupt
 starts is the latency since the update event, and the change in it from tick to
 tick is the jitter. If the update flag is set again before the work ends, the
-tick overran. TIM3 wraps every period, so a tick that starts a whole period
-late would look on time. A free-running 32-bit TIM5 at 1 MHz times each
-release, and whole periods between two releases show the update events that
-merged. The counters are atomics with one writer, the interrupt, so telemetry
-can read them without ever blocking it.
+tick overran. TIM3 wraps every period, so a tick that starts a whole period late
+would look on time. A free-running 32-bit TIM5 at 1 MHz times each release, and
+whole periods between two releases show the update events that merged. The
+counters are atomics with one writer, the interrupt, so telemetry can read them
+without ever blocking it. Each counter reads whole, though the four can straddle
+a tick. [#6](https://github.com/guy-with-a-why/telemetry-blackbox/issues/6)
+settles that.
 
 ## What challenges were faced
 
