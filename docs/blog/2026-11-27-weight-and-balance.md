@@ -120,7 +120,7 @@ symbol so Renode can find `LOOP_TIMING`, and unmasking TIM3 in the NVIC.
 The borrow checker guards every reference the core holds, and the PAC reaches
 registers through volatile accesses.
 
-It doesn't cover the stack's depth. The dive above is entirely safe Rust.
+It doesn't cover the stack's depth. The dive above is safe Rust.
 `thumbv7em-none-eabihf` has no guard page and no stack probes, so recursion or
 one large local is enough to write over statics with no `unsafe` in sight. The
 borrow checker can't see the DMA engine either, or what a register write does
