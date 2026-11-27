@@ -83,10 +83,11 @@ stay masked during the dive, so no tick lands halfway.
 
 The LED stopped blinking the moment the button went down. The counters now
 report 2,863,311,530 overruns, which is `0xAAAAAAAA`, and a worst jitter of 179
-seconds. One counter holds a saved frame pointer. The word just above `.bss`
-holds `0x0800_047D`, a return address back into the dive. The loop died because
+seconds. `last_release_us` holds `0x2000_005C`, the address of that frame's own
+`0xAA` bytes. The word just above `.bss` holds `0x0800_047D`, a return address
+back into the dive. The loop died because
 the overflow went one step further. `CONTROL_LOOP`'s `RefCell` borrow flag, 12
-bytes below the counters, took a frame pointer too. The next tick's
+bytes below the counters, took the next frame's buffer address. The next tick's
 `borrow_mut` read it as borrowed and panicked, and `panic-halt` spins inside
 TIM3 at P0, so nothing runs again. The flight recorder's own counters were the
 first casualty, which isn't a great look for a flight recorder.
