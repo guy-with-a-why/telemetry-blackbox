@@ -19,9 +19,8 @@ rough shape. Code sits low, SRAM from `0x2000_0000`, peripherals from
 [RM0090](https://www.st.com/resource/en/reference_manual/rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf)
 fills in the F407. Flash starts at `0x0800_0000`. SRAM1 (112 KB) and SRAM2
 (16 KB) sit back to back from `0x2000_0000`, so `memory.x` treats them as one
-128 KB block. Just below `0x2000_0000` sit the 30 KB ROM bootloader, 528 bytes
-of one-time-programmable memory and the option bytes, which hold the chip's
-protection settings.
+128 KB block. Just below `0x2000_0000` sit the ROM bootloader and the option
+bytes, which hold the chip's protection settings.
 
 The odd one out is 64 KB of core-coupled memory (CCM) at `0x1000_0000`. It hangs
 off the core's data bus, outside the bus matrix that links the DMA controllers
@@ -33,9 +32,8 @@ below `0x1000_0000` is reserved and faults, but it would have half the room.
 
 ![The STM32F407VG's 4 GB address space, from the top: the private peripheral bus at 0xE000_0000 with the NVIC, SCB, SysTick and MPU; peripherals at 0x4000_0000; SRAM1 and SRAM2 at 0x2000_0000, reachable by the core and DMA; the option bytes at 0x1FFF_C000; the ROM bootloader and OTP at 0x1FFF_0000; CCM RAM at 0x1000_0000, reachable by the core only; flash at 0x0800_0000 with 4,808 bytes used; and the boot alias at 0x0000_0000. Beside it, SRAM as this firmware fills it: the initial stack pointer at 0x2002_0000, 130,960 bytes of stack growing down, __sheap at 0x2000_0070 with no heap, LOOP_TIMING at 0x2000_0058 outlined in red as the first thing an overflow overwrites, then CONTROL_LOOP, Embassy's task pool and .data.](../diagrams/memory-map.svg)
 
-There's no heap. Nothing in the firmware allocates, so there's no allocator to
-fragment or misuse, and `__sheap` at `0x2000_0070` only marks where one would
-start. Every byte has its place at link time, which is what you want from a load
+There's no heap. Nothing in the firmware allocates, and `__sheap` at
+`0x2000_0070` only marks where one would start. Every byte has its place at link time, which is what you want from a load
 sheet.
 
 ## From reset to main
@@ -60,8 +58,7 @@ in RAM.
 The stack grows down from `0x2002_0000`, and nothing below it stops it. It has
 130,960 bytes before it reaches the statics. The first static in its path is
 `LOOP_TIMING` at `0x2000_0058`, the counters that prove the loop keeps its
-deadline. On a desktop OS a guard page would catch the overflow. Here the stack
-just keeps writing, because to the core it's ordinary RAM.
+deadline. The stack just keeps writing, because to the core it's ordinary RAM.
 
 Every interrupt adds weight. On entry the core pushes eight words onto the
 current stack: R0 to R3, R12, LR, the return address and xPSR. That's 32 bytes
@@ -98,11 +95,10 @@ first casualty, which isn't a great look for a flight recorder.
 Everything in this firmware runs privileged, on the main stack, with the MPU
 off. The core's [default memory map](https://developer.arm.com/documentation/dui0553/latest/)
 marks SRAM as executable, so bytes the stack writes could, in principle, run as
-code. The MPU can change that. It has eight regions, each a power of two from
-32 bytes, and a background region for privileged code. One region can make SRAM
-execute-never, another can make flash read-only, and a third can turn the
-bottom 32 bytes of the stack into a guard. An access the MPU forbids raises a
-MemManage fault.
+code. The MPU can change that. It has eight regions, each a power of two from 32
+bytes and aligned to its size. One region can make SRAM execute-never, and
+another can turn the bottom of the stack into a guard. An access the MPU
+forbids raises a MemManage fault.
 
 The MPU sits inside the core, so it only judges the core's own accesses. The DMA
 controllers are separate masters on the bus matrix, and a transfer aimed at the
@@ -124,9 +120,8 @@ Write protection works per flash sector, with one bit for each of the twelve.
 
 The firmware denies `unsafe_code`, with two marked exceptions: an unmangled
 symbol so Renode can find `LOOP_TIMING`, and unmasking TIM3 in the NVIC.
-Embassy keeps its task in a 48-byte static pool, the PAC reaches registers
-through volatile accesses, and the borrow checker guards every reference the
-core holds. That covers a lot.
+The borrow checker guards every reference the core holds, and the PAC reaches
+registers through volatile accesses.
 
 It doesn't cover the stack's depth. The dive above is entirely safe Rust.
 `thumbv7em-none-eabihf` has no guard page and no stack probes, so recursion or
@@ -160,8 +155,6 @@ hardware.
 - Arm's [Cortex-M4 Devices Generic User Guide](https://developer.arm.com/documentation/dui0553/latest/):
   the default memory map, the exception frame, `EXC_RETURN` and the MPU in one
   place.
-- The [ARMv7-M Architecture Reference Manual](https://developer.arm.com/documentation/ddi0403/latest/):
-  the rules behind both, for when the user guide runs out.
 - [AN298](https://developer.arm.com/documentation/dai0298/a), Cortex-M4(F) lazy
   stacking: how the long frame is reserved and when it's filled.
 - [AN5156](https://www.st.com/resource/en/application_note/an5156-introduction-to-security-for-stm32-mcus-stmicroelectronics.pdf),
@@ -172,8 +165,6 @@ hardware.
 - The Embedonomicon on [memory layout](https://docs.rust-embedded.org/embedonomicon/memory-layout.html)
   and [DMA](https://docs.rust-embedded.org/embedonomicon/dma.html): the linker
   script, and a memory-safe DMA API built from first principles.
-- [flip-link](https://github.com/knurling-rs/flip-link): the README explains
-  the flipped layout in a page.
 - Memfault on [debugging a HardFault](https://interrupt.memfault.com/blog/cortex-m-fault-debug)
   and [the MPU](https://interrupt.memfault.com/blog/fix-bugs-and-secure-firmware-with-the-mpu):
   reading a fault from the stacked frame, and a guard region in practice.
@@ -190,9 +181,8 @@ The questions this post set out to answer. Open one for my answer.
 <summary>Why does memory.x leave out the CCM, and what would moving the stack
 there gain and lose?</summary>
 
-DMA can't reach CCM, so nothing the telemetry DMAs can live there. The stack in
-CCM would get a hard floor, since an overflow below `0x1000_0000` hits reserved
-space and faults, but it would have half the room.
+DMA can't reach it. The stack there would fault on overflow below
+`0x1000_0000`, with half the room.
 
 </details>
 
@@ -219,9 +209,8 @@ guard page or MPU region, so every write succeeds.
 <summary>What does TIM3 push when it preempts float code, and what does lazy
 stacking save?</summary>
 
-Eight words plus S0 to S15, FPSCR and a reserved word, 104 bytes on the current
-stack. Lazy stacking reserves the float space but only fills it if the handler
-uses the FPU. Bit 4 of `EXC_RETURN` says which frame is there.
+The eight basic words plus 18 for the float registers, 104 bytes. Lazy stacking
+reserves the float space and only fills it if the handler uses the FPU.
 
 </details>
 
@@ -238,7 +227,7 @@ again.
 <summary>How can safe Rust write over LOOP_TIMING?</summary>
 
 By overflowing the stack. This target has no guard page or stack probes, and the
-dive was safe code from end to end.
+dive was safe code.
 
 </details>
 
