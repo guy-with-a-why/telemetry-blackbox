@@ -12,7 +12,7 @@ stack.
 The Cortex-M4 sees one flat 4 GB address space, and the [ARMv7-M
 architecture](https://developer.arm.com/documentation/ddi0403/latest/) fixes its
 rough shape. Code sits low, SRAM from `0x2000_0000`, peripherals from
-`0x4000_0000`, and the core's own registers (the NVIC, SysTick and the MPU) from
+`0x4000_0000` and the core's own registers (the NVIC, SysTick and the MPU) from
 `0xE000_0000`.
 [RM0090](https://www.st.com/resource/en/reference_manual/rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf)
 fills in the F407. Flash starts at `0x0800_0000`. SRAM1 (112 KB) and SRAM2
