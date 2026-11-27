@@ -1,0 +1,20 @@
+// Renode's description of the board: the STM32F407VG and the parts around it,
+// including the green LED on PD12.
+using "platforms/boards/stm32f4_discovery-kit.repl"
+
+// Renode builds the timers at a fixed 10 MHz and doesn't model the clock tree
+// (#188). The firmware runs from the 16 MHz internal oscillator with no bus
+// prescalers, so TIM2 (embassy-time), TIM3 (the control loop) and TIM5 (its
+// clock) count at 16 MHz. Change these with the firmware's clocks.
+//
+// Set the rate here, not with the monitor's `Frequency`. That retimes only the
+// counter, and the compare channels stay at 10 MHz, so embassy-time's alarm on
+// CC2 never fired (#197).
+timer2:
+    frequency: 16000000
+
+timer3:
+    frequency: 16000000
+
+timer5:
+    frequency: 16000000
