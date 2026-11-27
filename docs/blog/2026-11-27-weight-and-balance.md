@@ -4,8 +4,8 @@
 
 ## Where everything sits
 
-The linker writes this firmware's load sheet. `llvm-size` on the release build puts 4,808 bytes in flash, out of
-1 MB. That's the vector table, the code, the constants and a copy of the
+The linker writes this firmware's load sheet. `llvm-size` on the release build
+puts 4,808 bytes in flash, out of 1 MB. That's the vector table, the code, the constants and a copy of the
 statics' starting values. RAM holds 112 bytes of statics, and the rest of it is
 stack.
 
@@ -140,9 +140,10 @@ quietly and leaves the counters lying. A guard lands before
 [#6](https://github.com/guy-with-a-why/telemetry-blackbox/issues/6) adds tasks. My
 first choice is [flip-link](https://github.com/knurling-rs/flip-link). It puts
 the stack below the statics, so an overflow runs off the bottom of SRAM into
-reserved space and faults. It spends no MPU region either. The fallback is an MPU guard region. That costs one of the eight, and a
-frame bigger than 32 bytes can step clean over it. That fault is the
-silicon's to raise, so the guard is proved on real hardware.
+reserved space and faults. It spends no MPU region either. The fallback is an
+MPU guard region. That costs one of the eight, and a frame bigger than 32 bytes
+can step clean over it. The bus fault flip-link relies on is the silicon's to
+raise, so the guard is proved on real hardware.
 
 ## Further reading
 
