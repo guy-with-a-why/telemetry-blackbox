@@ -231,8 +231,7 @@ dive was safe code.
 <summary>What are two ways to make an overflow fault, and why won't the MPU stop
 a stray DMA transfer?</summary>
 
-flip-link moves the stack below the statics, at the cost of another tool in the
-link. An MPU guard costs one of eight regions, and a big frame can jump it. The
+flip-link moves the stack below the statics and spends no MPU region. An MPU guard costs one of eight regions, and a big frame can jump it. The
 MPU only checks the core's accesses, and DMA is a separate bus master.
 
 </details>
@@ -241,7 +240,7 @@ MPU only checks the core's accesses, and DMA is a separate bus master.
 <summary>What does read protection Level 1 change for a debugger on SWD, and why
 is Level 2 a one-way door?</summary>
 
-With a debugger attached, flash and backup SRAM reads fail with a bus error, and
+With a debugger attached, flash and backup SRAM are blocked, and
 dropping to Level 0 mass-erases them. Level 2 switches off the debug port, SWD
 included, and freezes the option bytes, so nothing can lower it.
 
