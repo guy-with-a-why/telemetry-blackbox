@@ -21,47 +21,56 @@ were missed, which is every one of the 2,049 periods in 2.05 seconds.
 
 The board is ST's
 [STM32F4DISCOVERY](https://www.st.com/en/evaluation-tools/stm32f4discovery.html).
-Renode simulates it out of the box, so I could start without hardware, and it's
-a cheap, common board to flash once the simulation has done its job. Its
-STM32F407VG is a Cortex-M4F, so the attitude estimate in
-[#5](https://github.com/guy-with-a-why/telemetry-blackbox/issues/5) gets a
-hardware FPU. The same family turns up in plenty of hobby flight controllers,
-which keeps the target realistic.
+Renode simulates it out of the box, so I could start without any hardware. It's
+also cheap and common, so I can flash a real one once the simulation has done
+its job. Its chip, the STM32F407VG, is a Cortex-M4F, which gives the attitude
+estimate in [#5](https://github.com/guy-with-a-why/telemetry-blackbox/issues/5)
+a hardware FPU. The same family turns up in plenty of hobby flight controllers,
+so the target is a realistic one.
 
-Embassy runs on it because
-[embassy-stm32](https://docs.embassy.dev/embassy-stm32/) already covers the
-F407's timers, UART and DMA, so the evenings go into the loop rather than
-register plumbing. It also gets out of the way when asked. Its [low-level
+Embassy runs the firmware because
+[embassy-stm32](https://docs.embassy.dev/embassy-stm32/) already drives the
+F407's timers, UART and DMA. My evenings go into the loop instead of register
+plumbing. It also steps aside when I need it to. Its [low-level
 timer](https://docs.embassy.dev/embassy-stm32/git/stm32f407vg/timer/low_level/struct.Timer.html)
 and
 [interrupt](https://docs.embassy.dev/embassy-stm32/git/stm32f407vg/interrupt/trait.InterruptExt.html)
-APIs let me hang the loop off a raw interrupt with no executor in between.
-Renode is the bench because it runs in deterministic virtual time, so a timing
-figure repeats run for run. Its monitor scripts the drills.
+APIs let me run the loop straight from a hardware interrupt, with no executor in
+between.
 
-The loop runs inside the interrupt, at the top priority. I weighed an Embassy
-task woken by a `Ticker`, which reads well, but its wake-up passes through the
-executor and the time driver, so its jitter would include theirs. Polling a
-timer flag was never in the running. It burns the core and its deadline slips
-whenever anything else runs, while an interrupt arrives on time whatever thread
-mode is doing. Embassy leaves its TIM2 and DMA interrupts at P0, the reset
-priority. Equal priorities never preempt each other, and TIM2's lower IRQ
-number, 28 to TIM3's 29, would win a tie. Both move down to P1, so TIM3 sits
-alone at P0 and wins every tie. The loop can now preempt a DMA handler, but
-TIM2's handler runs inside a critical section, so its length still counts
-against the tick.
+Renode is the bench because its time is virtual and deterministic. The same
+firmware gives the same timing figures on every run, and I can script the drills
+from its monitor.
 
-The loop times itself with TIM3's own counter. The count when the interrupt
-starts is the latency since the update event, and the change in it from tick to
-tick is the jitter. If the update flag is set again before the work ends, the
-tick overran. TIM3 wraps every period, so a tick that starts a whole period late
-would look on time. A free-running 32-bit TIM5 at 1 MHz dates each update event,
-worked back from the tick's start, and whole periods between two of them show
-the update events that merged. The counters are atomics with one writer, the
-interrupt, so telemetry can read them without ever blocking it. Each counter
-reads whole, though the four can straddle a tick.
-[#6](https://github.com/guy-with-a-why/telemetry-blackbox/issues/6) settles
-that.
+The loop itself runs inside TIM3's interrupt. I considered an Embassy task woken
+by a `Ticker`, which would read more nicely. Its wake-up goes through the
+executor and the time driver, though, so their delays would end up in the loop's
+jitter. Polling a timer flag was never an option. It keeps the core busy doing
+nothing, and the tick has to wait for whatever else is running. An interrupt
+starts the tick when the timer fires.
+
+Priorities decide who waits. Embassy leaves its TIM2 and DMA interrupts at P0,
+the top priority I want for the loop. Interrupts at the same priority never
+preempt each other, and when two are pending the lower IRQ number goes first.
+TIM2 is 28 and TIM3 is 29, so TIM2 would win. Moving TIM2 and DMA down to P1
+leaves TIM3 alone at P0, so the loop wins every tie and can preempt a DMA
+handler. TIM2 is the exception. Its handler runs inside a critical section,
+which masks the loop as well, so its length still counts against the tick.
+
+The loop measures itself with TIM3's own counter. When the interrupt starts, the
+count says how long ago the timer overflowed. That's the tick's latency, and the
+change in latency from one tick to the next is the jitter. If the timer
+overflows again before the work ends, the tick overran.
+
+TIM3's counter starts again every period, so on its own it can't see a tick that
+starts a whole period late. A free-running 32-bit TIM5, counting microseconds,
+fills that gap. Each tick works back to when its overflow happened, and more
+than one period between two overflows means updates were missed.
+
+The counters are atomics, and only the interrupt writes them. Telemetry can read
+them at any time without ever blocking the loop. Each one reads whole, though a
+read of all four can straddle a tick, which
+[#6](https://github.com/guy-with-a-why/telemetry-blackbox/issues/6) settles.
 
 ## What challenges were faced
 
