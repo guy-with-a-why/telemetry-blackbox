@@ -134,7 +134,7 @@ the long frame, and the tick's float work fills it.
 [#6](https://github.com/guy-with-a-why/telemetry-blackbox/issues/6) keeps its DMA
 buffers in `'static` SRAM, never on the stack and never in CCM.
 
-The biggest risk is the one the drill showed: an overflow that corrupts state
+The biggest risk is the one the drill showed. An overflow corrupts state
 quietly and leaves the counters lying. A guard lands before #6 adds tasks. My
 first choice is [flip-link](https://github.com/knurling-rs/flip-link). It puts
 the stack below the statics, so an overflow runs off the bottom of SRAM into
