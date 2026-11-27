@@ -70,8 +70,9 @@ the core leaves in LR, `EXC_RETURN`, tells the return which frame it pushed. Bit
 
 So the return address is just a word in SRAM, next to everything else. That's
 worth a drill. On a throwaway branch, I made the firmware dive down the stack
-while the Discovery's blue button is held. Each 32-byte frame carries 16 bytes
-of `0xAA`, and the dive stops when a frame reaches `LOOP_TIMING`. Interrupts
+once the Discovery's blue button is pressed. Each 32-byte frame carries 16
+bytes of `0xAA`, and the dive stops at the first frame whose `0xAA` bytes sit
+below the start of `LOOP_TIMING`. Interrupts
 stay masked during the dive, so no tick lands halfway.
 
 ![just fly boots the drill build in Renode. runMacro $timing shows 3,958 and then 6,857 ticks with no overruns, while the green LED log toggles every half second. After gpioPortA.UserButton Press the LED log stops. The next two runs of runMacro $timing both show 10,361 ticks, 2,863,311,530 overruns, 2,863,311,530 missed and a max jitter of 178,956,970,625 ns.](assets/2026-11-27-stack-dive.gif)
