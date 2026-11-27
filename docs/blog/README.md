@@ -16,3 +16,4 @@ A flight recorder has two halves. The [flight log](../flight-log.md) is the data
 | 19 Nov 2026 | [Fuel reserve: ClickHouse beside Redpanda](2026-11-19-fuel-reserve.md) |
 | 21 Nov 2026 | [Leg 1 debrief: A cluster I built myself](2026-11-21-leg-1-debrief.md) |
 | 26 Nov 2026 | [Inner loop: a deadline every millisecond](2026-11-26-inner-loop.md) |
+| 27 Nov 2026 | [Weight and balance: what sits where on the F407](2026-11-27-weight-and-balance.md) |

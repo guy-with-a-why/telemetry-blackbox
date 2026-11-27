@@ -1,0 +1,36 @@
+# The STM32F407VG's memory map, high addresses at the top, and how this
+# firmware fills its SRAM. Addresses from RM0090 and llvm-nm on the release
+# build.
+direction: right
+
+map: "4 GB address space" {
+  grid-rows: 8
+  grid-gap: 0
+  ppb: "0xE000_0000  Private peripheral bus\nNVIC, SCB, SysTick, MPU"
+  periph: "0x4000_0000  Peripherals\nTIM3, TIM5, USART, DMA, GPIO, 4 KB backup SRAM"
+  sram: "0x2000_0000  SRAM1 112 KB + SRAM2 16 KB\nreachable by the core and DMA"
+  opt: "0x1FFF_C000  Option bytes\nread protection, write protection"
+  sys: "0x1FFF_0000  System memory\n30 KB ROM bootloader, then 528 bytes of OTP"
+  ccm: "0x1000_0000  CCM RAM 64 KB\nthe core only, off the bus matrix"
+  flash: "0x0800_0000  Flash 1 MB, 4,808 bytes used\nvector table, .text, .rodata, .data's image"
+  alias: "0x0000_0000  Boot alias\nflash, system memory or SRAM, set by BOOT0 and BOOT1"
+}
+
+ram: "SRAM as this firmware fills it" {
+  grid-rows: 7
+  grid-gap: 0
+  msp: "0x2002_0000  Initial MSP, word 0 of the vector table"
+  stack: "Stack, 130,960 bytes\ngrows down, with nothing below it to stop it" {
+    height: 140
+  }
+  sheap: "0x2000_0070  __sheap: no heap"
+  timing: "0x2000_0058  LOOP_TIMING, 24 bytes\nthe first thing an overflow overwrites" {
+    style.stroke: "#e5534b"
+    style.stroke-width: 3
+  }
+  control: "0x2000_0048  CONTROL_LOOP and the clock frequencies"
+  pool: "0x2000_0018  Embassy's task pool, 48 bytes"
+  data: "0x2000_0000  .data: the time driver, 24 bytes"
+}
+
+map -> ram: "SRAM1, 112 bytes used"
