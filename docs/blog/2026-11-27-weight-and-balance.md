@@ -39,9 +39,9 @@ The BOOT0 pin is low at reset, so flash is aliased at `0x0000_0000`. The core
 reads two words from there before it runs a single instruction. Word 0 is the
 initial stack pointer, `0x2002_0000`, the top of SRAM. Word 1 is the reset
 vector, `0x0800_0189`, though `Reset` starts at `0x0800_0188`. The extra 1 is
-the Thumb bit. A Cortex-M only runs Thumb code, so every vector has bit 0 set,
+the Thumb bit. A Cortex-M only runs Thumb code, so every handler address has bit 0 set,
 and one without it faults on the spot. The table is 98 words long: the stack
-pointer, 15 system exceptions and the F407's 82 interrupts.
+pointer, 15 system exception slots and the F407's 82 interrupts.
 
 Reset doesn't clear SRAM. Whatever the last run left is still there, so
 [cortex-m-rt](https://docs.rs/cortex-m-rt/0.7.7/cortex_m_rt/)'s `Reset` does
