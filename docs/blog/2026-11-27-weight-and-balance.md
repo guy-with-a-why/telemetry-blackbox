@@ -91,7 +91,7 @@ first casualty, which isn't a great look for a flight recorder.
 
 Everything in this firmware runs privileged, on the main stack, with the MPU
 off. The core's [default memory map](https://developer.arm.com/documentation/dui0553/latest/)
-marks SRAM as executable, so bytes the stack writes could, in principle, run as
+marks SRAM as executable, so bytes the stack writes could run as
 code. The MPU can change that. It has eight regions, each a power of two from 32
 bytes and aligned to its size. One region can make SRAM execute-never, and
 another can turn the bottom of the stack into a guard. An access the MPU
@@ -141,9 +141,8 @@ first choice is [flip-link](https://github.com/knurling-rs/flip-link). It puts
 the stack below the statics, so an overflow runs off the bottom of SRAM into
 reserved space and faults instead of writing over data, and it spends no MPU
 region. The fallback is an MPU guard region. That costs one of the eight, and a
-frame bigger than 32 bytes can step clean over it. Renode may not fault on
-reserved space the way silicon does, so proof of the guard is marked for real
-hardware.
+frame bigger than 32 bytes can step clean over it. That fault is the
+silicon's to raise, so the guard is proved on real hardware.
 
 ## Further reading
 
