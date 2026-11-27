@@ -66,8 +66,8 @@ Every interrupt adds weight. On entry the core pushes eight words onto the
 current stack: R0 to R3, R12, LR, the return address and xPSR. That's 32 bytes
 per preemption. Once the attitude estimate in
 [#5](https://github.com/guy-with-a-why/telemetry-blackbox/issues/5) runs float
-code, the frame can carry 18 more words (S0 to S15, FPSCR and a reserved word)
-for 104 bytes in all. [Lazy stacking](https://developer.arm.com/documentation/dai0298/a)
+code, an interrupt that preempts it can push 18 more words (S0 to S15, FPSCR
+and a reserved word) for 104 bytes in all. [Lazy stacking](https://developer.arm.com/documentation/dai0298/a)
 keeps that cheap. The core reserves the space and notes its address in FPCAR,
 but only writes the registers if the handler touches the FPU itself. The value
 the core leaves in LR, `EXC_RETURN`, tells the return which frame it pushed. Bit
@@ -135,7 +135,8 @@ to the hardware.
 ## What's next
 
 [#5](https://github.com/guy-with-a-why/telemetry-blackbox/issues/5) puts float
-work in the tick, so TIM3 pushes the long frame whenever it preempts float code.
+work in the tick. Whenever TIM3 preempts code that has used the FPU, it reserves
+the long frame, and the tick's float work fills it.
 [#6](https://github.com/guy-with-a-why/telemetry-blackbox/issues/6) keeps its DMA
 buffers in `'static` SRAM, never on the stack and never in CCM.
 
