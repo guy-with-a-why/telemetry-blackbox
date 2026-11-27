@@ -19,6 +19,6 @@ COPY pipeline pipeline
 RUN test -n "$CRATE" && cargo auditable build --release --locked --package "$CRATE" \
     && cp "target/release/$CRATE" /app
 
-FROM gcr.io/distroless/cc-debian13:nonroot@sha256:cb87acc574abe719b6e5c547384defa2f7b1f24af9605d3f618cf852495d8be2
+FROM gcr.io/distroless/cc-debian13:nonroot@sha256:29ee70762214fe8190cea04ef1c0a84a8365879e047ce8f911ae5a5ab2355fa2
 COPY --from=build /app /app
 ENTRYPOINT ["/app"]
