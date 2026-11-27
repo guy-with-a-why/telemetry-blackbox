@@ -115,8 +115,9 @@ The chip has guards of its own in the option bytes. The Discovery ships at read
 protection Level 0, where SWD can read and write everything. At Level 1, flash
 and backup SRAM are blocked while a debugger is connected or the chip boots
 from RAM or the ROM bootloader, and dropping back to Level 0 mass-erases both.
-Level 2 is permanent. It switches off JTAG and trace, stops booting from RAM or
-the bootloader and freezes the option bytes, so nothing can lower it again.
+Level 2 is permanent. It switches off the debug port, SWD and JTAG alike, along
+with trace. It stops booting from RAM or the bootloader and freezes the option
+bytes, so nothing can lower it again.
 Write protection works per flash sector, with one bit for each of the twelve.
 
 ## What Rust covers and what it doesn't
@@ -256,7 +257,7 @@ MPU only checks the core's accesses, and DMA is a separate bus master.
 is Level 2 a one-way door?</summary>
 
 With a debugger attached, flash and backup SRAM reads fail with a bus error, and
-dropping to Level 0 mass-erases them. Level 2 switches off JTAG and trace and
-freezes the option bytes, so nothing can lower it.
+dropping to Level 0 mass-erases them. Level 2 switches off the debug port, SWD
+included, and freezes the option bytes, so nothing can lower it.
 
 </details>
