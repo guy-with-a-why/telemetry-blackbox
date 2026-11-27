@@ -4,9 +4,7 @@
 
 ## Where everything sits
 
-Before a flight, the load sheet says what's aboard, where it sits and whether
-the aircraft stays inside its limits. The firmware has one too, and the linker
-writes it. `llvm-size` on the release build puts 4,808 bytes in flash, out of
+The linker writes this firmware's load sheet. `llvm-size` on the release build puts 4,808 bytes in flash, out of
 1 MB. That's the vector table, the code, the constants and a copy of the
 statics' starting values. RAM holds 112 bytes of statics, and the rest of it is
 stack.
@@ -33,8 +31,7 @@ below `0x1000_0000` is reserved and faults, but it would have half the room.
 ![The STM32F407VG's 4 GB address space, from the top: the private peripheral bus at 0xE000_0000 with the NVIC, SCB, SysTick and MPU; peripherals at 0x4000_0000; SRAM1 and SRAM2 at 0x2000_0000, reachable by the core and DMA; the option bytes at 0x1FFF_C000; the ROM bootloader and OTP at 0x1FFF_0000; CCM RAM at 0x1000_0000, reachable by the core only; flash at 0x0800_0000 with 4,808 bytes used; and the boot alias at 0x0000_0000. Beside it, SRAM as this firmware fills it: the initial stack pointer at 0x2002_0000, 130,960 bytes of stack growing down, __sheap at 0x2000_0070 with no heap, LOOP_TIMING at 0x2000_0058 outlined in red as the first thing an overflow overwrites, then CONTROL_LOOP, Embassy's task pool and .data.](../diagrams/memory-map.svg)
 
 There's no heap. Nothing in the firmware allocates, and `__sheap` at
-`0x2000_0070` only marks where one would start. Every byte has its place at link time, which is what you want from a load
-sheet.
+`0x2000_0070` only marks where one would start. Every byte has its place at link time.
 
 ## From reset to main
 
