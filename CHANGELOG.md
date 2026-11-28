@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.1](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.11.0...v0.11.1) (2026-11-27)
+
+
+### Bug Fixes
+
+* **renode:** clock the timers' compare channels at 16 MHz ([#199](https://github.com/guy-with-a-why/telemetry-blackbox/issues/199)) ([f183131](https://github.com/guy-with-a-why/telemetry-blackbox/commit/f1831315368950c88e94d6c57972cfa24b8310ca)), closes [#197](https://github.com/guy-with-a-why/telemetry-blackbox/issues/197)
+
 ## [0.11.0](https://github.com/guy-with-a-why/telemetry-blackbox/compare/v0.10.4...v0.11.0) (2026-11-26)
 
 
