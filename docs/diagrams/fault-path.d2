@@ -1,0 +1,19 @@
+# How the firmware fails: today every path spins in silence; with #201 a
+# failure leaves its cause, the chip resets and the next boot reports it.
+direction: right
+
+t_fail: "Today\npanic or fault"
+t_spin: "Spins forever\nnothing says why"
+t_out: "Telemetry stops\nno reset" {style.stroke: "#e5534b"; style.stroke-width: 3}
+
+t_fail -> t_spin -> t_out
+
+a_fail: "With #201\npanic or fault"
+a_stall: "Loop stalls"
+a_save: "Cause saved to RAM\nthat survives a reset"
+a_reset: "Chip resets"
+a_out: "Next boot\nreports the cause" {style.stroke: "#46954a"; style.stroke-width: 3}
+
+a_fail -> a_save -> a_reset
+a_stall -> a_reset: watchdog
+a_reset -> a_out

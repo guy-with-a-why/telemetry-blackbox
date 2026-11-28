@@ -1,0 +1,15 @@
+# Why a load-then-store counter needs exactly one writer: a second writer
+# that TIM3 preempts between its load and its store loses TIM3's count.
+race: "" {
+  shape: sequence_diagram
+
+  task: "Second writer\nat lower priority"
+  counter: "Counter\nholds 41"
+  tim3: "TIM3 tick\nat P0"
+
+  task -> counter: "load 41"
+  tim3 -> counter: "preempts, load 41"
+  tim3 -> counter: "store 42"
+  task -> counter: "store 41 + 1 = 42"
+  counter."Two adds ran, but it holds 42, not 43"
+}
