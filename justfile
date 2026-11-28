@@ -63,6 +63,10 @@ test-scripts:
     npm --prefix tools/flight run --silent lint
     npm --prefix tools/flight test
 
+# Clippy for the board skips the firmware's `#[cfg(test)]` modules, so it runs
+# again on the host. `--profile test` lints the library's tests alone, because
+# `--tests` would build the binary too, and that only builds for the board.
+
 # Check formatting, lints and licences for the crates, the firmware, bbcheck and the shell scripts
 lint:
     shfmt --diff --indent 2 --case-indent scripts deploy
@@ -71,6 +75,7 @@ lint:
     cargo clippy --workspace --all-targets --locked -- -D warnings
     cargo deny check bans licenses sources
     cd firmware && cargo fmt --check && cargo clippy --locked -- -D warnings
+    cd firmware && cargo clippy --lib --profile test --locked --target "$(rustc -vV | sed -n 's/^host: //p')" -- -D warnings
     cd firmware && cargo deny --target thumbv7em-none-eabihf check bans licenses sources
     uv run --locked --project tools/bbcheck ruff check tools/bbcheck
 
@@ -81,14 +86,17 @@ test:
     cd firmware && cargo test --lib --locked --target "$(rustc -vV | sed -n 's/^host: //p')"
     cd tools/bbcheck && uv run --locked pytest
 
-# Measure line coverage across Rust and bbcheck, and write the badge to
-# target/coverage/coverage.json
+# Measure line coverage across the crates, the firmware library and bbcheck,
+# and write the badge to target/coverage/coverage.json
 coverage:
     mkdir -p target/coverage
     cargo llvm-cov --workspace --locked --json --summary-only --output-path target/coverage/rust.json
+    cd firmware && cargo llvm-cov --lib --locked --target "$(rustc -vV | sed -n 's/^host: //p')" \
+        --json --summary-only --output-path ../target/coverage/firmware.json
     cd tools/bbcheck && COVERAGE_FILE=../../target/coverage/.coverage uv run --locked pytest \
         --cov=bbcheck --cov-report=term --cov-report=json:../../target/coverage/python.json
-    python3 scripts/coverage_badge.py target/coverage/rust.json target/coverage/python.json target/coverage/coverage.json
+    python3 scripts/coverage_badge.py target/coverage/rust.json target/coverage/firmware.json \
+        target/coverage/python.json target/coverage/coverage.json
 
 # Run the registry and caches the VMs use from the host
 host:

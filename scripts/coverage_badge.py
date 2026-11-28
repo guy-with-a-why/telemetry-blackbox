@@ -1,10 +1,11 @@
 """Turns the Rust and Python coverage reports into one badge.
 
-    python3 scripts/coverage_badge.py RUST_JSON PYTHON_JSON OUT_JSON
+    python3 scripts/coverage_badge.py RUST_JSON... PYTHON_JSON OUT_JSON
 
-RUST_JSON comes from `cargo llvm-cov --json --summary-only` and PYTHON_JSON
-from pytest-cov's JSON report. The badge shows line coverage across both, as
-a shields.io endpoint that the docs site serves next to the flight strip.
+Each RUST_JSON comes from `cargo llvm-cov --json --summary-only`, one for each
+Cargo workspace, and PYTHON_JSON from pytest-cov's JSON report. The badge
+shows line coverage across all of them, as a shields.io endpoint that the docs
+site serves next to the flight strip.
 """
 
 import json
@@ -32,16 +33,18 @@ def colour(percent: float) -> str:
     return "red"
 
 
-def badge(rust: dict, python: dict) -> dict:
-    covered, total = (a + b for a, b in zip(rust_lines(rust), python_lines(python), strict=True))
+def badge(rust: list[dict], python: dict) -> dict:
+    counts = [rust_lines(report) for report in rust] + [python_lines(python)]
+    covered = sum(lines for lines, _ in counts)
+    total = sum(lines for _, lines in counts)
     if total == 0:
         raise ValueError("no lines measured")
     percent = 100 * covered / total
     return {"schemaVersion": 1, "label": "coverage", "message": f"{percent:.0f}%", "color": colour(percent)}
 
 
-def main(rust_path: str, python_path: str, out_path: str) -> None:
-    rust = json.loads(Path(rust_path).read_text())
+def main(rust_paths: list[str], python_path: str, out_path: str) -> None:
+    rust = [json.loads(Path(path).read_text()) for path in rust_paths]
     python = json.loads(Path(python_path).read_text())
     result = badge(rust, python)
     Path(out_path).write_text(json.dumps(result) + "\n")
@@ -49,6 +52,6 @@ def main(rust_path: str, python_path: str, out_path: str) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
+    if len(sys.argv) < 4:
         sys.exit(__doc__)
-    main(*sys.argv[1:])
+    main(sys.argv[1:-2], *sys.argv[-2:])
