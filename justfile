@@ -86,14 +86,17 @@ test:
     cd firmware && cargo test --lib --locked --target "$(rustc -vV | sed -n 's/^host: //p')"
     cd tools/bbcheck && uv run --locked pytest
 
-# Measure line coverage across Rust and bbcheck, and write the badge to
-# target/coverage/coverage.json
+# Measure line coverage across the crates, the firmware library and bbcheck,
+# and write the badge to target/coverage/coverage.json
 coverage:
     mkdir -p target/coverage
     cargo llvm-cov --workspace --locked --json --summary-only --output-path target/coverage/rust.json
+    cd firmware && cargo llvm-cov --lib --locked --target "$(rustc -vV | sed -n 's/^host: //p')" \
+        --json --summary-only --output-path ../target/coverage/firmware.json
     cd tools/bbcheck && COVERAGE_FILE=../../target/coverage/.coverage uv run --locked pytest \
         --cov=bbcheck --cov-report=term --cov-report=json:../../target/coverage/python.json
-    python3 scripts/coverage_badge.py target/coverage/rust.json target/coverage/python.json target/coverage/coverage.json
+    python3 scripts/coverage_badge.py target/coverage/rust.json target/coverage/firmware.json \
+        target/coverage/python.json target/coverage/coverage.json
 
 # Run the registry and caches the VMs use from the host
 host:
