@@ -1,0 +1,14 @@
+# Two ways into TIM3's update event. Both load the waiting PSC, but with URS on
+# counter-only during generate_update_event, only the overflow sets UIF.
+direction: right
+
+overflow: "Counter overflows\nat ARR"
+ug: "Software sets UG\ngenerate_update_event"
+uev: "Update event" {shape: hexagon}
+psc: "Waiting PSC\ntakes effect"
+uif: "UIF set\nthe tick runs"
+
+overflow -> uev
+ug -> uev: "URS = counter-only"
+uev -> psc: always
+uev -> uif: overflow only

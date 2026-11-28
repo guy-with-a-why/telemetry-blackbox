@@ -17,6 +17,7 @@
   - [Leg 1 debrief: A cluster I built myself](blog/2026-11-21-leg-1-debrief.md)
   - [Inner loop: a deadline every millisecond](blog/2026-11-26-inner-loop.md)
   - [Weight and balance: what sits where on the F407](blog/2026-11-27-weight-and-balance.md)
+  - [Walkaround: a defensive review before the firmware grows](blog/2026-11-28-walkaround.md)
 - [Airworthiness directives](directives/README.md)
 - [Decisions](adr/README.md)
   - [0002. kubeadm](adr/0002-kubeadm.md)
